@@ -1,0 +1,168 @@
+import React, {useEffect} from "react";
+import {Button, FormControl, MenuItem, Select, TextField} from "@mui/material";
+import SwcModal from "../SwcModal";
+import TitleEntryType from "../../types/titleEntryType";
+import EffectGenerator from "../EffectGenerator";
+import {SwcFab, SwcFabContainer} from "../SwcFab";
+import {isAdmin} from "../../utils/constants";
+import {getTimeString} from "../../utils/FormatDate";
+
+interface CreateNewModalProps {
+    show: boolean;
+    onHide: () => void;
+    setSelectedResult: (title: TitleEntryType) => void;
+    setSearchMode: (mode: "all" | "movie" | "series") => void;
+    setSearch: (search: string) => void;
+}
+function CreateNewModal(props: CreateNewModalProps){
+    const [createMode, setCreateMode] = React.useState<"movie" | "series">("movie")
+    const [title, setTitle] = React.useState("")
+
+    return (
+        <SwcModal show={props.show} onHide={props.onHide}>
+            <h5>Create new...</h5>
+            <Select
+                variant="standard"
+                value={createMode}
+                onChange={e => setCreateMode(e.target.value as "movie" | "series")}
+            >
+                <MenuItem value="movie">Movie</MenuItem>
+                <MenuItem value="series">Series</MenuItem>
+            </Select>
+            <TextField
+                variant="standard"
+                placeholder="Title"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                error={title.length === 0}
+            />
+            <Button
+                variant="contained"
+                color="primary"
+                onClick={() => {
+                    const formData = new FormData();
+                    formData.append("title", title);
+                    fetch(`/${createMode === "movie" ? "movies" : "series"}/new`, {
+                        method: "POST",
+                        body: formData
+                    }).then(res => res.json()).then(res => {
+                        props.setSearchMode(createMode);
+                        props.setSearch(title);
+                        props.setSelectedResult({
+                            uuid: res.uuid,
+                            title: title,
+                            type: createMode
+                        });
+                        props.onHide();
+                    })
+                }}
+                disabled={title.length === 0}
+            >
+                Create
+            </Button>
+        </SwcModal>
+    )
+}
+
+interface SidebarProps {
+    setSelectedTitle: (title: TitleEntryType) => void;
+    selectedTitle: TitleEntryType | null;
+}
+function Sidebar(props: SidebarProps){
+    const [search, setSearch] = React.useState(sessionStorage.getItem("search") || "")
+    const [searchMode, setSearchMode] =
+        React.useState<"all" | "movie" | "series">(sessionStorage.getItem("search-mode") as "all" | "movie" | "series" || "all")
+    const [searchResults, setSearchResults] =
+        React.useState<TitleEntryType[]>(JSON.parse(sessionStorage.getItem("search-results") || "[]"))
+
+    const [createNewModal, setCreateNewModal] = React.useState(false)
+
+    useEffect(() => {
+        sessionStorage.setItem("search", search)
+        sessionStorage.setItem("search-mode", searchMode)
+        fetch(`/search/${searchMode}${search !== "" ? "?q=" + search : ""}`)
+            .then(res => res.json())
+            .then(setSearchResults)
+    }, [search, searchMode])
+    useEffect(() => {
+        sessionStorage.setItem("search-results", JSON.stringify(searchResults))
+    }, [searchResults])
+
+    function handleClick(searchResult: TitleEntryType){
+        props.setSelectedTitle(searchResult)
+    }
+    function handleMiddleClick(e: React.MouseEvent<HTMLButtonElement, MouseEvent>, searchResult: TitleEntryType){
+        if(e.button !== 1 && e.buttons !== 4) return
+        window.open(`/info?mode=${searchResult.type}&uuid=${searchResult.uuid}`, "_blank")
+    }
+
+    return (
+        <>
+            <div className="sidebar d-flex flex-column border-end border-secondary">
+                <div>
+                    <FormControl fullWidth>
+                        <TextField
+                            variant="standard"
+                            placeholder="Search"
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                        />
+                    </FormControl>
+                    <FormControl fullWidth>
+                        <Select
+                            variant="standard"
+                            value={searchMode}
+                            onChange={e => setSearchMode(e.target.value as "all" | "movie" | "series")}
+                        >
+                            <MenuItem value="all">All</MenuItem>
+                            <MenuItem value="movie">Movie</MenuItem>
+                            <MenuItem value="series">Series</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <hr className="mb-0" />
+                </div>
+
+                <div className="results">
+                    {searchResults.map((searchResult, i) => (
+                        <EffectGenerator
+                            key={i}
+                            onClick={() => handleClick(searchResult)}
+                            onMouseDown={(e) => handleMiddleClick(e, searchResult)}
+                            className={`result p-2 ps-3 border-bottom border-secondary ${props.selectedTitle?.uuid === searchResult.uuid ? "selected" : ""}`}
+                            rippleEffect
+                            candleEffect
+                            candleSize={2}
+                        >
+                            <img src={`/${searchResult.type === "movie" ? "movies" : "series"}/${searchResult.uuid}?thumbnail`} alt="title" />
+                            <div className="ms-3">
+                                <div className="fw-bold">{searchResult.title}</div>
+                                {searchResult.type === "movie" ? (
+                                    <div className="text-muted">Runtime: {getTimeString(searchResult.runtime!)}</div>
+                                ) : (
+                                    <div className="text-muted">Seasons: {searchResult.season_count}</div>
+                                )}
+                            </div>
+                        </EffectGenerator>
+                    ))}
+                </div>
+
+                <SwcFabContainer hide={!isAdmin}>
+                    <SwcFab
+                        icon={<i className="material-icons">add</i>}
+                        onClick={() => setCreateNewModal(true)}
+                        color="primary"
+                    />
+                </SwcFabContainer>
+            </div>
+            <CreateNewModal
+                show={createNewModal}
+                onHide={() => setCreateNewModal(false)}
+                setSelectedResult={props.setSelectedTitle}
+                setSearchMode={setSearchMode}
+                setSearch={setSearch}
+            />
+        </>
+    )
+}
+
+export default Sidebar;

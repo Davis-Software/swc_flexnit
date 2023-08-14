@@ -1,0 +1,5 @@
+.idea/
+venv/
+static/js/bundle/
+static/db/db.sqlite
+temp.py

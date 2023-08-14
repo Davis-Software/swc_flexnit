@@ -1,0 +1,23 @@
+body{
+    /*background-image: url(/static/img/bg/bg_01.svg);*/
+    background-color: #222;
+}
+.form-control{
+    transition: all .3s;
+    background-color: rgb(56, 62, 68, .5);
+    color: #fff;
+}
+.form-control:focus{
+    background-color: rgb(57, 65, 72, .6);
+    color: #fff;
+}
+.form-control:disabled{
+    background-color: rgb(57, 65, 72, .9);
+}
+.container{
+    margin-top: 30vh;
+    transition: all .3s;
+}
+.container:hover{
+    transform: scale(1.01);
+}

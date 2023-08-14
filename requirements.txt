@@ -1,0 +1,5 @@
+requests
+flask
+SQLAlchemy==1.4.46
+sqlalchemy-json==0.6.0
+flask_sqlalchemy==2.5.1

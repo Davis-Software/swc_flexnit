@@ -1,0 +1,16 @@
+{% extends "bases/minimal_base.html" %}
+
+{% block head %}
+    <link rel="stylesheet" href="/static/css/auth/login.css">
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <form method="POST" action="/login{{ '?jump=' + redirect if redirect else '' }}" class="card-body">
+            <input type="text" class="form-control" placeholder="Username" name="username" required>
+            <input type="password" class="form-control" placeholder="Password" name="password" required>
+            <br> <span class="text-warning" id="error">{{ error }}</span> <br>
+            <button type="submit" class="btn btn-lg btn-info w-100" >Login</button>
+        </form>
+    </div>
+{% endblock %}

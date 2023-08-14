@@ -1,0 +1,20 @@
+from __init__ import app
+from flask import request, make_response, session
+
+from models.playback_progress import get_playback_progress, set_playback_progress
+from utils.password_manager import auth_required
+
+
+@app.route("/sync", methods=["GET", "POST"])
+@auth_required
+def sync():
+    if request.method == "GET":
+        username = session.get("username")
+        playback_progress = get_playback_progress(username).to_json()
+        return make_response(playback_progress, 200)
+
+    elif request.method == "POST":
+        username = session.get("username")
+        playback_progress = request.form.get("playback_progress")
+        set_playback_progress(username, playback_progress)
+        return make_response("OK", 200)

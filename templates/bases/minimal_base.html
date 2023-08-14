@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}SWC FlexNit{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Software City">
+
+    <meta name="theme-color" content="#375a7f">
+
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon">
+    <link rel="stylesheet" href="/static/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/bases/base_style.css">
+    <link rel="stylesheet" href="/static/css/utils/effects.css">
+    <link rel="stylesheet" href="/static/css/pages/error_styles.css"/>
+
+    <link rel="stylesheet" href="/static/font/material_icons/material_icons.css">
+
+    <script src="/static/bootstrap/bootstrap.bundle.min.js" defer></script>
+    <script src="/static/js/modules/modal-generator.js" defer></script>
+
+    <script src="/static/js/bases/base_script.js" defer></script>
+    <script src="/static/js/utils/effects.js" defer></script>
+
+    {% if session.get("logged_in") == True %}
+    <script>
+        globalThis.user = {{ session.get("username")|tojson }};
+        globalThis.admin = {{ session.get("admin")|tojson }};
+        globalThis.cloud = {{ session.get("cloud")|tojson }};
+        globalThis.permissions = {{ session.get("permissions")|tojson }};
+    </script>
+    {% endif %}
+
+    {% block base_head %}{% endblock %}
+    {% block head %}{% endblock %}
+</head>
+<body>
+    {% block nav %}{% endblock %}
+
+    {% block body %}{% endblock %}
+
+    {% block footer %}{% endblock %}
+</body>
+</html>

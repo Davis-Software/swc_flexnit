@@ -1,0 +1,82 @@
+@import "swc-loader.css";
+
+.ripple {
+    position: relative;
+}
+.ripple-inner {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+    pointer-events: none;
+    border-radius: inherit;
+    transform: translateZ(0);
+    animation: ripple-shadow 0.4s forwards;
+}
+.ripple-wave {
+    position: absolute;
+    background: rgba(255, 255, 255, .6);
+    backface-visibility: hidden;
+    border-radius: 50%;
+    opacity: 0.45;
+    transform: scale(0.7);
+    animation: ripple 1s forwards;
+}
+@keyframes ripple-shadow {
+    0% {
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+    20% {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, .3);
+    }
+    100% {
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+@keyframes ripple {
+    to {
+        opacity: 0;
+        transform: scale(24);
+    }
+}
+
+
+.candle-canvas{
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+    pointer-events: none; /* allow user interaction */
+    border-radius: inherit; /* inherit from parent (rounded buttons etc) */
+}
+.candle{
+    position: absolute;
+    /*background: radial-gradient(circle closest-side, rgba(255, 255, 255, .15), transparent);*/
+    backface-visibility: hidden;
+    border-radius: 50%;
+    opacity: 0;
+}
+.candle-anim{
+    animation: shinetrough-candle .6s forwards;
+}
+.candle-anim-back{
+    animation: shinetrough-candle-back .6s forwards;
+}
+@keyframes shinetrough-candle {
+    to {
+        opacity: 1;
+    }
+}
+@keyframes shinetrough-candle-back {
+    from{
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+

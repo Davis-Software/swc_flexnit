@@ -1,0 +1,81 @@
+.error-404{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+.error-404 *{
+    user-select: none;
+    -webkit-user-drag: none;
+}
+.error-404 .water{
+    overflow: hidden;
+    position: absolute;
+    width: 100%;
+    height: 80vh;
+    bottom: 0;
+}
+.error-404 .water .wave{
+    object-position: left;
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 110%;
+    width: auto;
+    height: 110%;
+    animation: ease 10s wave infinite;
+    z-index: 100;
+}
+.error-404 .water .wave:nth-child(2){
+    animation-direction: reverse;
+    opacity: 80%;
+    z-index: 500;
+}
+
+.error-404 .boat{
+    position: absolute;
+    bottom: 10%;
+    left: 0;
+    width: 60%;
+    height: 80%;
+    z-index: 300;
+    animation: ease 10s float infinite;
+    animation-delay: 2s;
+    transform: rotate(-2deg);
+}
+.error-404 .boat img{
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.error-404 .text{
+    position: absolute;
+    top: 20%;
+    right: 15%;
+}
+
+@keyframes wave{
+    0%{
+        transform: translateX(0) translateY(0);
+    }
+    50%{
+        transform: translateX(8%) translateY(10%);
+    }
+    100%{
+        transform: translateX(0) translateY(0);
+    }
+}
+@keyframes float {
+    0% {
+        transform: translate(0, 0) rotate(-2deg);
+    }
+    50% {
+        transform: translate(2%, 10%) rotate(5deg);
+    }
+    100% {
+        transform: translate(0, 0) rotate(-2deg);
+    }
+
+}
