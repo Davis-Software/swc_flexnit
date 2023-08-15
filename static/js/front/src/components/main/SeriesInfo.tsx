@@ -162,6 +162,7 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
 interface SeriesInfoProps{
     title: TitleEntryType;
     setTitle: (title: TitleEntryType | null) => void;
+    setSearchResults: (results: (prevState: TitleEntryType[]) => TitleEntryType[]) => void;
 }
 function SeriesInfo(props: SeriesInfoProps){
     const [loading, setLoading] = React.useState<boolean>(true);
@@ -178,12 +179,17 @@ function SeriesInfo(props: SeriesInfoProps){
             })
     }, [props.title.uuid])
 
+    function handleDeleted(){
+        props.setTitle(null)
+        props.setSearchResults(prevState => prevState.filter(t => t.uuid !== props.title.uuid))
+    }
+
     return !loading && series !== null ? (
         <>
             <TransitionGroup>
                 <Fade>
                     <div>
-                        <SeriesInfoDisplay setShowEdit={setShowEdit} series={series} resetSeries={() => props.setTitle(null)} />
+                        <SeriesInfoDisplay setShowEdit={setShowEdit} series={series} resetSeries={handleDeleted} />
                     </div>
                 </Fade>
             </TransitionGroup>

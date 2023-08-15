@@ -7,7 +7,9 @@ import FileTable from "../FileTable";
 interface EditEpisodeProps{
     series: SeriesType;
     episode: EpisodeType;
-    setEpisode: (episode: EpisodeType | null) => void;
+    setEpisode: (episode: ((prevState: EpisodeType) => EpisodeType)) => void;
+    setSeries: (series: (prevState: SeriesType) => SeriesType) => void;
+    setClose: () => void;
 }
 function EditEpisode(props: EditEpisodeProps){
     const [title, setTitle] = useState<string>(props.episode.title)
@@ -54,7 +56,7 @@ function EditEpisode(props: EditEpisodeProps){
             .then(res => {
                 if(res.ok){
                     setUpdateFiles(!updateFiles)
-                    props.setEpisode({...props.episode, video_hls: true})
+                    props.setEpisode(pv => ({...pv, video_hls: true}))
                 }
             })
     }
@@ -79,7 +81,7 @@ function EditEpisode(props: EditEpisodeProps){
                 .then(res => {
                     if(res.ok){
                         setUpdateFiles(!updateFiles)
-                        props.setEpisode({...props.episode, video_hls: false})
+                        props.setEpisode(pv => ({...pv, video_hls: false}))
                     }
                 })
         }
@@ -92,7 +94,7 @@ function EditEpisode(props: EditEpisodeProps){
                 .then(res => {
                     if(res.ok){
                         setUpdateFiles(!updateFiles)
-                        props.setEpisode({...props.episode, video_hls: false})
+                        props.setEpisode(pv => ({...pv, video_hls: false}))
                     }
                 })
         }
@@ -125,8 +127,9 @@ function EditEpisode(props: EditEpisodeProps){
             body: formData
         })
             .then(res => res.json())
-            .then(() => {
-                props.setEpisode(null)
+            .then((data) => {
+                props.setEpisode(() => data)
+                props.setClose()
             })
     }
 
@@ -181,7 +184,7 @@ function EditEpisode(props: EditEpisodeProps){
             )} sx={{maxHeight: "350px", overflow: "auto"}} />
 
             <div className="d-flex flex-row float-end mt-5">
-                <Button variant="contained" onClick={() => props.setEpisode(null)}>Close</Button>
+                <Button variant="contained" onClick={props.setClose}>Close</Button>
                 <Button variant="contained" color="warning" onClick={handleSave}>Save</Button>
             </div>
         </>

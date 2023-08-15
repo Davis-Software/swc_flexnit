@@ -21,8 +21,8 @@ function InfoPage(){
         <PageBase>
             <div className="content">
                 <Suspense fallback={<PageLoader />}>
-                    {title && type === "movie" && <MovieInfo title={title} setTitle={setTitle} />}
-                    {title && type === "series" && <SeriesInfo title={title} setTitle={setTitle} />}
+                    {title && type === "movie" && <MovieInfo title={title} setTitle={setTitle} setSearchResults={() => {}} />}
+                    {title && type === "series" && <SeriesInfo title={title} setTitle={setTitle} setSearchResults={() => {}} />}
                 </Suspense>
             </div>
         </PageBase>

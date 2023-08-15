@@ -1,7 +1,8 @@
-import React from "react";
+import React, {useMemo} from "react";
 import SeriesType, {EpisodeType} from "../../types/seriesType";
 import {Button, Checkbox, Collapse, FormControlLabel, TextField} from "@mui/material";
-import EditEpisode from "./EditEpisode";
+
+const EditEpisode = React.lazy(() => import("./EditEpisode"));
 
 interface SeasonOverviewProps{
     seriesProps: EditSeriesProps;
@@ -12,7 +13,9 @@ interface SeasonOverviewProps{
 }
 function SeasonOverview(props: SeasonOverviewProps){
     const [open, setOpen] = React.useState<boolean>(false)
-    const episodes = props.seriesProps.series.episodes.sort((a, b) => a.episode - b.episode).filter(episode => episode.season === props.season + 1)
+    const episodes = useMemo(() => (
+        props.seriesProps.series.episodes.sort((a, b) => a.episode - b.episode).filter(episode => episode.season === props.season + 1)
+    ), [props.seriesProps.series.episodes, props.season, props.seriesProps.series.season_count])
 
     function handleConvertSeason(reEncode: boolean = false){
         if(!confirm("Are you sure you want to convert all episodes in this season to HLS?")) return
@@ -35,7 +38,10 @@ function SeasonOverview(props: SeasonOverviewProps){
         fetch(`/series/${props.seriesProps.series.uuid}/episode/${episode.uuid}/delete`, {
             method: "POST"
         }).then(() => {
-            props.seriesProps.setSeries({...props.seriesProps.series, episodes: props.seriesProps.series.episodes.filter(ep => ep.uuid !== episode.uuid)})
+            props.seriesProps.setSeries(pv => pv !== null ? ({
+                ...pv,
+                episodes: pv.episodes.filter(ep => ep.uuid !== episode.uuid)
+            }) : null)
         })
     }
 
@@ -84,7 +90,7 @@ function SeasonOverview(props: SeasonOverviewProps){
 
 interface EditSeriesProps{
     series: SeriesType;
-    setSeries: (series: SeriesType) => void;
+    setSeries: (series: (prevState: SeriesType | null) => SeriesType | null) => void;
     setShowEdit: (show: boolean) => void;
 }
 function EditSeries(props: EditSeriesProps){
@@ -102,7 +108,11 @@ function EditSeries(props: EditSeriesProps){
     const [episodeUploadProgress, setEpisodeUploadProgress] = React.useState<{[filename: string]: number}>({})
 
     function handleAddEpisodes(season: number, episode_count: number, episodes: FileList){
+        let semaphore = 0
         for(let i = 0; i < episodes.length; i++){
+            while(semaphore >= 3){}
+            semaphore++;
+
             const episode = episodes.item(i)!
             const req = new XMLHttpRequest()
             const formData = new FormData()
@@ -115,8 +125,14 @@ function EditSeries(props: EditSeriesProps){
                 setEpisodeUploadProgress(pv => ({...pv, [episode.name]: e.loaded / e.total * 100}))
             })
             req.addEventListener("load", () => {
-                props.setSeries({...props.series, episodes: [...props.series.episodes, JSON.parse(req.responseText)]})
-                setEpisodeUploadProgress({})
+                props.setSeries(pv => pv !== null ? ({
+                    ...pv,
+                    episodes: [...pv.episodes, JSON.parse(req.responseText)]
+                }) : null)
+                setEpisodeUploadProgress(pv => {
+                    delete pv[episode.name]
+                    return {...pv}
+                })
             })
             req.open("POST", `/series/${props.series.uuid}/upload`)
             req.send(formData)
@@ -124,7 +140,10 @@ function EditSeries(props: EditSeriesProps){
     }
 
     function handleAddSeason(){
-        props.setSeries({...props.series, season_count: props.series.season_count + 1})
+        props.setSeries(pv => pv !== null ? ({
+            ...pv,
+            season_count: pv.season_count + 1
+        }) : null)
     }
 
     function handleSave(){
@@ -144,9 +163,17 @@ function EditSeries(props: EditSeriesProps){
         })
             .then(res => res.json())
             .then((data: SeriesType) => {
-                props.setSeries(data)
+                props.setSeries(() => data)
                 props.setShowEdit(false)
             })
+    }
+
+    function handleUpdateEpisode(setEpisode: ((prevState: EpisodeType) => EpisodeType)){
+        setSelectedEpisode(pv => pv !== null ? setEpisode(pv) : null)
+        props.setSeries(pv => pv !== null ? ({
+            ...pv,
+            episodes: pv.episodes.map(episode => episode.uuid === selectedEpisode!.uuid ? setEpisode(episode) : episode)
+        }) : null)
     }
 
     return (
@@ -231,7 +258,13 @@ function EditSeries(props: EditSeriesProps){
                     <Button variant="contained" color="warning" onClick={handleSave}>Save</Button>
                 </div>
             </div>
-            {selectedEpisode && <EditEpisode series={props.series} episode={selectedEpisode} setEpisode={setSelectedEpisode} />}
+            {selectedEpisode && <EditEpisode
+                series={props.series}
+                episode={selectedEpisode}
+                setEpisode={handleUpdateEpisode}
+                setClose={() => setSelectedEpisode(null)}
+                setSeries={props.setSeries as React.Dispatch<React.SetStateAction<SeriesType>>}
+            />}
         </>
     )
 }

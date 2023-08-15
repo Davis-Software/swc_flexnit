@@ -67,13 +67,13 @@ function CreateNewModal(props: CreateNewModalProps){
 interface SidebarProps {
     setSelectedTitle: (title: TitleEntryType) => void;
     selectedTitle: TitleEntryType | null;
+    searchResults: TitleEntryType[];
+    setSearchResults: (results: (prevState: TitleEntryType[]) => TitleEntryType[]) => void;
 }
 function Sidebar(props: SidebarProps){
     const [search, setSearch] = React.useState(sessionStorage.getItem("search") || "")
     const [searchMode, setSearchMode] =
         React.useState<"all" | "movie" | "series">(sessionStorage.getItem("search-mode") as "all" | "movie" | "series" || "all")
-    const [searchResults, setSearchResults] =
-        React.useState<TitleEntryType[]>(JSON.parse(sessionStorage.getItem("search-results") || "[]"))
 
     const [createNewModal, setCreateNewModal] = React.useState(false)
 
@@ -82,11 +82,11 @@ function Sidebar(props: SidebarProps){
         sessionStorage.setItem("search-mode", searchMode)
         fetch(`/search/${searchMode}${search !== "" ? "?q=" + search : ""}`)
             .then(res => res.json())
-            .then(setSearchResults)
+            .then(props.setSearchResults)
     }, [search, searchMode])
     useEffect(() => {
-        sessionStorage.setItem("search-results", JSON.stringify(searchResults))
-    }, [searchResults])
+        sessionStorage.setItem("search-results", JSON.stringify(props.searchResults))
+    }, [props.searchResults])
 
     function handleClick(searchResult: TitleEntryType){
         props.setSelectedTitle(searchResult)
@@ -123,7 +123,7 @@ function Sidebar(props: SidebarProps){
                 </div>
 
                 <div className="results">
-                    {searchResults.map((searchResult, i) => (
+                    {props.searchResults.map((searchResult, i) => (
                         <EffectGenerator
                             key={i}
                             onClick={() => handleClick(searchResult)}

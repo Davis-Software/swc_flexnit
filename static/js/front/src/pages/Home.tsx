@@ -12,6 +12,8 @@ const SeriesInfo = React.lazy(() => import("../components/main/SeriesInfo"));
 function Home(){
     const [selectedTitle, setSelectedTitle] =
         React.useState<TitleEntryType | null>(sessionStorage.getItem("selected-title") ? JSON.parse(sessionStorage.getItem("selected-title")!) : null);
+    const [searchResults, setSearchResults] =
+        React.useState<TitleEntryType[]>(JSON.parse(sessionStorage.getItem("search-results") || "[]"))
 
     useEffect(() => {
         sessionStorage.setItem("selected-title", JSON.stringify(selectedTitle));
@@ -21,9 +23,9 @@ function Home(){
         if(selectedTitle){
             switch (selectedTitle.type) {
                 case "movie":
-                    return <MovieInfo title={selectedTitle} setTitle={setSelectedTitle} />
+                    return <MovieInfo title={selectedTitle} setTitle={setSelectedTitle} setSearchResults={setSearchResults} />
                 case "series":
-                    return <SeriesInfo title={selectedTitle} setTitle={setSelectedTitle} />
+                    return <SeriesInfo title={selectedTitle} setTitle={setSelectedTitle}  setSearchResults={setSearchResults} />
                 default:
                     return <span>Something went wrong</span>
             }
@@ -43,6 +45,8 @@ function Home(){
                         setSelectedTitle(title)
                     }
                 }}
+                searchResults={searchResults}
+                setSearchResults={setSearchResults}
             />
             <div className="content d-none d-lg-block">
                 <Suspense fallback={<PageLoader />}>

@@ -87,6 +87,7 @@ function MovieInfoDisplay(props: MovieInfoDisplayProps){
 interface MovieInfoProps{
     title: TitleEntryType;
     setTitle: (title: TitleEntryType | null) => void;
+    setSearchResults: (results: (prevState: TitleEntryType[]) => TitleEntryType[]) => void;
 }
 function MovieInfo(props: MovieInfoProps){
     const [loading, setLoading] = React.useState<boolean>(true);
@@ -103,12 +104,17 @@ function MovieInfo(props: MovieInfoProps){
             })
     }, [props.title.uuid])
 
+    function handleDeleted(){
+        props.setTitle(null)
+        props.setSearchResults(prevState => prevState.filter(title => title.uuid !== props.title.uuid))
+    }
+
     return !loading && movie !== null ? (
         <>
             <TransitionGroup>
                 <Fade>
                     <div>
-                        <MovieInfoDisplay setShowEdit={setShowEdit} movie={movie} resetMovie={() => props.setTitle(null)} />
+                        <MovieInfoDisplay setShowEdit={setShowEdit} movie={movie} resetMovie={handleDeleted} />
                     </div>
                 </Fade>
             </TransitionGroup>
