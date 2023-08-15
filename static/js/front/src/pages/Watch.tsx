@@ -130,6 +130,7 @@ function Home(){
     }
 
     function handleKeyDown(e: KeyboardEvent){
+        if(!videoRef.current) return;
         if([" ", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "f", "Escape"].includes(e.key)){
             e.preventDefault()
         }
