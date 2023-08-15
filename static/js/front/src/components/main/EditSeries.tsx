@@ -30,6 +30,14 @@ function SeasonOverview(props: SeasonOverviewProps){
         })
         alert("Conversion started, warning: this will take a while and there is no way to track progress.")
     }
+    function handleDeleteEpisode(episode: EpisodeType){
+        if(!confirm("Are you sure you want to delete this episode?")) return
+        fetch(`/series/${props.seriesProps.series.uuid}/episode/${episode.uuid}/delete`, {
+            method: "POST"
+        }).then(() => {
+            props.seriesProps.setSeries({...props.seriesProps.series, episodes: props.seriesProps.series.episodes.filter(ep => ep.uuid !== episode.uuid)})
+        })
+    }
 
     return (
         <div className="card">
@@ -63,6 +71,7 @@ function SeasonOverview(props: SeasonOverviewProps){
                                 <div className="d-flex flex-row">
                                     <h5 className="flex-grow-1">{episode.title}</h5>
                                     <Button variant="contained" color="warning" onClick={() => props.setSelectedEpisode(episode)}>Edit</Button>
+                                    <Button variant="contained" color="error" onClick={() => handleDeleteEpisode(episode)}>Delete</Button>
                                 </div>
                             </li>
                         ))}

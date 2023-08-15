@@ -32,13 +32,9 @@ def series_info(uuid):
         return make_response("Series not found", RequestCode.ClientError.NotFound)
 
     if "poster" in request.args:
-        if not series.poster:
-            return make_response("Poster not found", RequestCode.ClientError.NotFound)
         return send_binary_image(series.poster)
 
     if "thumbnail" in request.args:
-        if not series.thumbnail:
-            return make_response("Thumbnail not found", RequestCode.ClientError.NotFound)
         return send_binary_image(series.thumbnail)
 
     return make_response(series.to_json(), RequestCode.Success.OK)

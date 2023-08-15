@@ -31,13 +31,9 @@ def movie_info(uuid):
         return make_response("Movie not found", RequestCode.ClientError.NotFound)
 
     if "poster" in request.args:
-        if not movie.poster:
-            return make_response("Poster not found", RequestCode.ClientError.NotFound)
         return send_binary_image(movie.poster)
 
     if "thumbnail" in request.args:
-        if not movie.thumbnail:
-            return make_response("Thumbnail not found", RequestCode.ClientError.NotFound)
         return send_binary_image(movie.thumbnail)
 
     return make_response(movie.to_json(), RequestCode.Success.OK)
