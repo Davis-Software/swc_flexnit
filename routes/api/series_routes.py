@@ -90,7 +90,7 @@ def new_episode(uuid):
     if series is None:
         return make_response("Series not found", RequestCode.ClientError.NotFound)
 
-    episode = add_episode(series, **request.form, **request.files)
+    episode = add_episode(series.uuid, **request.form)
 
     if episode is None:
         return make_response("Invalid request", RequestCode.ClientError.BadRequest)

@@ -2,11 +2,13 @@ import React, {useMemo} from "react";
 import SeriesType, {EpisodeType} from "../../types/seriesType";
 import {Button, Checkbox, Collapse, FormControlLabel, TextField} from "@mui/material";
 
+const AddEpisode = React.lazy(() => import("./EditEpisode").then(module => ({default: module.AddEpisode})));
 const EditEpisode = React.lazy(() => import("./EditEpisode"));
 
 interface SeasonOverviewProps{
     seriesProps: EditSeriesProps;
     season: number;
+    handleAddEpisode: (season: number, episode_count: number) => void;
     handleAddEpisodes: (season: number, episode_count: number, episodes: FileList) => void;
     episodeUploadProgress: {[filename: string]: number};
     setSelectedEpisode: (episode: EpisodeType | null) => void;
@@ -52,10 +54,17 @@ function SeasonOverview(props: SeasonOverviewProps){
             </div>
             <Collapse in={open}>
                 <div className="card-body">
-                    <Button className="flex-grow-1" variant="contained" component="label" fullWidth>
-                        Add Episodes
-                        <input hidden accept="video/mp4" type="file" onChange={e => props.handleAddEpisodes(props.season + 1, episodes.length, e.target.files!)} multiple />
-                    </Button>
+                    <div className="d-flex">
+                        <Button className="flex-grow-1" variant="contained" component="label" onClick={() => {
+                            props.handleAddEpisode(props.season + 1, episodes.length)
+                        }}>
+                            Add Episode
+                        </Button>
+                        <Button className="flex-grow-1" variant="contained" component="label">
+                            Add Episodes
+                            <input hidden accept="video/mp4" type="file" onChange={e => props.handleAddEpisodes(props.season + 1, episodes.length, e.target.files!)} multiple />
+                        </Button>
+                    </div>
                     <div className="d-flex">
                         <Button className="flex-grow-1" variant="contained" color="warning" onClick={() => handleConvertSeason()}>
                             Convert All to HLS
@@ -103,6 +112,7 @@ function EditSeries(props: EditSeriesProps){
     const [newThumbnail, setNewThumbnail] = React.useState<File | null | undefined>(null)
     const [newPoster, setNewPoster] = React.useState<File | null | undefined>(null)
 
+    const [newEpisode, setNewEpisode] = React.useState<{season: number, episode_count: number} | null>(null)
     const [selectedEpisode, setSelectedEpisode] = React.useState<EpisodeType | null>(null)
 
     const [episodeUploadProgress, setEpisodeUploadProgress] = React.useState<{[filename: string]: number}>({})
@@ -172,13 +182,15 @@ function EditSeries(props: EditSeriesProps){
         setSelectedEpisode(pv => pv !== null ? setEpisode(pv) : null)
         props.setSeries(pv => pv !== null ? ({
             ...pv,
-            episodes: pv.episodes.map(episode => episode.uuid === selectedEpisode!.uuid ? setEpisode(episode) : episode)
+            episodes: (selectedEpisode === null || pv.episodes.filter(e => e.uuid !== selectedEpisode?.uuid).length === 0) ?
+                [...pv.episodes, setEpisode(selectedEpisode!)] :
+                pv.episodes.map(episode => episode.uuid === selectedEpisode!.uuid ? setEpisode(episode) : episode)
         }) : null)
     }
 
     return (
         <>
-            <div hidden={!!selectedEpisode}>
+            <div hidden={!!selectedEpisode || !!newEpisode}>
                 <TextField
                     variant="standard"
                     label="Title"
@@ -247,6 +259,7 @@ function EditSeries(props: EditSeriesProps){
                         key={season}
                         seriesProps={props}
                         season={season}
+                        handleAddEpisode={(s, ec) => setNewEpisode({season: s, episode_count: ec})}
                         handleAddEpisodes={handleAddEpisodes}
                         episodeUploadProgress={episodeUploadProgress}
                         setSelectedEpisode={setSelectedEpisode}
@@ -258,6 +271,13 @@ function EditSeries(props: EditSeriesProps){
                     <Button variant="contained" color="warning" onClick={handleSave}>Save</Button>
                 </div>
             </div>
+            {newEpisode && <AddEpisode
+                series={props.series}
+                setEpisode={handleUpdateEpisode}
+                setClose={() => setNewEpisode(null)}
+                currentSeason={newEpisode.season}
+                currentEpisode={newEpisode.episode_count}
+            />}
             {selectedEpisode && <EditEpisode
                 series={props.series}
                 episode={selectedEpisode}

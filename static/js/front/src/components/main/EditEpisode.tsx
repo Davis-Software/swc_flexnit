@@ -4,6 +4,76 @@ import FileType from "../../types/fileType";
 import {Button, TextField} from "@mui/material";
 import FileTable from "../FileTable";
 
+interface AddEpisodeProps{
+    series: SeriesType;
+    setEpisode: (episode: ((prevState: EpisodeType) => EpisodeType)) => void;
+    setClose: () => void;
+    currentSeason?: number;
+    currentEpisode?: number;
+}
+function AddEpisode(props: AddEpisodeProps){
+    const [title, setTitle] = useState<string>("")
+    const [season, setSeason] = useState<string>((props.currentSeason || 1).toString())
+    const [episode, setEpisode] = useState<string>((props.currentEpisode || 1).toString())
+
+    useEffect(() => {
+        if(season.length === 0 || episode.length === 0) return
+        setTitle(prevState => [0, 5].includes(prevState.length) ? `S${season} E${episode}` : prevState)
+    }, [season, episode])
+
+    function handleSave(){
+        const formData = new FormData()
+
+        formData.append("title", title)
+        formData.append("season", season)
+        formData.append("episode", episode)
+
+        fetch(`/series/${props.series.uuid}/episode/new`, {
+            method: "POST",
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                props.setEpisode(() => data)
+                props.setClose()
+            })
+    }
+
+    return (
+        <>
+            <TextField
+                variant="standard"
+                label="Title"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                error={title.length === 0}
+                fullWidth
+            />
+            <TextField
+                variant="standard"
+                label="Season"
+                value={season}
+                onChange={e => setSeason(e.target.value)}
+                error={Number.isNaN(season)}
+                fullWidth
+            />
+            <TextField
+                variant="standard"
+                label="Episode"
+                value={episode}
+                onChange={e => setEpisode(e.target.value)}
+                error={Number.isNaN(episode)}
+                fullWidth
+            />
+
+            <div className="d-flex flex-row float-end mt-5">
+                <Button variant="contained" onClick={props.setClose}>Close</Button>
+                <Button variant="contained" color="warning" onClick={handleSave}>Save</Button>
+            </div>
+        </>
+    )
+}
+
 interface EditEpisodeProps{
     series: SeriesType;
     episode: EpisodeType;
@@ -192,3 +262,4 @@ function EditEpisode(props: EditEpisodeProps){
 }
 
 export default EditEpisode;
+export {AddEpisode}
