@@ -2,9 +2,11 @@ from __init__ import app
 from flask import render_template, request
 
 from models.series import get_all_series, add_episode
+from utils.password_manager import admin_required
 
 
 @app.route("/temp/add-episode", methods=["GET", "POST"])
+@admin_required
 def temp_add_episode():
     series = get_all_series()
 
