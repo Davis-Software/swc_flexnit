@@ -12,6 +12,7 @@ function TitleProgress(props: {title: MovieType | SeriesType, episode?: EpisodeT
         if(progress[props.title.uuid]){
             if((props.title as SeriesType).episodes && !props.episode){
                 const episode = (props.title as SeriesType).episodes.filter(e => progress[props.title.uuid][e.uuid] && progress[props.title.uuid].latestEpisode === e.uuid).pop()!
+                if(!episode) return
                 setProgressValue(progress[props.title.uuid][episode.uuid] / episode.video_info.format.duration * 100)
             }else{
                 if(props.episode){
