@@ -84,7 +84,7 @@ function SeasonOverview(props: SeasonOverviewProps){
                         {episodes.map((episode, i) => (
                             <li key={i} className="list-group-item">
                                 <div className="d-flex flex-row">
-                                    <h5 className="flex-grow-1">{episode.title}</h5>
+                                    <h5 className="flex-grow-1">{episode.episode}: {episode.title}</h5>
                                     <Button variant="contained" color="warning" onClick={() => props.setSelectedEpisode(episode)}>Edit</Button>
                                     <Button variant="contained" color="error" onClick={() => handleDeleteEpisode(episode)}>Delete</Button>
                                 </div>

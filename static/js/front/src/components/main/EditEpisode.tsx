@@ -14,7 +14,7 @@ interface AddEpisodeProps{
 function AddEpisode(props: AddEpisodeProps){
     const [title, setTitle] = useState<string>("")
     const [season, setSeason] = useState<string>((props.currentSeason || 1).toString())
-    const [episode, setEpisode] = useState<string>((props.currentEpisode || 1).toString())
+    const [episode, setEpisode] = useState<string>(((props.currentEpisode || 0) + 1).toString())
 
     useEffect(() => {
         if(season.length === 0 || episode.length === 0) return
