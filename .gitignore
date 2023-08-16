@@ -2,4 +2,5 @@
 venv/
 static/js/bundle/
 static/db/db.sqlite
+templates/pages/index.html
 temp.py

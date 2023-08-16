@@ -1,6 +1,6 @@
 import MovieType from "../../types/movieType";
 import SeriesType, {EpisodeType} from "../../types/seriesType";
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {LinearProgress} from "@mui/material";
 import React from "react";
 
@@ -25,18 +25,29 @@ function TitleProgress(props: {title: MovieType | SeriesType, episode?: EpisodeT
         }
     }, [progress]);
 
-    const lastEpisode = (props.title as SeriesType).episodes ?
+    const lastEpisode = useMemo(() => (
+        (props.title as SeriesType).episodes ?
         (props.title as SeriesType).episodes.filter(e => progress[props.title.uuid] && progress[props.title.uuid][e.uuid] && progress[props.title.uuid].latestEpisode === e.uuid).pop()! :
         null
+    ), [props.title, progress])
+    const episodesWatched = useMemo(() => (
+        (props.title as SeriesType).episodes ?
+        Object.keys(progress[props.title.uuid])
+            .filter(uuid => progress[props.title.uuid][uuid] > ((props.title as SeriesType).episodes.filter(e => e.uuid === uuid).pop()?.video_info.format.duration * 0.9)).length :
+        null
+    ), [props.title, progress])
 
     return (
         progressValue > 0 && <>
-            {(props.title as SeriesType).episodes && !props.episode && (
-                <p className="text-muted">
-                    {Object.keys(progress[props.title.uuid]).length - 1} / {(props.title as SeriesType).episodes.length} episodes watched <br/>
-                    Last: {lastEpisode?.title} (Season {lastEpisode?.season}, Episode {lastEpisode?.episode})
-                </p>
-            )}
+            <p className="text-muted">
+                {(props.title as SeriesType).episodes && !props.episode && (
+                    <>
+                        {episodesWatched} / {(props.title as SeriesType).episodes.length} episodes watched <br/>
+                        Last: {lastEpisode?.title} (Season {lastEpisode?.season}, Episode {lastEpisode?.episode})&nbsp;
+                    </>
+                )}
+                {Math.round(progressValue)}% watched
+            </p>
             <LinearProgress variant="determinate" value={progressValue} />
         </>
     )
