@@ -21,7 +21,7 @@ function SeriesFileManager(){
 
     return (
         <div>
-            <FileManagerFileTable files={files} path={path} setPath={setPath} loading={loading} />
+            <FileManagerFileTable files={files} setFiles={setFiles} path={path} setPath={setPath} loading={loading} />
         </div>
     )
 }
