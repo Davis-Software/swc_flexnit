@@ -1,8 +1,19 @@
 import {AdvancedFileType} from "../../types/fileType";
 import React, {useEffect, useState} from "react";
 import hrFileSize from "../../utils/hrFileSize";
-import {Checkbox, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
+import {
+    Checkbox, Fade,
+    IconButton,
+    InputAdornment,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    TextField
+} from "@mui/material";
 import SwcLoader from "../SwcLoader";
+import {SwcFabContainer} from "../SwcFab";
 
 function hrPath(path: string, files: AdvancedFileType[]){
     return path.split("/").map(p => {
@@ -71,8 +82,6 @@ interface FileManagerTableHeadProps{
     setSort: (sort: (prevState: string) => string) => void
     order: "asc" | "desc"
     setOrder: (order: (prevState: "asc" | "desc") => "asc" | "desc") => void
-    search: string
-    setSearch: (search: (prevState: string) => string) => void
     files: AdvancedFileType[]
     allFiles: AdvancedFileType[]
 }
@@ -140,7 +149,10 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
 
     useEffect(() => {
         setFiles(() => {
-            let files = [...props.files]
+            let files = [...props.files.filter(f => (
+                f.display_name.toLowerCase().includes(search.toLowerCase()) ||
+                f.filename.toLowerCase().includes(search.toLowerCase())
+            ))]
             files.sort((a, b) => {
                 if(sortBy === "display_name"){
                     if(a.display_name.toLowerCase() < b.display_name.toLowerCase()){
@@ -167,57 +179,77 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
     }, [props.files, sortBy, sortOrder, search])
 
     return (
-        <Table>
-            <FileManagerTableHead
-                path={props.path}
-                selected={selected}
-                setSelected={setSelected}
-                sort={sortBy}
-                setSort={setSortBy}
-                order={sortOrder}
-                setOrder={setSortOrder}
-                search={search}
-                setSearch={setSearch}
-                files={files}
-                allFiles={props.files}
-            />
-            <TableBody>
-                {!props.loading ? (
-                    <>
-                        {!["", "/"].includes(props.path) && (
-                            <TableRow hover>
-                                <TableCell padding="checkbox" />
-                                <TableCell
-                                    onClick={() => {
-                                        if(props.path !== "/"){
-                                            props.setPath(prevState => prevState.substring(0, prevState.lastIndexOf("/")))
-                                        }
-                                    }}
-                                >
-                                    ..
-                                </TableCell>
-                                <TableCell />
-                            </TableRow>
-                        )}
-                        {files.map(file => (
-                            <FileTableEntry
-                                key={file.filename}
-                                file={file}
-                                selected={selected}
-                                setSelected={setSelected}
-                                setPath={props.setPath}
-                            />
-                        ))}
-                    </>
-                ) : (
-                    <TableRow>
-                        <TableCell colSpan={3}>
-                            <SwcLoader />
-                        </TableCell>
-                    </TableRow>
-                )}
-            </TableBody>
-        </Table>
+        <>
+            <Table>
+                <FileManagerTableHead
+                    path={props.path}
+                    selected={selected}
+                    setSelected={setSelected}
+                    sort={sortBy}
+                    setSort={setSortBy}
+                    order={sortOrder}
+                    setOrder={setSortOrder}
+                    files={files}
+                    allFiles={props.files}
+                />
+                <TableBody>
+                    {!props.loading ? (
+                        <>
+                            {!["", "/"].includes(props.path) && (
+                                <TableRow hover>
+                                    <TableCell padding="checkbox" />
+                                    <TableCell
+                                        onClick={() => {
+                                            if(props.path !== "/"){
+                                                props.setPath(prevState => prevState.substring(0, prevState.lastIndexOf("/")))
+                                            }
+                                        }}
+                                    >
+                                        ..
+                                    </TableCell>
+                                    <TableCell />
+                                </TableRow>
+                            )}
+                            {files.map(file => (
+                                <FileTableEntry
+                                    key={file.filename}
+                                    file={file}
+                                    selected={selected}
+                                    setSelected={setSelected}
+                                    setPath={props.setPath}
+                                />
+                            ))}
+                        </>
+                    ) : (
+                        <TableRow>
+                            <TableCell colSpan={3}>
+                                <SwcLoader />
+                            </TableCell>
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+            <SwcFabContainer>
+                <Fade>
+                    <TextField
+                        label="Search"
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton
+                                        onClick={() => setSearch("")}
+                                    >
+                                        <i className="material-icons">clear</i>
+                                    </IconButton>
+                                </InputAdornment>
+                            )
+                        }}
+                    />
+                </Fade>
+            </SwcFabContainer>
+        </>
     )
 }
 
