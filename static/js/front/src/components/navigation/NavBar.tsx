@@ -80,7 +80,7 @@ function UserInfo(){
 }
 
 interface ToolbarProps{
-    navItems: [string, string][]
+    navItems: [string, string, boolean][]
 }
 function ToolbarLarge(props: ToolbarProps){
     return (
@@ -88,10 +88,12 @@ function ToolbarLarge(props: ToolbarProps){
             <Brand />
 
             <Box sx={{marginLeft: "25px"}} />
-            {props.navItems.map(([name, path]) => (
-                <NavButton target={path} key={path}>
-                    {name}
-                </NavButton>
+            {props.navItems.map(([name, path, adminRequired]) => (
+                !adminRequired || isAdmin ? (
+                    <NavButton target={path} key={path}>
+                        {name}
+                    </NavButton>
+                ) : null
             ))}
             <Box sx={{flexGrow: 1}} />
 
@@ -134,8 +136,10 @@ function ToolbarSmall(props: ToolbarProps){
                 open={Boolean(open)}
                 onClose={handleCloseNavMenu}
             >
-                {props.navItems.map(([name, path]) => (
-                    <NavButton key={path} target={path} onClick={handleCloseNavMenu} noButton>{name}</NavButton>
+                {props.navItems.map(([name, path, adminRequired]) => (
+                    !adminRequired || isAdmin ?
+                        <NavButton key={path} target={path} onClick={handleCloseNavMenu} noButton>{name}</NavButton> :
+                        null
                 ))}
             </Menu>
 

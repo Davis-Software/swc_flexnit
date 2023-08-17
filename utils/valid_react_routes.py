@@ -2,5 +2,6 @@ VALID_REACT_ROUTES = [
     "/",
     "watch",
     "info",
-    "settings"
+    "settings",
+    "file-manager"
 ]

@@ -6,7 +6,7 @@ import MovieType from "../types/movieType";
 import SeriesType from "../types/seriesType";
 import SwcLoader from "../components/SwcLoader";
 import {navigateTo} from "../utils/navigation";
-import {EpisodeList} from "../components/main/SeriesInfo";
+import {EpisodeList} from "../components/series/SeriesInfo";
 import {closeFullscreen, openFullscreen} from "../utils/documentFunctions";
 import {handleSyncUpload} from "../components/SyncPlaybackProgress";
 

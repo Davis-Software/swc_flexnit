@@ -4,10 +4,10 @@ import Sidebar from "../components/navigation/Sidebar";
 import PageLoader from "../components/PageLoader";
 import TitleEntryType from "../types/titleEntryType";
 import {navigateTo} from "../utils/navigation";
-import News from "../components/main/News";
+import News from "../components/other/News";
 
-const MovieInfo = React.lazy(() => import("../components/main/MovieInfo"));
-const SeriesInfo = React.lazy(() => import("../components/main/SeriesInfo"));
+const MovieInfo = React.lazy(() => import("../components/movie/MovieInfo"));
+const SeriesInfo = React.lazy(() => import("../components/series/SeriesInfo"));
 
 function Home(){
     const [selectedTitle, setSelectedTitle] =

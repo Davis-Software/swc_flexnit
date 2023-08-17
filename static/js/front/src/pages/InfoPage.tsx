@@ -3,8 +3,8 @@ import PageBase from "./PageBase";
 import PageLoader from "../components/PageLoader";
 import TitleEntryType from "../types/titleEntryType";
 
-const MovieInfo = React.lazy(() => import("../components/main/MovieInfo"));
-const SeriesInfo = React.lazy(() => import("../components/main/SeriesInfo"));
+const MovieInfo = React.lazy(() => import("../components/movie/MovieInfo"));
+const SeriesInfo = React.lazy(() => import("../components/series/SeriesInfo"));
 
 function InfoPage(){
     const searchParams = new URLSearchParams(window.location.search);

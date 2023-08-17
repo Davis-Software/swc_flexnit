@@ -8,7 +8,7 @@ import SwcModal from "../SwcModal";
 import {SwcFab, SwcFabContainer} from "../SwcFab";
 import {isAdmin} from "../../utils/constants";
 import {navigateTo} from "../../utils/navigation";
-import TitleProgress from "./TitleProgress";
+import TitleProgress from "../other/TitleProgress";
 
 const EditMovie = React.lazy(() => import("./EditMovie"));
 

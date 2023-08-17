@@ -6,11 +6,14 @@ import PageLoader from "./components/PageLoader";
 import {ThemeProvider} from "@mui/material";
 import {setWindowTitle} from "./utils/navigation";
 import {handleSyncDownload} from "./components/SyncPlaybackProgress";
+import {isAdmin} from "./utils/constants";
 
 const Home = lazy(() => import("./pages/Home"));
 const Watch = lazy(() => import("./pages/Watch"));
 const Info = lazy(() => import("./pages/InfoPage"));
 const Settings = lazy(() => import("./pages/Settings"));
+
+const FileManager = lazy(() => import("./pages/FileManager"));
 
 const NotFound = lazy(() => import("./pages/other/NotFound"));
 
@@ -19,9 +22,11 @@ const pageNames: {[key: string]: string} = {
     "/watch": "Watch",
     "/info": "Info",
     "/settings": "Settings",
+    "/file-manager": "File Manager",
 }
-const navItems: [string, string][] = [
-    ["Home", "/"],
+const navItems: [string, string, boolean][] = [
+    ["Home", "/", false],
+    ["File Manager", "/file-manager", true],
 ]
 
 function App(){
@@ -50,6 +55,8 @@ function App(){
                 return <Info />
             case "/settings":
                 return <Settings />
+            case "/file-manager":
+                if(isAdmin) return <FileManager />
             default:
                 return <NotFound />
         }
