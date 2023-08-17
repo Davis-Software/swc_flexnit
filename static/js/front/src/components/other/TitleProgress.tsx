@@ -26,12 +26,12 @@ function TitleProgress(props: {title: MovieType | SeriesType, episode?: EpisodeT
     }, [progress]);
 
     const lastEpisode = useMemo(() => (
-        (props.title as SeriesType).episodes ?
+        (props.title as SeriesType).episodes && progress[props.title.uuid] ?
         (props.title as SeriesType).episodes.filter(e => progress[props.title.uuid] && progress[props.title.uuid][e.uuid] && progress[props.title.uuid].latestEpisode === e.uuid).pop()! :
         null
     ), [props.title, progress])
     const episodesWatched = useMemo(() => (
-        (props.title as SeriesType).episodes ?
+        (props.title as SeriesType).episodes && progress[props.title.uuid] ?
         Object.keys(progress[props.title.uuid])
             .filter(uuid => progress[props.title.uuid][uuid] > ((props.title as SeriesType).episodes.filter(e => e.uuid === uuid).pop()?.video_info.format.duration * 0.9)).length :
         null

@@ -11,6 +11,7 @@ import {isAdmin} from "./utils/constants";
 const Home = lazy(() => import("./pages/Home"));
 const Watch = lazy(() => import("./pages/Watch"));
 const Info = lazy(() => import("./pages/InfoPage"));
+const UserLibrary = lazy(() => import("./pages/UserLibrary"));
 const Settings = lazy(() => import("./pages/Settings"));
 
 const FileManager = lazy(() => import("./pages/FileManager"));
@@ -21,11 +22,13 @@ const pageNames: {[key: string]: string} = {
     "/": "Home",
     "/watch": "Watch",
     "/info": "Info",
+    "library": "Library",
     "/settings": "Settings",
     "/file-manager": "File Manager",
 }
 const navItems: [string, string, boolean][] = [
     ["Home", "/", false],
+    ["Library", "/library", false],
     ["File Manager", "/file-manager", true],
 ]
 
@@ -53,6 +56,8 @@ function App(){
                 return <Watch />
             case "/info":
                 return <Info />
+            case "/library":
+                return <UserLibrary />
             case "/settings":
                 return <Settings />
             case "/file-manager":
