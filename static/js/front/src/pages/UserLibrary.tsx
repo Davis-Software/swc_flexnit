@@ -1,8 +1,9 @@
 import React, {useEffect, useMemo} from "react";
 import TitleEntryType from "../types/titleEntryType";
-import TitleProgress from "../components/other/TitleProgress";
+import TitleProgress, {InfoCallbackType} from "../components/other/TitleProgress";
 import MovieType from "../types/movieType";
 import SeriesType from "../types/seriesType";
+import {LinearProgress} from "@mui/material";
 
 interface TitleDisplayProps {
     titles: TitleEntryType[]
@@ -10,6 +11,7 @@ interface TitleDisplayProps {
 function TitleDisplay(props: TitleDisplayProps){
     function InnerTitleDisplay({title}: {title: TitleEntryType}){
         const [actualTitle, setActualTitle] = React.useState<MovieType | SeriesType | null>(null);
+        const [titleProgressInfo, setTitleProgressInfo] = React.useState<InfoCallbackType | null>(null);
 
         useEffect(() => {
             fetch(`/${title.type === "movie" ? "movies" : "series"}/${title.uuid}`)
@@ -19,13 +21,18 @@ function TitleDisplay(props: TitleDisplayProps){
                 })
         }, [title])
 
+        useEffect(() => {
+            console.log(titleProgressInfo)
+        }, [titleProgressInfo])
+
         return (
             <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-3">
                 <div className="card">
                     <img src={`/${title.type === "movie" ? "movies" : "series"}/${title.uuid}?poster`} className="card-img-top" alt={title.title}/>
+                    <LinearProgress variant="determinate" value={titleProgressInfo?.seriesWatched || titleProgressInfo?.progress || 0} />
                     <div className="card-body">
                         <h5 className="card-title">{title.title}</h5>
-                        {actualTitle && <TitleProgress title={actualTitle} />}
+                        {actualTitle && <TitleProgress title={actualTitle} infoCallback={setTitleProgressInfo} hideProgress />}
                     </div>
                 </div>
             </div>

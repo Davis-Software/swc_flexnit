@@ -4,7 +4,20 @@ import {useEffect, useMemo, useState} from "react";
 import {LinearProgress} from "@mui/material";
 import React from "react";
 
-function TitleProgress(props: {title: MovieType | SeriesType, episode?: EpisodeType}){
+interface InfoCallbackType{
+    title: MovieType | SeriesType,
+    progress: number
+    lastEpisode?: EpisodeType
+    episodesWatched?: number
+    seriesWatched?: number
+}
+interface TitleProgressProps {
+    title: MovieType | SeriesType,
+    episode?: EpisodeType
+    hideProgress?: boolean
+    infoCallback?: (info: InfoCallbackType) => void
+}
+function TitleProgress(props: TitleProgressProps){
     const [progress, _] = useState(localStorage.getItem("playbackProgress") ? JSON.parse(localStorage.getItem("playbackProgress")!) : {})
     const [progressValue, setProgressValue] = useState(0)
 
@@ -37,6 +50,16 @@ function TitleProgress(props: {title: MovieType | SeriesType, episode?: EpisodeT
         null
     ), [props.title, progress])
 
+    useEffect(() => {
+        props.infoCallback && props.infoCallback({
+            title: props.title,
+            progress: progressValue,
+            lastEpisode: lastEpisode!,
+            episodesWatched: episodesWatched!,
+            seriesWatched: episodesWatched ? (episodesWatched / (props.title as SeriesType).episodes.length * 100) : undefined
+        })
+    }, [props.title, props.episode, progressValue, lastEpisode, episodesWatched])
+
     return (
         progressValue > 0 && <>
             <p className="text-muted">
@@ -48,9 +71,12 @@ function TitleProgress(props: {title: MovieType | SeriesType, episode?: EpisodeT
                 )}
                 {Math.round(progressValue)}% watched
             </p>
-            <LinearProgress variant="determinate" value={progressValue} />
+            {!props.hideProgress && (
+                <LinearProgress variant="determinate" value={progressValue} />
+            )}
         </>
     )
 }
 
 export default TitleProgress;
+export type {InfoCallbackType}
