@@ -14,7 +14,7 @@ function getTimeString(seconds: number){
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor(seconds / 60) % 60;
     const seconds2 = Math.round(seconds % 60);
-    return `${hours < 9 ? "0" + hours : hours}:${minutes < 9 ? "0" + minutes : minutes}:${seconds2 < 9 ? "0" + seconds2 : seconds2}`
+    return `${hours <= 9 ? "0" + hours : hours}:${minutes <= 9 ? "0" + minutes : minutes}:${seconds2 <= 9 ? "0" + seconds2 : seconds2}`
 }
 
 function Home(){
