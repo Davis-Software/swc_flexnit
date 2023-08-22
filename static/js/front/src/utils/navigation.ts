@@ -2,11 +2,10 @@ function setWindowTitle(title: string, basic?: boolean){
     document.title = `${basic ? "" : "SWC flexNit -"} ${title}`
 }
 
-function navigateTo(page: string, url?: string, pageName?: string){
-    if(!url) url = page
+function navigateTo(url: string, noSetPrevState?: boolean){
     if(url === location.pathname) return
 
-    window.history.pushState(null, "", url)
+    window.history.pushState(!noSetPrevState ? location.href : (history.state || null), "", url)
     window.dispatchEvent(new Event("popstate"))
 }
 

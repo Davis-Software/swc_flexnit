@@ -234,10 +234,10 @@ function Home(){
             if(episodesInCurrentSeason.length === currentEpisode?.episode){
                 const nextSeason = episodesInCurrentSeason[0].season + 1
                 const nextEpisode = episodes.find(e => e.season === nextSeason && e.episode === 1)
-                navigateTo(`/watch?series=${uuid}&episode=${nextEpisode?.uuid}${nextEpisode?.video_hls ? "&hls" : ""}`)
+                navigateTo(`/watch?series=${uuid}&episode=${nextEpisode?.uuid}${nextEpisode?.video_hls ? "&hls" : ""}`, true)
             }else{
                 const nextEpisode = episodes.find(e => e.season === currentEpisode?.season && e.episode === currentEpisode?.episode + 1)
-                navigateTo(`/watch?series=${uuid}&episode=${nextEpisode?.uuid}${nextEpisode?.video_hls ? "&hls" : ""}`)
+                navigateTo(`/watch?series=${uuid}&episode=${nextEpisode?.uuid}${nextEpisode?.video_hls ? "&hls" : ""}`, true)
             }
         })
     }
@@ -374,7 +374,7 @@ function Home(){
                                 <Button variant="text" size="large" onClick={() => {
                                     handleSyncUpload((state) => {
                                         !state && alert("Failed to sync playback progress")
-                                        navigateTo("/")
+                                        navigateTo(history.state || "/")
                                     })
                                 }}>
                                     <i className="material-icons" style={{fontSize: "2rem"}}>arrow_back</i>
@@ -588,7 +588,7 @@ function Home(){
                                                                 handlePlayEpisode={(e) => {
                                                                     handleSyncUpload(state => {
                                                                         !state && alert("Failed to sync playback progress")
-                                                                        navigateTo(`/watch?series=${videoInfo.uuid}&episode=${e.uuid}${e?.video_hls ? "&hls" : ""}`)
+                                                                        navigateTo(`/watch?series=${videoInfo.uuid}&episode=${e.uuid}${e?.video_hls ? "&hls" : ""}`, true)
                                                                         setShowEpisodeSelector(false)
                                                                     })
                                                                 }}
