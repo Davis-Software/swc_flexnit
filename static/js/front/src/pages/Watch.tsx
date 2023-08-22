@@ -105,11 +105,19 @@ function Home(){
         }
         setVideoLink(path)
 
+        function waitForVideo(){
+            if(videoRef.current?.readyState === 4){
+                startPlayback()
+            }else{
+                setTimeout(waitForVideo, 100)
+            }
+        }
+
         if(searchParams.has("hls") && Hls.isSupported()){
             const hls = new Hls()
             hls.loadSource(path + "?hls")
             hls.attachMedia(videoRef.current)
-            hls.on(Hls.Events.MEDIA_ATTACHED, startPlayback)
+            hls.on(Hls.Events.MEDIA_ATTACHED, waitForVideo)
 
             return () => {
                 hls.destroy()
