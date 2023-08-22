@@ -8,7 +8,7 @@ import SwcModal from "../SwcModal";
 import {SwcFab, SwcFabContainer} from "../SwcFab";
 import {isAdmin} from "../../utils/constants";
 import {navigateTo} from "../../utils/navigation";
-import TitleProgress from "../other/TitleProgress";
+import TitleProgress, {InfoCallbackType} from "../other/TitleProgress";
 
 const EditSeries = React.lazy(() => import("./EditSeries"));
 
@@ -64,12 +64,11 @@ interface SeriesInfoDisplayProps{
 }
 function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
     const [showEpisodes, setShowEpisodes] = React.useState<boolean>(false);
-    const [progress, _] = useState(localStorage.getItem("playbackProgress") ? JSON.parse(localStorage.getItem("playbackProgress")!) : {})
+    const [progressInfo, setProgressInfo] = useState<InfoCallbackType | null>(null)
 
     function handlePlay(){
-        if(progress[props.series.uuid] && progress[props.series.uuid].latestEpisode){
-            const episode = props.series.episodes.filter(e => progress[props.series.uuid][e.uuid] && progress[props.series.uuid].latestEpisode === e.uuid).pop()!
-            handlePlayEpisode(episode)
+        if(progressInfo?.lastEpisode){
+            handlePlayEpisode(progressInfo.lastEpisode)
         }else{
             handlePlayEpisode(props.series.episodes.sort((a, b) => a.episode - b.episode)[0])
         }
@@ -103,7 +102,7 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
                 <div className="content-info rounded-top rounded-3 d-lg-flex d-block">
                     <div className="d-flex flex-column">
                         <div className="info-inner d-flex flex-column flex-lg-row">
-                            <img className="m-5" src={`/series/${props.series.uuid}?thumbnail`} />
+                            <img className="m-5" src={`/series/${props.series.uuid}?thumbnail`} alt={props.series.title} />
                             <div className="m-5 pt-5 w-100 pe-5">
                                 <h1>{props.series.title}</h1>
                                 <p className="text-muted">{props.series.year > 0 && props.series.year}</p>
@@ -113,14 +112,14 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
                                 <Chip label={props.series.is_nsfw ? "NSFW" : "SFW"} color={props.series.is_nsfw ? "warning" : "secondary"} className="me-2" />
 
                                 <br /><br />
-                                <TitleProgress title={props.series} />
+                                <TitleProgress title={props.series} infoCallback={setProgressInfo} />
                                 <Button
                                     variant="contained"
                                     color="primary"
                                     onClick={handlePlay}
                                     className="mt-3"
                                     size="large"
-                                >{progress[props.series.uuid] && progress[props.series.uuid].latestEpisode ? "Continue Watching" : "Play"}</Button>
+                                >{progressInfo?.lastEpisode ? "Continue Watching" : "Play"}</Button>
                                 <Button
                                     variant="contained"
                                     color="secondary"
@@ -150,7 +149,7 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
                             series={props.series}
                             season={season}
                             handlePlayEpisode={handlePlayEpisode}
-                            selectedEpisode={props.series.episodes.filter(e => progress[props.series.uuid] && progress[props.series.uuid][e.uuid] && progress[props.series.uuid].latestEpisode === e.uuid).pop()!}
+                            selectedEpisode={progressInfo?.lastEpisode}
                         />
                     ))}
                 </ul>

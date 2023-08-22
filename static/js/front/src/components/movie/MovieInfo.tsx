@@ -8,7 +8,7 @@ import SwcModal from "../SwcModal";
 import {SwcFab, SwcFabContainer} from "../SwcFab";
 import {isAdmin} from "../../utils/constants";
 import {navigateTo} from "../../utils/navigation";
-import TitleProgress from "../other/TitleProgress";
+import TitleProgress, {InfoCallbackType} from "../other/TitleProgress";
 
 const EditMovie = React.lazy(() => import("./EditMovie"));
 
@@ -18,7 +18,7 @@ interface MovieInfoDisplayProps{
     setShowEdit: React.Dispatch<React.SetStateAction<boolean>>;
 }
 function MovieInfoDisplay(props: MovieInfoDisplayProps){
-    const [progress, _] = useState(localStorage.getItem("playbackProgress") ? JSON.parse(localStorage.getItem("playbackProgress")!) : {})
+    const [progressInfo, setProgressInfo] = useState<InfoCallbackType | null>(null)
 
     function handlePlay(){
         navigateTo(`/watch?movie=${props.movie.uuid}${props.movie.video_hls ? "&hls" : ""}`)
@@ -49,7 +49,7 @@ function MovieInfoDisplay(props: MovieInfoDisplayProps){
                 <div className="content-info rounded-top rounded-3 d-lg-flex d-block">
                     <div className="d-flex flex-column">
                         <div className="info-inner d-flex flex-column flex-lg-row">
-                            <img className="m-5" src={`/movies/${props.movie.uuid}?thumbnail`} />
+                            <img className="m-5" src={`/movies/${props.movie.uuid}?thumbnail`} alt={props.movie.title} />
                             <div className="m-5 pt-5 w-100 pe-5">
                                 <h1>{props.movie.title}</h1>
                                 <p className="text-muted">{props.movie.year > 0 && props.movie.year}</p>
@@ -59,14 +59,14 @@ function MovieInfoDisplay(props: MovieInfoDisplayProps){
                                 <Chip label={props.movie.is_nsfw ? "NSFW" : "SFW"} color={props.movie.is_nsfw ? "warning" : "secondary"} className="me-2" />
 
                                 <br /><br />
-                                <TitleProgress title={props.movie} />
+                                <TitleProgress title={props.movie} infoCallback={setProgressInfo} />
                                 <Button
                                     variant="contained"
                                     color="primary"
                                     onClick={handlePlay}
                                     className="mt-3"
                                     size="large"
-                                >{progress[props.movie.uuid] ? "Continue Watching" : "Play"}</Button>
+                                >{progressInfo?.progress ? "Continue Watching" : "Play"}</Button>
                             </div>
                         </div>
                         <div className="m-5">
