@@ -106,7 +106,7 @@ function Home(){
         setVideoLink(path)
 
         function waitForVideo(){
-            if(videoRef.current?.readyState === 4){
+            if(videoRef.current?.readyState !== undefined && videoRef.current?.readyState >= 3){
                 startPlayback()
             }else{
                 setTimeout(waitForVideo, 100)
