@@ -19,6 +19,26 @@ interface MovieInfoDisplayProps{
 }
 function MovieInfoDisplay(props: MovieInfoDisplayProps){
     const [progressInfo, setProgressInfo] = useState<InfoCallbackType | null>(null)
+    const [library, setLibrary] = useState<{[key: string]: any}>(JSON.parse(localStorage.getItem("library") || "{}"))
+
+    function toggleLibrary(){
+        setLibrary(prevState => {
+            const newLibrary = {...prevState}
+            if(!newLibrary.movie){
+                newLibrary.movie = {}
+            }
+            if(!newLibrary.movie[props.movie.uuid]){
+                newLibrary.movie[props.movie.uuid] = {
+                    lastWatched: Date.now(),
+                    showInLibrary: true
+                }
+            }else{
+                newLibrary.movie[props.movie.uuid].showInLibrary = !newLibrary.movie[props.movie.uuid].showInLibrary
+            }
+            localStorage.setItem("library", JSON.stringify(newLibrary))
+            return newLibrary
+        })
+    }
 
     function handlePlay(){
         navigateTo(`/watch?movie=${props.movie.uuid}${props.movie.video_hls ? "&hls" : ""}`)
@@ -76,9 +96,30 @@ function MovieInfoDisplay(props: MovieInfoDisplayProps){
                 </div>
             </div>
 
-            <SwcFabContainer hide={!isAdmin}>
-                <SwcFab color="warning" icon={<i className="material-icons">edit</i>} onClick={() => props.setShowEdit(true)} />
-                <SwcFab color="error" icon={<i className="material-icons">delete</i>} onClick={handleDelete} />
+            <SwcFabContainer>
+                <SwcFab
+                    color="primary"
+                    icon={<i className="material-icons">play_arrow</i>}
+                    onClick={handlePlay}
+                    tooltip={progressInfo?.progress ? "Continue Watching" : "Play"}
+                />
+                <SwcFab
+                    color="secondary"
+                    icon={
+                        library.movie && library.movie[props.movie.uuid] && library.movie[props.movie.uuid].showInLibrary ?
+                            <i className="material-icons">bookmark</i> :
+                            <i className="material-icons">bookmark_border</i>
+                    }
+                    tooltip={
+                        library.movie && library.movie[props.movie.uuid] && library.movie[props.movie.uuid].showInLibrary ?
+                            "Remove from library" :
+                            "Add to library"
+                    }
+                    onClick={toggleLibrary}
+                />
+
+                <SwcFab color="warning" icon={<i className="material-icons">edit</i>} onClick={() => props.setShowEdit(true)} hide={!isAdmin} />
+                <SwcFab color="error" icon={<i className="material-icons">delete</i>} onClick={handleDelete} hide={!isAdmin} />
             </SwcFabContainer>
         </>
     )

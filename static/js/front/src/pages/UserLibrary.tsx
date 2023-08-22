@@ -9,24 +9,26 @@ import {navigateTo} from "../utils/navigation";
 
 interface TitleDisplayProps {
     titles: TitleEntryType[]
+    library: {[key: string]: any}
+    setLibrary: React.Dispatch<React.SetStateAction<{[key: string]: any}>>
 }
 function TitleDisplay(props: TitleDisplayProps){
-    const [library, setLibrary] = useState<{[key: string]: any}>(JSON.parse(localStorage.getItem("library") || "{}"))
-
     function InnerTitleDisplay({title}: {title: TitleEntryType}){
         const [actualTitle, setActualTitle] = React.useState<MovieType | SeriesType | null>(null);
         const [titleProgressInfo, setTitleProgressInfo] = React.useState<InfoCallbackType | null>(null);
         const [imageLoaded, setImageLoaded] = React.useState(false);
 
-        function removeFromLibrary(){
-            setLibrary(prev => {
+        function removeFromLibrary(e: React.MouseEvent<HTMLButtonElement>){
+            e.stopPropagation();
+            props.setLibrary(prev => {
                 let newLibrary = {...prev};
                 newLibrary[title.type][title.uuid].showInLibrary = false;
                 localStorage.setItem("library", JSON.stringify(newLibrary));
                 return newLibrary;
             })
         }
-        function playTitle(){
+        function playTitle(e: React.MouseEvent<HTMLButtonElement>){
+            e.stopPropagation();
             if(title.type === "movie"){
                 handlePlayMovie(actualTitle as MovieType);
             }else{
@@ -41,6 +43,10 @@ function TitleDisplay(props: TitleDisplayProps){
             navigateTo(`/watch?series=${series.uuid}&episode=${episode.uuid}${episode.video_hls ? "&hls" : ""}`)
         }
 
+        function handleShowInfo(){
+            navigateTo(`/info?mode=${title.type}&uuid=${title.uuid}`)
+        }
+
         useEffect(() => {
             setImageLoaded(false);
             fetch(`/${title.type === "movie" ? "movies" : "series"}/${title.uuid}`)
@@ -51,7 +57,7 @@ function TitleDisplay(props: TitleDisplayProps){
         }, [title])
 
         return (
-            <div className="card position-relative">
+            <div className="card position-relative" onClick={handleShowInfo}>
                 {!imageLoaded && <Skeleton animation="wave" variant="rectangular" width="100%" height={180} />}
                 <img
                     src={`/${title.type === "movie" ? "movies" : "series"}/${title.uuid}?poster`}
@@ -70,7 +76,7 @@ function TitleDisplay(props: TitleDisplayProps){
                 </div>
 
                 <div className="position-absolute top-0 end-0 p-2" style={{backgroundColor: "rgba(0,0,0,.7)", borderBottomLeftRadius: "5px"}}>
-                    <Tooltip title="Play">
+                    <Tooltip title={titleProgressInfo?.progress ? "Continue watching" : "Play"}>
                         <Button variant="outlined" color="primary" className="me-2" onClick={playTitle}>
                             <i className="material-icons">play_arrow</i>
                         </Button>
@@ -87,9 +93,9 @@ function TitleDisplay(props: TitleDisplayProps){
 
     return (
         <div className="row m-0">
-            <TransitionGroup>
+            <TransitionGroup component={null}>
                 {props.titles
-                    .filter(title => library[title.type] && library[title.type][title.uuid] && library[title.type][title.uuid].showInLibrary)
+                    .filter(title => props.library[title.type] && props.library[title.type][title.uuid] && props.library[title.type][title.uuid].showInLibrary)
                     .map((title, i) => (
                     <Zoom key={i}>
                         <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-3">
@@ -103,6 +109,7 @@ function TitleDisplay(props: TitleDisplayProps){
 }
 
 function UserLibrary(){
+    const [library, setLibrary] = useState<{[key: string]: any}>(JSON.parse(localStorage.getItem("library") || "{}"))
     const [libraryTitles, setLibraryTitles] = React.useState<TitleEntryType[]>([]);
     const playbackProgress = useMemo(() => (
         JSON.parse(localStorage.getItem("playbackProgress") || "{}")
@@ -112,7 +119,10 @@ function UserLibrary(){
         fetch("/search/all")
             .then(res => res.json())
             .then((titles: TitleEntryType[]) => {
-                setLibraryTitles(titles.filter(title => !!playbackProgress[title.uuid]))
+                setLibraryTitles(titles.filter(title =>
+                    (!!playbackProgress[title.uuid] && !(library[title.type] && library[title.type][title.uuid])) ||
+                    (library[title.type] && library[title.type][title.uuid] && library[title.type][title.uuid].showInLibrary)
+                ))
             })
     }, [])
 
@@ -121,8 +131,8 @@ function UserLibrary(){
             <div className="container d-flex justify-content-center py-3 mb-3">
                 <h4>My Library</h4>
             </div>
-            <TitleDisplay titles={libraryTitles.filter(title => title.type === "movie")}/>
-            <TitleDisplay titles={libraryTitles.filter(title => title.type === "series")}/>
+            <TitleDisplay titles={libraryTitles.filter(title => title.type === "movie")} library={library} setLibrary={setLibrary} />
+            <TitleDisplay titles={libraryTitles.filter(title => title.type === "series")}  library={library} setLibrary={setLibrary} />
         </div>
     )
 }

@@ -65,6 +65,26 @@ interface SeriesInfoDisplayProps{
 function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
     const [showEpisodes, setShowEpisodes] = React.useState<boolean>(false);
     const [progressInfo, setProgressInfo] = useState<InfoCallbackType | null>(null)
+    const [library, setLibrary] = useState<{[key: string]: any}>(JSON.parse(localStorage.getItem("library") || "{}"))
+
+    function toggleLibrary(){
+        setLibrary(prevState => {
+            const newLibrary = {...prevState}
+            if(!newLibrary.series){
+                newLibrary.series = {}
+            }
+            if(!newLibrary.series[props.series.uuid]){
+                newLibrary.series[props.series.uuid] = {
+                    lastWatched: Date.now(),
+                    showInLibrary: true
+                }
+            }else{
+                newLibrary.series[props.series.uuid].showInLibrary = !newLibrary.series[props.series.uuid].showInLibrary
+            }
+            localStorage.setItem("library", JSON.stringify(newLibrary))
+            return newLibrary
+        })
+    }
 
     function handlePlay(){
         if(progressInfo?.lastEpisode){
@@ -137,8 +157,29 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
             </div>
 
             <SwcFabContainer hide={!isAdmin}>
-                <SwcFab color="warning" icon={<i className="material-icons">edit</i>} onClick={() => props.setShowEdit(true)} />
-                <SwcFab color="error" icon={<i className="material-icons">delete</i>} onClick={handleDelete} />
+                <SwcFab
+                    color="primary"
+                    icon={<i className="material-icons">play_arrow</i>}
+                    onClick={handlePlay}
+                    tooltip={progressInfo?.progress ? "Continue Watching" : "Play"}
+                />
+                <SwcFab
+                    color="secondary"
+                    icon={
+                        library.series && library.series[props.series.uuid] && library.series[props.series.uuid].showInLibrary ?
+                            <i className="material-icons">bookmark</i> :
+                            <i className="material-icons">bookmark_border</i>
+                    }
+                    tooltip={
+                        library.series && library.series[props.series.uuid] && library.series[props.series.uuid].showInLibrary ?
+                            "Remove from library" :
+                            "Add to library"
+                    }
+                    onClick={toggleLibrary}
+                />
+
+                <SwcFab color="warning" icon={<i className="material-icons">edit</i>} onClick={() => props.setShowEdit(true)} hide={!isAdmin} />
+                <SwcFab color="error" icon={<i className="material-icons">delete</i>} onClick={handleDelete} hide={!isAdmin} />
             </SwcFabContainer>
 
             <SwcModal show={showEpisodes} onHide={() => {setShowEpisodes(false)}}>
