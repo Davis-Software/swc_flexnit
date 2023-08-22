@@ -5,6 +5,7 @@ import hrFileSize from "../utils/hrFileSize";
 import MovieFileManager from "../components/fileManager/MovieFileManager";
 import SeriesFileManager from "../components/fileManager/SeriesFileManager";
 
+const loader =  <Skeleton animation="wave" variant="text" width={100} />
 
 function Overview() {
     const [overviewData, setOverviewData] = React.useState<any>(null)
@@ -23,32 +24,32 @@ function Overview() {
     const totalFileSize = useMemo(() => (
         overviewData ?
             hrFileSize(overviewData.movie_size + overviewData.series_size) :
-            <Skeleton variant="text" width={100} />
+            loader
     ), [overviewData])
     const movieFileSize = useMemo(() => (
         overviewData ?
             hrFileSize(overviewData.movie_size) :
-            <Skeleton variant="text" width={100} />
+            loader
     ), [overviewData])
     const seriesFileSize = useMemo(() => (
         overviewData ?
             hrFileSize(overviewData.series_size) :
-            <Skeleton variant="text" width={100} />
+            loader
     ), [overviewData])
     const cpuUsage = useMemo(() => (
         overviewData ?
             `${overviewData.process_info.cpu}%` :
-            <Skeleton variant="text" width={100} />
+            loader
     ), [overviewData])
     const memoryUsage = useMemo(() => (
         overviewData ?
             hrFileSize(overviewData.process_info.memory) :
-            <Skeleton variant="text" width={100} />
+            loader
     ), [overviewData])
     const threadCount = useMemo(() => (
         overviewData ?
             overviewData.process_info.threads :
-            <Skeleton variant="text" width={100} />
+            loader
     ), [overviewData])
 
     return (
