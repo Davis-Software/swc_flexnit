@@ -20,7 +20,7 @@ function handleSyncDownload(callback?: (data: any) => void, force?: boolean, upl
                 return
             }
             localStorage.setItem("playbackProgressLastUpdated", data.updated_at)
-            localStorage.setItem("playbackProgress", JSON.stringify(data.progress))
+            localStorage.setItem("playbackProgress", data.progress ? JSON.stringify(data.progress) : "{}")
             callback && callback(data)
         })
 }

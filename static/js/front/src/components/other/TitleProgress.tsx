@@ -18,7 +18,7 @@ interface TitleProgressProps {
     infoCallback?: (info: InfoCallbackType) => void
 }
 function TitleProgress(props: TitleProgressProps){
-    const [progress, _] = useState(localStorage.getItem("playbackProgress") ? JSON.parse(localStorage.getItem("playbackProgress")!) : {})
+    const [progress, _] = useState(JSON.parse(localStorage.getItem("playbackProgress") || "{}"))
     const [progressValue, setProgressValue] = useState(0)
 
     useEffect(() => {
