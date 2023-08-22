@@ -22,7 +22,7 @@ const pageNames: {[key: string]: string} = {
     "/": "Home",
     "/watch": "Watch",
     "/info": "Info",
-    "library": "Library",
+    "/library": "Library",
     "/settings": "Settings",
     "/file-manager": "File Manager",
 }
