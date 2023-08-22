@@ -56,7 +56,7 @@ function TitleProgress(props: TitleProgressProps){
             progress: progressValue,
             lastEpisode: lastEpisode!,
             episodesWatched: episodesWatched!,
-            seriesWatched: episodesWatched ? (episodesWatched / (props.title as SeriesType).episodes.length * 100) : undefined
+            seriesWatched: episodesWatched !== null ? (episodesWatched / (props.title as SeriesType).episodes.length * 100) : undefined
         })
     }, [props.title, props.episode, progressValue, lastEpisode, episodesWatched])
 
