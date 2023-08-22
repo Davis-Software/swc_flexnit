@@ -56,6 +56,20 @@ function Home(){
         const uuid = (searchParams.get("movie") || searchParams.get("series")) as string
         if(!uuid) return;
 
+        const library = JSON.parse(localStorage.getItem("library") || "{}")
+        if(!library[mode]){
+            library[mode] = {}
+        }
+        if(!Object.keys(library[mode]).includes(uuid)){
+            library[mode][uuid] = {
+                lastWatched: Date.now(),
+                showInLibrary: true
+            }
+        }else{
+            library[mode][uuid].lastWatched = Date.now()
+        }
+        localStorage.setItem("library", JSON.stringify(library))
+
         const playbackProgress = JSON.parse(localStorage.getItem("playbackProgress") || "{}")
 
         fetch(mode === "movie" ? `/movies/${uuid}` : `/series/${uuid}`)
