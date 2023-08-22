@@ -33,29 +33,32 @@ interface SwcFabProps {
     color?: "primary" | "secondary" | "inherit" | "default" | "success" | "error" | "info" | "warning" | undefined
     tooltip?: string
     tooltipPlacement?: "top" | "right" | "bottom" | "left"
+    hide?: boolean
     [key: string]: any
 }
 function SwcFab(props: SwcFabProps) {
     const eProps = gatherSubProps(
         props,
-        ["icon", "onClick", "color", "tooltip", "tooltipPlacement"]
+        ["icon", "onClick", "color", "tooltip", "tooltipPlacement", "hide"],
     )
 
     return (
         <Zoom {...eProps}>
-            <Tooltip
-                title={props.tooltip || ""}
-                placement={props.tooltipPlacement || "top"}
-                TransitionComponent={Zoom}
-            >
-                <Fab
-                    className="ms-3 mt-3"
-                    color={props.color}
-                    onClick={props.onClick}
+            {!props.hide ? (
+                <Tooltip
+                    title={props.tooltip || ""}
+                    placement={props.tooltipPlacement || "top"}
+                    TransitionComponent={Zoom}
                 >
-                    {typeof props.icon === "string" ? <i className="material-icons">{props.icon}</i> : props.icon}
-                </Fab>
-            </Tooltip>
+                    <Fab
+                        className="ms-3 mt-3"
+                        color={props.color}
+                        onClick={props.onClick}
+                    >
+                        {typeof props.icon === "string" ? <i className="material-icons">{props.icon}</i> : props.icon}
+                    </Fab>
+                </Tooltip>
+            ) : <div></div>}
         </Zoom>
     )
 }
