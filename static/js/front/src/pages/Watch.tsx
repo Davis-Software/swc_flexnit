@@ -37,8 +37,10 @@ function Home(){
     const [_, setShowControlsTimeout] = useState<NodeJS.Timeout | null>(null)
     const [fullscreen, setFullscreen] = useState(false)
     const [loading, setLoading] = useState(true)
+
     const [playing, setPlaying] = useState(false)
     const [timePlayed, setTimePlayed] = useState(0)
+
     const [volume, setVolume] = useState(parseFloat(localStorage.getItem("volume") || "1"))
     const [playbackSpeed, setPlaybackSpeed] = useState(parseFloat(localStorage.getItem("playbackSpeed") || "1"))
     const [showPlayNextEpisode, setShowPlayNextEpisode] = useState(false)
@@ -47,6 +49,8 @@ function Home(){
 
     useEffect(() => {
         if(!videoRef.current) return;
+        videoRef.current.pause()
+
         const searchParams = new URLSearchParams(window.location.search)
         setSearchParams(searchParams)
         const uuid = (searchParams.get("movie") || searchParams.get("series")) as string
@@ -73,7 +77,7 @@ function Home(){
                 }
             }
 
-            videoRef.current!.play()
+            videoRef.current?.play()
                 .then(() => setDisplayError(false))
                 .catch(() => setDisplayError(true))
         }
@@ -91,7 +95,7 @@ function Home(){
             const hls = new Hls()
             hls.loadSource(path + "?hls")
             hls.attachMedia(videoRef.current)
-            hls.on(Hls.Events.MEDIA_ATTACHED, () => setTimeout(startPlayback, 1000))
+            hls.on(Hls.Events.MEDIA_ATTACHED, startPlayback)
 
             return () => {
                 hls.destroy()
@@ -171,7 +175,7 @@ function Home(){
         const searchParams = new URLSearchParams(window.location.search)
         const uuid = searchParams.get("movie") || searchParams.get("series")
 
-        if(videoRef.current!.paused) return
+        if(videoRef.current?.paused) return
         const p = JSON.parse(localStorage.getItem("playbackProgress") || "{}")
         const episode = searchParams.get("episode")
         const newPlaybackProgress = {
@@ -188,7 +192,7 @@ function Home(){
 
     function handlePlayNextEpisode(){
         if(mode !== "series" || !videoInfo) return;
-        setPlaying(false)
+        videoRef.current?.pause()
         setEpisodeEnded(false)
 
         const searchParams = new URLSearchParams(window.location.search)
@@ -339,7 +343,7 @@ function Home(){
                     onClick={handleMouseMove}
                     style={{zIndex: 1000}}
                 >
-                    <Fade in={showControls || !playing}>
+                    <Fade in={showControls || !playing || loading}>
                         <div
                             className="w-100 h-100 position-relative"
                             style={{cursor: (showControls|| !playing) ? "default" : "none"}}
@@ -377,7 +381,7 @@ function Home(){
                                             </Button>
                                         </div>
                                     </div>
-                                ) : <SwcLoader />}
+                                ) : <SwcLoader style={{transform: "translateY(-50px)"}} />}
                             </div>
                             <div
                                 className="position-absolute w-100 start-0 bottom-0"

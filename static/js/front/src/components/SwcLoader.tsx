@@ -16,9 +16,13 @@ function DoubleTriangle(){
     )
 }
 
-function SwcLoader(){
+interface SwcLoaderProps{
+    className?: string
+    style?: React.CSSProperties
+}
+function SwcLoader(props: SwcLoaderProps){
     return (
-        <div className="swc-loader">
+        <div className={`swc-loader ${props.className}`} style={props.style}>
             <div className="swc-loader-inner">
                 <div className="triangle left">
                     <Triangle />
