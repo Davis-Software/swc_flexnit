@@ -1,19 +1,48 @@
-import React, {useEffect, useMemo} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import TitleEntryType from "../types/titleEntryType";
 import TitleProgress, {InfoCallbackType} from "../components/other/TitleProgress";
 import MovieType from "../types/movieType";
-import SeriesType from "../types/seriesType";
-import {LinearProgress} from "@mui/material";
+import SeriesType, {EpisodeType} from "../types/seriesType";
+import {Button, LinearProgress, Skeleton, Tooltip, Zoom} from "@mui/material";
+import {TransitionGroup} from "react-transition-group";
+import {navigateTo} from "../utils/navigation";
 
 interface TitleDisplayProps {
     titles: TitleEntryType[]
 }
 function TitleDisplay(props: TitleDisplayProps){
+    const [library, setLibrary] = useState<{[key: string]: any}>(JSON.parse(localStorage.getItem("library") || "{}"))
+
     function InnerTitleDisplay({title}: {title: TitleEntryType}){
         const [actualTitle, setActualTitle] = React.useState<MovieType | SeriesType | null>(null);
         const [titleProgressInfo, setTitleProgressInfo] = React.useState<InfoCallbackType | null>(null);
+        const [imageLoaded, setImageLoaded] = React.useState(false);
+
+        function removeFromLibrary(){
+            setLibrary(prev => {
+                let newLibrary = {...prev};
+                newLibrary[title.type][title.uuid].showInLibrary = false;
+                localStorage.setItem("library", JSON.stringify(newLibrary));
+                return newLibrary;
+            })
+        }
+        function playTitle(){
+            if(title.type === "movie"){
+                handlePlayMovie(actualTitle as MovieType);
+            }else{
+                handlePlayEpisode(actualTitle as SeriesType, titleProgressInfo?.lastEpisode ||
+                    (actualTitle as SeriesType).episodes.sort((a, b) => a.episode - b.episode)[0]);
+            }
+        }
+        function handlePlayMovie(movie: MovieType){
+            navigateTo(`/watch?movie=${movie.uuid}${movie.video_hls ? "&hls" : ""}`)
+        }
+        function handlePlayEpisode(series: SeriesType, episode: EpisodeType){
+            navigateTo(`/watch?series=${series.uuid}&episode=${episode.uuid}${episode.video_hls ? "&hls" : ""}`)
+        }
 
         useEffect(() => {
+            setImageLoaded(false);
             fetch(`/${title.type === "movie" ? "movies" : "series"}/${title.uuid}`)
                 .then(res => res.json())
                 .then((title: MovieType | SeriesType) => {
@@ -22,14 +51,35 @@ function TitleDisplay(props: TitleDisplayProps){
         }, [title])
 
         return (
-            <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-3">
-                <div className="card">
-                    <img src={`/${title.type === "movie" ? "movies" : "series"}/${title.uuid}?poster`} className="card-img-top" alt={title.title}/>
-                    <LinearProgress variant="determinate" value={titleProgressInfo?.seriesWatched !== undefined ? titleProgressInfo?.seriesWatched : (titleProgressInfo?.progress || 0)} />
-                    <div className="card-body">
-                        <h5 className="card-title">{title.title}</h5>
-                        {actualTitle && <TitleProgress title={actualTitle} infoCallback={setTitleProgressInfo} hideProgress />}
-                    </div>
+            <div className="card position-relative">
+                {!imageLoaded && <Skeleton animation="wave" variant="rectangular" width="100%" height={180} />}
+                <img
+                    src={`/${title.type === "movie" ? "movies" : "series"}/${title.uuid}?poster`}
+                    className="card-img-top"
+                    alt={title.title}
+                    onLoad={() => setImageLoaded(true)}
+                    hidden={!imageLoaded}
+                />
+                <LinearProgress variant="determinate" value={titleProgressInfo?.seriesWatched !== undefined ? titleProgressInfo?.seriesWatched : (titleProgressInfo?.progress || 0)} />
+                <div className="card-body">
+                    <h5 className="card-title">{title.title}</h5>
+                    {actualTitle ?
+                        <TitleProgress title={actualTitle} infoCallback={setTitleProgressInfo} hideProgress /> :
+                        <Skeleton animation="wave" variant="text" width="100%" height={30} />
+                    }
+                </div>
+
+                <div className="position-absolute top-0 end-0 p-2" style={{backgroundColor: "rgba(0,0,0,.7)", borderBottomLeftRadius: "5px"}}>
+                    <Tooltip title="Play">
+                        <Button variant="outlined" color="primary" className="me-2" onClick={playTitle}>
+                            <i className="material-icons">play_arrow</i>
+                        </Button>
+                    </Tooltip>
+                    <Tooltip title="Remove from library">
+                        <Button variant="outlined" color={"error"} onClick={removeFromLibrary}>
+                            <i className="material-icons">delete</i>
+                        </Button>
+                    </Tooltip>
                 </div>
             </div>
         )
@@ -37,9 +87,17 @@ function TitleDisplay(props: TitleDisplayProps){
 
     return (
         <div className="row m-0">
-            {props.titles.map(title => (
-                <InnerTitleDisplay title={title} key={title.uuid}/>
-            ))}
+            <TransitionGroup>
+                {props.titles
+                    .filter(title => library[title.type] && library[title.type][title.uuid] && library[title.type][title.uuid].showInLibrary)
+                    .map((title, i) => (
+                    <Zoom key={i}>
+                        <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-3">
+                            <InnerTitleDisplay title={title} />
+                        </div>
+                    </Zoom>
+                ))}
+            </TransitionGroup>
         </div>
     )
 }
