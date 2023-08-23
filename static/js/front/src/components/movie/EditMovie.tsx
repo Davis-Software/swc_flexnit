@@ -6,7 +6,7 @@ import FileType from "../../types/fileType";
 
 interface EditMovieProps{
     movie: MovieType;
-    setMovie: (movie: MovieType) => void;
+    setMovie: React.Dispatch<React.SetStateAction<MovieType>>;
     setShowEdit: (show: boolean) => void;
 }
 function EditMovie(props: EditMovieProps){
@@ -59,7 +59,7 @@ function EditMovie(props: EditMovieProps){
             .then(res => {
                 if(res.ok){
                     setUpdateFiles(!updateFiles)
-                    props.setMovie({...props.movie, video_hls: true})
+                    props.setMovie(pv => ({...pv, video_hls: true}))
                 }
             })
     }
@@ -84,7 +84,20 @@ function EditMovie(props: EditMovieProps){
                 .then(res => {
                     if(res.ok){
                         setUpdateFiles(!updateFiles)
-                        props.setMovie({...props.movie, video_hls: false})
+                        props.setMovie(pv => ({...pv, video_hls: false}))
+                    }
+                })
+        }
+    }
+    function handleDeleteHLS(){
+        if(confirm("Are you sure you want to delete the HLS files?")){
+            fetch(`/movies/${props.movie.uuid}/delete_hls`, {
+                method: "POST"
+            })
+                .then(res => {
+                    if(res.ok){
+                        setUpdateFiles(!updateFiles)
+                        props.setMovie(pv => ({...pv, video_hls: false}))
                     }
                 })
         }
@@ -207,8 +220,9 @@ function EditMovie(props: EditMovieProps){
             <Button variant="contained" color="warning" disabled={props.movie.video_hls} onClick={() => handleFileConvert()}>Convert to HLS</Button>
             <Button variant="contained" color="warning" disabled={props.movie.video_hls} onClick={() => handleFileConvert(true)}>Re-encode to HLS</Button>
             <Button variant="contained" color="warning" disabled={!props.movie.video_hls} onClick={handleFileRevert}>Revert to MP4</Button>
+            <Button variant="contained" color="error" onClick={handleDeleteHLS}>Delete HLS Files</Button>
             <FileTable files={files} onDelete={handleFileDelete} customActions={file => (
-                <Button variant="contained" color="warning" disabled={mainFile === file.name} onClick={() => handleSetMainFile(file)}>Set as Main</Button>
+                <Button variant="contained" color="warning" disabled={mainFile === file.name || file.name.endsWith(".m3u8")} onClick={() => handleSetMainFile(file)}>Set as Main</Button>
             )} sx={{maxHeight: "350px", overflow: "auto"}} />
 
             <div className="d-flex flex-row float-end mt-5">

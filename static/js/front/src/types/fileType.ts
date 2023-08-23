@@ -1,6 +1,7 @@
 interface FileType{
     name: string;
     size: number;
+    display_name: string;
 }
 interface AdvancedFileType{
     filename: string;

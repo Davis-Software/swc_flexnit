@@ -1,6 +1,8 @@
-requests
-flask
-psutil
+requests~=2.31.0
+flask~=2.3.2
+psutil~=5.9.5
 SQLAlchemy==1.4.46
 sqlalchemy-json==0.6.0
 flask_sqlalchemy==2.5.1
+
+Werkzeug~=2.3.6

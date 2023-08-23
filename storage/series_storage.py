@@ -2,13 +2,12 @@ from __init__ import config
 
 import os
 import shutil
-import subprocess
 from os import path
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from models.series import get_series, add_episode, delete_episode as delete_episode_model, get_episode, get_episodes
-from .storage_tools import get_video_file_info, convert_file_to_hls, remove_hls_files, get_video_frame
+from .storage_tools import get_video_file_info, convert_file_to_hls, remove_hls_files, get_video_frame, get_dir_files
 
 SERIES_STORAGE_PATH = path.join(config.get("VIDEO_DIR"), "series")
 
@@ -146,16 +145,9 @@ def get_episode_files(series_uuid: str, episode_uuid: str):
     if not path.exists(episode_path):
         os.makedirs(episode_path)
 
-    files = []
-    for file in os.listdir(episode_path):
-        files.append({
-            "name": file,
-            "size": os.path.getsize(path.join(episode_path, file)),
-        })
-
     return {
         "main": episode_model.video_file,
-        "files": files
+        "files": get_dir_files(episode_path),
     }
 
 

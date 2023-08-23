@@ -25,7 +25,7 @@ function FileTable(props: FileTableProps){
                 <TableBody>
                     {props.files.map((file, i) => (
                         <TableRow key={i}>
-                            <TableCell>{file.name}</TableCell>
+                            <TableCell>{file.display_name}</TableCell>
                             <TableCell>{file.size}</TableCell>
                             <TableCell>
                                 {props.customActions && props.customActions(file)}
@@ -35,6 +35,7 @@ function FileTable(props: FileTableProps){
                                     onClick={() => {
                                         props.onDelete(file)
                                     }}
+                                    disabled={file.name.endsWith(".m3u8")}
                                 >
                                     Delete
                                 </Button>

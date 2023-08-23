@@ -25,6 +25,29 @@ def get_video_file_info(file_path: str):
     return json.loads(ffprobe.stdout.read())
 
 
+def get_dir_files(file_path: str):
+    files = []
+    dir_files = os.listdir(file_path)
+    for file in dir_files:
+        if file.endswith(".ts"):
+            continue
+        elif file.endswith(".m3u8"):
+            segments = list(filter(lambda x: x.endswith(".ts"), dir_files))
+            display_name = f"{file} (HLS with {len(segments)} segments)"
+            size = sum([os.path.getsize(os.path.join(file_path, segment)) for segment in segments])
+        else:
+            display_name = file
+            size = os.path.getsize(os.path.join(file_path, file))
+
+        files.append({
+            "name": file,
+            "size": size,
+            "display_name": display_name,
+        })
+
+    return files
+
+
 def get_video_frame(file_path: str, time_index: int):
     key = f"{file_path}_{time_index}"
 

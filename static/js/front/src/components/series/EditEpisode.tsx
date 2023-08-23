@@ -250,7 +250,7 @@ function EditEpisode(props: EditEpisodeProps){
             <Button variant="contained" color="warning" disabled={!props.episode.video_hls} onClick={handleFileRevert}>Revert to MP4</Button>
             <Button variant="contained" color="error" onClick={handleDeleteHLS}>Delete HLS Files</Button>
             <FileTable files={files} onDelete={handleFileDelete} customActions={file => (
-                <Button variant="contained" color="warning" disabled={mainFile === file.name} onClick={() => handleSetMainFile(file)}>Set as Main</Button>
+                <Button variant="contained" color="warning" disabled={mainFile === file.name || file.name.endsWith(".m3u8")} onClick={() => handleSetMainFile(file)}>Set as Main</Button>
             )} sx={{maxHeight: "350px", overflow: "auto"}} />
 
             <div className="d-flex flex-row float-end mt-5">

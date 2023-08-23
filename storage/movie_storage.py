@@ -7,7 +7,7 @@ from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from models.movie import get_movie, delete_movie as delete_movie_model
-from .storage_tools import get_video_file_info, convert_file_to_hls, remove_hls_files, get_video_frame
+from .storage_tools import get_video_file_info, convert_file_to_hls, remove_hls_files, get_video_frame, get_dir_files
 
 MOVIE_STORAGE_PATH = path.join(config.get("VIDEO_DIR"), "movies")
 
@@ -98,16 +98,9 @@ def get_movie_files(movie_uuid: str):
 
     movie_path = get_movie_storage_path(movie_uuid)
 
-    files = []
-    for file in os.listdir(movie_path):
-        files.append({
-            "name": file,
-            "size": path.getsize(path.join(movie_path, file))
-        })
-
     return {
         "main": movie.video_file,
-        "files": files
+        "files": get_dir_files(movie_path),
     }
 
 
