@@ -119,9 +119,21 @@ def convert_file_to_hls(input_file: str, output_file: str, re_encode: bool = Fal
             "copy",
         ]
 
+    video_info = get_video_file_info(input_file)
+    audio_groups = [f"a:{stream['index']-1},language:{stream['tags']['language']},name:{stream['tags']['language']}"
+                    for stream in video_info["streams"] if stream["codec_type"] == "audio"]
+
     subprocess.run(
         [
             *opts,
+            # "-map",
+            # "0:v",
+            # "-map",
+            # "0:a",
+
+            "-map",  # carry over all streams into hls
+            "0",
+
             "-start_number",
             "0",
             "-hls_time",
@@ -130,7 +142,12 @@ def convert_file_to_hls(input_file: str, output_file: str, re_encode: bool = Fal
             "0",
             "-f",
             "hls",
-            output_file
+            "-master_pl_name",
+            "index.m3u8",
+            "-var_stream_map",
+            f"v:0,name:video {' '.join(audio_groups)}",
+            f"{output_file.replace('.m3u8', '')}_%v.m3u8",
+            # output_file
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,

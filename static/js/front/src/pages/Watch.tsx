@@ -125,6 +125,7 @@ function Home(){
             hls.loadSource(path + "?hls")
             hls.attachMedia(videoRef.current)
             hls.on(Hls.Events.MEDIA_ATTACHED, waitForVideo)
+            console.log(hls.audioTracks)
 
             return () => {
                 hls.destroy()
