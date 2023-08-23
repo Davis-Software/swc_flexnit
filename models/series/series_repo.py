@@ -24,7 +24,9 @@ def edit_series(
         poster: FileStorage = None,
         intro_skip: bool = None,
         intro_start: int = None,
-        intro_length: int = None
+        intro_length: int = None,
+        endcard: bool = None,
+        endcard_length: int = None
 ):
     series = SeriesModel.query.filter_by(uuid=uuid).first()
     if not series:
@@ -34,6 +36,7 @@ def edit_series(
     is_visible = is_visible == "true"
     is_nsfw = is_nsfw == "true"
     intro_skip = intro_skip == "true"
+    endcard = endcard == "true"
 
     thumbnail = thumbnail.stream.read() if thumbnail is not None else None
     poster = poster.stream.read() if poster is not None else None
@@ -63,6 +66,10 @@ def edit_series(
         series.intro_start = intro_start
     if check_for_change("intro_length", intro_length):
         series.intro_length = intro_length
+    if check_for_change("endcard", endcard):
+        series.endcard = endcard
+    if check_for_change("endcard_length", endcard_length):
+        series.endcard_length = endcard_length
 
     series.commit()
     return series

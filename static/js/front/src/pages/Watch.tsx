@@ -213,9 +213,11 @@ function Home(){
             setShowSkipIntro(
                 info.intro_skip &&
                 videoRef.current.currentTime >= info.intro_start &&
-                videoRef.current.currentTime <= info.intro_start + info.intro_length
+                videoRef.current.currentTime < info.intro_start + info.intro_length
             )
-            setShowPlayNextEpisode(videoRef.current.currentTime >= videoRef.current.duration - 60)
+            setShowPlayNextEpisode(videoRef.current.currentTime >= videoRef.current.duration - (
+                info.endcard ? info.endcard_length : 60
+            ))
         }
 
         const searchParams = new URLSearchParams(window.location.search)
@@ -374,7 +376,7 @@ function Home(){
                 {!showNSFWModal && (
                     <video ref={videoRef} style={{width: "100%", height: "100%", objectFit: "contain", zIndex: 0}} />
                 )}
-                <Fade in={!loading && playing && showSkipIntro}>
+                <Fade in={!loading && showSkipIntro}>
                     <div
                         className="position-absolute"
                         style={{left: "40px", bottom: "160px", zIndex: 2000}}

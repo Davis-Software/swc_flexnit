@@ -25,6 +25,8 @@ interface SeriesType{
     intro_skip: boolean;
     intro_start: number;
     intro_length: number;
+    endcard: boolean;
+    endcard_length: number;
 }
 
 export default SeriesType;

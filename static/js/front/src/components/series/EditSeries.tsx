@@ -115,6 +115,8 @@ function EditSeries(props: EditSeriesProps){
     const [introSkip, setIntroSkip] = React.useState<boolean>(props.series.intro_skip)
     const [introStart, setIntroStart] = React.useState<number | null>(props.series.intro_start || 0)
     const [introLength, setIntroLength] = React.useState<number | null>(props.series.intro_length || 0)
+    const [endcard, setEndcard] = React.useState<boolean>(props.series.endcard)
+    const [endcardLength, setEndcardLength] = React.useState<number | null>(props.series.endcard_length || 0)
 
     const [newEpisode, setNewEpisode] = React.useState<{season: number, episode_count: number} | null>(null)
     const [selectedEpisode, setSelectedEpisode] = React.useState<EpisodeType | null>(null)
@@ -171,6 +173,8 @@ function EditSeries(props: EditSeriesProps){
         formData.append("intro_skip", introSkip.toString())
         formData.append("intro_start", introStart !== null ? introStart.toString() : "0")
         formData.append("intro_length", introLength !== null ? introLength.toString() : "0")
+        formData.append("endcard", endcard.toString())
+        formData.append("endcard_length", endcardLength !== null ? endcardLength.toString() : "0")
         if(newThumbnail) formData.append("thumbnail", newThumbnail)
         if(newPoster) formData.append("poster", newPoster)
 
@@ -258,29 +262,53 @@ function EditSeries(props: EditSeriesProps){
                     </Button>
                 </div>
 
-                <FormControlLabel
-                    control={<Checkbox
-                            checked={introSkip}
-                            onChange={e => setIntroSkip(e.target.checked)}
-                        />}
-                    label="Skip Intro"
-                />
-                <Collapse in={introSkip} className="mb-3">
-                    <TextField
-                        variant="standard"
-                        label="Intro Start"
-                        value={introStart !== null ? introStart.toString() : ""}
-                        onChange={e => setIntroStart(parseInt(e.target.value))}
-                        error={Number.isNaN(introStart!)}
-                    />
-                    <TextField
-                        variant="standard"
-                        label="Intro Length"
-                        value={introLength !== null ? introLength.toString() : ""}
-                        onChange={e => setIntroLength(parseInt(e.target.value))}
-                        error={Number.isNaN(introLength!)}
-                    />
-                </Collapse>
+                <div className="row m-0 w-100">
+                    <div className="col-6 p-0">
+                        <FormControlLabel
+                            control={<Checkbox
+                                    checked={introSkip}
+                                    onChange={e => setIntroSkip(e.target.checked)}
+                                />}
+                            label="Skip Intro"
+                        />
+                        <Collapse in={introSkip} className="mb-3">
+                            <div className="d-flex">
+                                <TextField
+                                    variant="standard"
+                                    label="Intro Start"
+                                    value={introStart !== null ? introStart.toString() : ""}
+                                    onChange={e => setIntroStart(parseInt(e.target.value))}
+                                    error={Number.isNaN(introStart!)}
+                                />
+                                <TextField
+                                    variant="standard"
+                                    label="Intro Length"
+                                    value={introLength !== null ? introLength.toString() : ""}
+                                    onChange={e => setIntroLength(parseInt(e.target.value))}
+                                    error={Number.isNaN(introLength!)}
+                                />
+                            </div>
+                        </Collapse>
+                    </div>
+                    <div className="col-6 p-0">
+                        <FormControlLabel
+                            control={<Checkbox
+                                    checked={endcard}
+                                    onChange={e => setEndcard(e.target.checked)}
+                                />}
+                            label="Endcard"
+                        />
+                        <Collapse in={endcard} className="mb-3">
+                            <TextField
+                                variant="standard"
+                                label="Endcard Length"
+                                value={endcardLength !== null ? endcardLength.toString() : ""}
+                                onChange={e => setEndcardLength(parseInt(e.target.value))}
+                                error={Number.isNaN(endcardLength!)}
+                            />
+                        </Collapse>
+                    </div>
+                </div>
 
                 <Button variant="contained" onClick={handleAddSeason} fullWidth>
                     Add Season {props.series.season_count + 1}
