@@ -84,9 +84,6 @@ function Sidebar(props: SidebarProps){
             .then(res => res.json())
             .then(props.setSearchResults)
     }, [search, searchMode])
-    useEffect(() => {
-        sessionStorage.setItem("search-results", JSON.stringify(props.searchResults))
-    }, [props.searchResults])
 
     function handleClick(searchResult: TitleEntryType){
         props.setSelectedTitle(searchResult)

@@ -10,14 +10,24 @@ const MovieInfo = React.lazy(() => import("../components/movie/MovieInfo"));
 const SeriesInfo = React.lazy(() => import("../components/series/SeriesInfo"));
 
 function Home(){
-    const [selectedTitle, setSelectedTitle] =
-        React.useState<TitleEntryType | null>(sessionStorage.getItem("selected-title") ? JSON.parse(sessionStorage.getItem("selected-title")!) : null);
-    const [searchResults, setSearchResults] =
-        React.useState<TitleEntryType[]>(JSON.parse(sessionStorage.getItem("search-results") || "[]"))
+    const [selectedUUID, setSelectedUUID] = React.useState<string | null>((new URLSearchParams(window.location.search)).get("selected"));
+    const [searchResults, setSearchResults] = React.useState<TitleEntryType[]>([])
+    const [selectedTitle, setSelectedTitle] = React.useState<TitleEntryType | null>(null)
 
     useEffect(() => {
-        sessionStorage.setItem("selected-title", JSON.stringify(selectedTitle));
+        if(searchResults.length > 0 && !selectedTitle){
+            history.replaceState(window.location.href, "", "/")
+            setSelectedUUID(null)
+        }else if(selectedTitle && selectedTitle.uuid !== selectedUUID){
+            history.replaceState(window.location.href, "", `?selected=${selectedTitle.uuid}`)
+            setSelectedUUID(selectedTitle.uuid)
+        }
     }, [selectedTitle])
+
+    useEffect(() => {
+        if(!searchResults) return
+        setSelectedTitle(searchResults.find((title) => title.uuid === selectedUUID) || null)
+    }, [searchResults]);
 
     const RenderContent = useMemo(() => {
         if(selectedTitle){
