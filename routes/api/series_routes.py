@@ -7,7 +7,7 @@ from storage.series_storage import upload_episode_file, convert_episode_to_hls, 
     get_episode_file, delete_episode, get_episode_part, delete_episode_file, set_main_file, create_and_upload_episode, \
     convert_season_to_hls, delete_episode_hls_files, get_episode_frame
 from utils.adv_responses import send_binary_image
-from utils.password_manager import auth_required, admin_required
+from utils.password_manager import auth_required, admin_required, check_permission
 from utils.request_codes import RequestCode
 
 
@@ -166,6 +166,9 @@ def deliver_episode_file(uuid, episode_uuid, file_name=None, frame=None):
 
     if series is None:
         return make_response("Series not found", RequestCode.ClientError.NotFound)
+
+    if series.is_nsfw and not check_permission("nsfw"):
+        return make_response("Age-Restricted Content", RequestCode.ClientError.Forbidden)
 
     episode = get_episode(series.uuid, episode_uuid)
 

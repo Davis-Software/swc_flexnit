@@ -9,6 +9,8 @@ import {navigateTo} from "../utils/navigation";
 import {EpisodeList} from "../components/series/SeriesInfo";
 import {closeFullscreen, openFullscreen} from "../utils/documentFunctions";
 import {handleSyncUpload} from "../components/SyncPlaybackProgress";
+import {hasNSFWPermission} from "../utils/permissionChecks";
+import SwcModal from "../components/SwcModal";
 
 function getTimeString(seconds: number){
     const hours = Math.floor(seconds / 3600);
@@ -46,6 +48,8 @@ function Home(){
     const [showPlayNextEpisode, setShowPlayNextEpisode] = useState(false)
     const [episodeEnded, setEpisodeEnded] = useState(false)
     const [displayError, setDisplayError] = useState(false)
+
+    const [showNSFWModal, setShowNSFWModal] = useState(false)
 
     useEffect(() => {
         if(!videoRef.current) return;
@@ -127,6 +131,13 @@ function Home(){
             videoRef.current.addEventListener("loadeddata", startPlayback)
         }
     }, [window.location.search]);
+
+    useEffect(() => {
+        if(!videoInfo) return;
+        if(videoInfo.is_nsfw && !hasNSFWPermission()){
+            setShowNSFWModal(true)
+        }
+    }, [videoInfo])
 
     function handleMouseMove(){
         if(showControls) return;
@@ -342,7 +353,9 @@ function Home(){
     return (
         <PageBase className="d-flex flex-md-row flex-column" style={{backgroundColor: "black"}}>
             <div className="overflow-hidden position-relative" style={{height: "100vh", width: "100vw"}}>
-                <video ref={videoRef} style={{width: "100%", height: "100%", objectFit: "contain", zIndex: 0}} />
+                {!showNSFWModal && (
+                    <video ref={videoRef} style={{width: "100%", height: "100%", objectFit: "contain", zIndex: 0}} />
+                )}
                 <Fade in={showPlayNextEpisode}>
                     <div
                         className="position-absolute"
@@ -365,7 +378,7 @@ function Home(){
                     onClick={handleMouseMove}
                     style={{zIndex: 1000}}
                 >
-                    <Fade in={showControls || !playing || loading}>
+                    <Fade in={(showControls || !playing || loading) && !showNSFWModal}>
                         <div
                             className="w-100 h-100 position-relative"
                             style={{cursor: (showControls|| !playing) ? "default" : "none"}}
@@ -483,7 +496,7 @@ function Home(){
                                     </div>
                                     {!!videoInfo && (
                                         <div className="d-flex m-2 justify-content-center align-items-center">
-                                            {getTimeString(timePlayed)} / {getTimeString(videoRef.current!.duration)}
+                                            {getTimeString(timePlayed)} / {getTimeString(videoRef.current?.duration || 0)}
                                         </div>
                                     )}
                                     <div className="d-flex m-2 justify-content-center align-items-center">
@@ -609,6 +622,21 @@ function Home(){
                     </Fade>
                 </div>
             </div>
+
+            <SwcModal show={showNSFWModal} onHide={() => {}}>
+                <div className="d-flex justify-content-center flex-column">
+                    <h3>Restricted Access</h3>
+                    <hr />
+                </div>
+                <div className="container p-3 mb-3">
+                    <p>The content you are trying to watch is age-restricted!</p>
+                    <p>As you do not have the required permissions to view NSFW topics, you cannot watch this content.</p>
+                </div>
+                <div className="d-flex justify-content-between">
+                    <Button variant="text" onClick={() => navigateTo(history.state || "/")} color="secondary">Go back</Button>
+                    <Button variant="contained" color="primary" onClick={() => navigateTo("/logout")}>Switch account</Button>
+                </div>
+            </SwcModal>
         </PageBase>
     )
 }

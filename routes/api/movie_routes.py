@@ -6,7 +6,7 @@ from storage.movie_storage import upload_movie, convert_movie_to_hls, revert_mov
     get_movie_file, delete_movie, get_movie_part, delete_movie_file, set_main_file, delete_movie_hls_files, \
     get_movie_frame
 from utils.adv_responses import send_binary_image
-from utils.password_manager import auth_required, admin_required
+from utils.password_manager import auth_required, admin_required, check_permission
 from utils.request_codes import RequestCode
 
 
@@ -98,6 +98,9 @@ def deliver_movie(uuid, file_name=None, frame=None):
 
     if movie is None:
         return make_response("Movie not found", RequestCode.ClientError.NotFound)
+
+    if movie.is_nsfw and not check_permission("nsfw"):
+        return make_response("Age-Restricted Content", RequestCode.ClientError.Forbidden)
 
     if frame is not None and frame.isdigit():
         response = make_response(get_movie_frame(movie.uuid, int(frame)))
