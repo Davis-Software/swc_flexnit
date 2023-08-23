@@ -13,7 +13,8 @@ import {
     TextField
 } from "@mui/material";
 import SwcLoader from "../SwcLoader";
-import {SwcFabContainer} from "../SwcFab";
+import {SwcFab, SwcFabContainer} from "../SwcFab";
+import {TransitionGroup} from "react-transition-group";
 
 function hrPath(path: string, files: AdvancedFileType[]){
     return path.split("/").map(p => {
@@ -39,6 +40,7 @@ function FileTableEntry({file, selected, setSelected, setPath}: FileTableEntryPr
     return (
         <TableRow
             hover
+            selected={selected.includes(file.filename)}
         >
             <TableCell padding="checkbox">
                 <Checkbox
@@ -229,7 +231,8 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
                     )}
                 </TableBody>
             </Table>
-            <SwcFabContainer>
+
+            <TransitionGroup className="position-fixed start-0 bottom-0 p-3">
                 <Fade>
                     <TextField
                         label="Search"
@@ -248,6 +251,9 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
                         }}
                     />
                 </Fade>
+            </TransitionGroup>
+            <SwcFabContainer hide={selected.length === 0}>
+                <SwcFab icon={<i className="material-icons">delete</i>} onClick={() => {}} color="error" />
             </SwcFabContainer>
         </>
     )

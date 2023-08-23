@@ -6,7 +6,7 @@ import FileType from "../../types/fileType";
 
 interface EditMovieProps{
     movie: MovieType;
-    setMovie: React.Dispatch<React.SetStateAction<MovieType>>;
+    setMovie: React.Dispatch<React.SetStateAction<MovieType | null>>;
     setShowEdit: (show: boolean) => void;
 }
 function EditMovie(props: EditMovieProps){
@@ -59,7 +59,7 @@ function EditMovie(props: EditMovieProps){
             .then(res => {
                 if(res.ok){
                     setUpdateFiles(!updateFiles)
-                    props.setMovie(pv => ({...pv, video_hls: true}))
+                    props.setMovie(pv => (pv ? {...pv, video_hls: true} : pv))
                 }
             })
     }
@@ -84,7 +84,7 @@ function EditMovie(props: EditMovieProps){
                 .then(res => {
                     if(res.ok){
                         setUpdateFiles(!updateFiles)
-                        props.setMovie(pv => ({...pv, video_hls: false}))
+                        props.setMovie(pv => (pv ? {...pv, video_hls: false} : pv))
                     }
                 })
         }
@@ -97,7 +97,7 @@ function EditMovie(props: EditMovieProps){
                 .then(res => {
                     if(res.ok){
                         setUpdateFiles(!updateFiles)
-                        props.setMovie(pv => ({...pv, video_hls: false}))
+                        props.setMovie(pv => (pv ? {...pv, video_hls: false} : pv))
                     }
                 })
         }
