@@ -18,6 +18,10 @@ class SeriesModel(BaseModel):
     is_nsfw = Column(Boolean, nullable=False, default=False)
     added_on = Column(DateTime, nullable=False, default=datetime.utcnow)
 
+    intro_skip = Column(Boolean, nullable=False, default=False)
+    intro_start = Column(Integer, nullable=True)
+    intro_length = Column(Integer, nullable=True)
+
     thumbnail = Column(BLOB, nullable=True)
     poster = Column(BLOB, nullable=True)
 

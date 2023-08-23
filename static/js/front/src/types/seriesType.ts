@@ -22,6 +22,9 @@ interface SeriesType{
     added_on: number;
     episodes: EpisodeType[];
     season_count: number;
+    intro_skip: boolean;
+    intro_start: number;
+    intro_length: number;
 }
 
 export default SeriesType;

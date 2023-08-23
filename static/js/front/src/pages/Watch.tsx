@@ -19,6 +19,8 @@ function getTimeString(seconds: number){
     return `${hours <= 9 ? "0" + hours : hours}:${minutes <= 9 ? "0" + minutes : minutes}:${seconds2 <= 9 ? "0" + seconds2 : seconds2}`
 }
 
+let extVideoInfo: MovieType | SeriesType | null = null
+
 function Home(){
     const mode: "movie" | "series" = window.location.href.includes("?movie=") ? "movie" : "series"
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -45,6 +47,7 @@ function Home(){
 
     const [volume, setVolume] = useState(parseFloat(localStorage.getItem("volume") || "1"))
     const [playbackSpeed, setPlaybackSpeed] = useState(parseFloat(localStorage.getItem("playbackSpeed") || "1"))
+    const [showSkipIntro, setShowSkipIntro] = useState(false)
     const [showPlayNextEpisode, setShowPlayNextEpisode] = useState(false)
     const [episodeEnded, setEpisodeEnded] = useState(false)
     const [displayError, setDisplayError] = useState(false)
@@ -137,6 +140,7 @@ function Home(){
         if(videoInfo.is_nsfw && !hasNSFWPermission()){
             setShowNSFWModal(true)
         }
+        extVideoInfo = videoInfo
     }, [videoInfo])
 
     function handleMouseMove(){
@@ -203,7 +207,16 @@ function Home(){
     function timeUpdate(){
         if(!videoRef.current) return;
         setTimePlayed(videoRef.current.currentTime)
-        setShowPlayNextEpisode(mode === "series" && (videoRef.current.currentTime >= videoRef.current.duration - 60))
+
+        if(mode === "series" && extVideoInfo){
+            let info = extVideoInfo as SeriesType
+            setShowSkipIntro(
+                info.intro_skip &&
+                videoRef.current.currentTime >= info.intro_start &&
+                videoRef.current.currentTime <= info.intro_start + info.intro_length
+            )
+            setShowPlayNextEpisode(videoRef.current.currentTime >= videoRef.current.duration - 60)
+        }
 
         const searchParams = new URLSearchParams(window.location.search)
         const uuid = searchParams.get("movie") || searchParams.get("series")
@@ -223,6 +236,11 @@ function Home(){
         localStorage.setItem("playbackProgressLastUpdated", Date.now().toString())
     }
 
+    function handleSkipIntro(){
+        if(!videoRef.current) return;
+        let info = extVideoInfo as SeriesType
+        videoRef.current.currentTime = info.intro_start + info.intro_length
+    }
     function handlePlayNextEpisode(){
         if(mode !== "series" || !videoInfo) return;
         videoRef.current?.pause()
@@ -356,6 +374,21 @@ function Home(){
                 {!showNSFWModal && (
                     <video ref={videoRef} style={{width: "100%", height: "100%", objectFit: "contain", zIndex: 0}} />
                 )}
+                <Fade in={!loading && playing && showSkipIntro}>
+                    <div
+                        className="position-absolute"
+                        style={{left: "40px", bottom: "160px", zIndex: 2000}}
+                    >
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            size="large"
+                            onClick={handleSkipIntro}
+                        >
+                            Skip intro
+                        </Button>
+                    </div>
+                </Fade>
                 <Fade in={showPlayNextEpisode}>
                     <div
                         className="position-absolute"

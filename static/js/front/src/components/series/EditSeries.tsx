@@ -112,6 +112,10 @@ function EditSeries(props: EditSeriesProps){
     const [newThumbnail, setNewThumbnail] = React.useState<File | null | undefined>(null)
     const [newPoster, setNewPoster] = React.useState<File | null | undefined>(null)
 
+    const [introSkip, setIntroSkip] = React.useState<boolean>(props.series.intro_skip)
+    const [introStart, setIntroStart] = React.useState<number | null>(props.series.intro_start || 0)
+    const [introLength, setIntroLength] = React.useState<number | null>(props.series.intro_length || 0)
+
     const [newEpisode, setNewEpisode] = React.useState<{season: number, episode_count: number} | null>(null)
     const [selectedEpisode, setSelectedEpisode] = React.useState<EpisodeType | null>(null)
 
@@ -164,6 +168,9 @@ function EditSeries(props: EditSeriesProps){
         formData.append("language", language)
         formData.append("is_visible", isVisible.toString())
         formData.append("is_nsfw", isNsfw.toString())
+        formData.append("intro_skip", introSkip.toString())
+        formData.append("intro_start", introStart !== null ? introStart.toString() : "0")
+        formData.append("intro_length", introLength !== null ? introLength.toString() : "0")
         if(newThumbnail) formData.append("thumbnail", newThumbnail)
         if(newPoster) formData.append("poster", newPoster)
 
@@ -250,6 +257,30 @@ function EditSeries(props: EditSeriesProps){
                         <input hidden accept="image/png" type="file" onChange={e => setNewPoster(e.target.files?.item(0))} />
                     </Button>
                 </div>
+
+                <FormControlLabel
+                    control={<Checkbox
+                            checked={introSkip}
+                            onChange={e => setIntroSkip(e.target.checked)}
+                        />}
+                    label="Skip Intro"
+                />
+                <Collapse in={introSkip} className="mb-3">
+                    <TextField
+                        variant="standard"
+                        label="Intro Start"
+                        value={introStart !== null ? introStart.toString() : ""}
+                        onChange={e => setIntroStart(parseInt(e.target.value))}
+                        error={Number.isNaN(introStart!)}
+                    />
+                    <TextField
+                        variant="standard"
+                        label="Intro Length"
+                        value={introLength !== null ? introLength.toString() : ""}
+                        onChange={e => setIntroLength(parseInt(e.target.value))}
+                        error={Number.isNaN(introLength!)}
+                    />
+                </Collapse>
 
                 <Button variant="contained" onClick={handleAddSeason} fullWidth>
                     Add Season {props.series.season_count + 1}
