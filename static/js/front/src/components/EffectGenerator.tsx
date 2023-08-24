@@ -58,7 +58,6 @@ function EffectGenerator(props: EffectGeneratorProps){
             .replace("rgba(", "")
             .replace("rgb(", "")
             .replace(")", "")
-            .replaceAll(" ", "")
             .split(",")
             .map(x => parseInt(x))
         let candleColor = `rgba(${255-elemColors[0]+50}, ${255-elemColors[1]+50}, ${255-elemColors[2]+50}, ${elemColors[3]+0.15 || .3})`
