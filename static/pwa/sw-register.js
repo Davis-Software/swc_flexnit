@@ -4,4 +4,8 @@
             console.debug('[SW] Service Worker Registered')
         })
     }
+    window.addEventListener("beforeinstallprompt ", (e) => {
+        e.preventDefault()
+        e.prompt()
+    })
 })()
