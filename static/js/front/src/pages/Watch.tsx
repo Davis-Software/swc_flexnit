@@ -8,9 +8,10 @@ import SwcLoader from "../components/SwcLoader";
 import {navigateTo} from "../utils/navigation";
 import {EpisodeList} from "../components/series/SeriesInfo";
 import {closeFullscreen, openFullscreen} from "../utils/documentFunctions";
-import {handleSyncUpload} from "../components/SyncPlaybackProgress";
+import {checkSyncEnabled, handleSyncUpload} from "../components/SyncPlaybackProgress";
 import {hasNSFWPermission} from "../utils/permissionChecks";
 import SwcModal from "../components/SwcModal";
+import {user} from "../utils/constants";
 
 function getTimeString(seconds: number){
     const hours = Math.floor(seconds / 3600);
@@ -21,7 +22,7 @@ function getTimeString(seconds: number){
 
 let extVideoInfo: MovieType | SeriesType | null = null
 
-function Home(){
+function Watch(){
     const mode: "movie" | "series" = window.location.href.includes("?movie=") ? "movie" : "series"
     const videoRef = useRef<HTMLVideoElement>(null);
     const showEpisodeSelectorButtonRef = useRef<HTMLButtonElement>(null);
@@ -236,6 +237,7 @@ function Home(){
         }
         localStorage.setItem("playbackProgress", JSON.stringify(newPlaybackProgress))
         localStorage.setItem("playbackProgressLastUpdated", Date.now().toString())
+        localStorage.setItem("playbackProgressUser", user)
     }
 
     function handleSkipIntro(){
@@ -423,6 +425,9 @@ function Home(){
                         >
                             <div className="position-relative d-flex justify-content-between" style={{left: "40px", top: "40px", width: "calc(100% - 80px)"}}>
                                 <Button variant="text" size="large" onClick={() => {
+                                    if(!checkSyncEnabled()) {
+                                        navigateTo(history.state || "/")
+                                    }
                                     handleSyncUpload((state) => {
                                         !state && alert("Failed to sync playback progress")
                                         navigateTo(history.state || "/")
@@ -687,4 +692,4 @@ function Home(){
     )
 }
 
-export default Home;
+export default Watch;

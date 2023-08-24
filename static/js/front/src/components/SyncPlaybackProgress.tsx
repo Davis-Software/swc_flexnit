@@ -1,9 +1,10 @@
 import React, {useEffect} from "react";
-import {Button, Tooltip} from "@mui/material";
+import {Button} from "@mui/material";
 import SwcModal from "./SwcModal";
+import {user} from "../utils/constants";
 
 function checkSyncEnabled(){
-    return localStorage.getItem("syncPlayback") !== null ? localStorage.getItem("syncPlayback") === "true" : true
+    return localStorage.getItem("syncPlayback") !== null ? (localStorage.getItem("syncPlayback") === "true") : true
 }
 
 function handleSyncDownload(callback?: (data: any) => void, force?: boolean, uploadIfOutdated?: boolean){
@@ -13,7 +14,9 @@ function handleSyncDownload(callback?: (data: any) => void, force?: boolean, upl
         .then(res => res.json())
         .then(data => {
             if(localStorage.getItem("playbackProgress") &&
-                parseFloat(localStorage.getItem("playbackProgressLastUpdated") || "0") > data.updated_at){
+                parseFloat(localStorage.getItem("playbackProgressLastUpdated") || "0") > data.updated_at &&
+                localStorage.getItem("playbackProgressUser") === user
+            ){
                 if(uploadIfOutdated){
                     handleSyncUpload()
                 }
@@ -21,6 +24,7 @@ function handleSyncDownload(callback?: (data: any) => void, force?: boolean, upl
             }
             localStorage.setItem("playbackProgressLastUpdated", data.updated_at)
             localStorage.setItem("playbackProgress", data.progress ? JSON.stringify(data.progress) : "{}")
+            localStorage.setItem("playbackProgressUser", user)
             callback && callback(data)
         })
 }
@@ -29,6 +33,7 @@ function handleSyncUpload(callback?: (state: boolean) => void, force?: boolean){
 
     const formData = new FormData()
     formData.append("playback_progress", localStorage.getItem("playbackProgress") || "{}")
+    formData.append("playback_user", user)
     fetch("/sync", {
         method: "POST",
         body: formData
@@ -64,7 +69,7 @@ function SyncPlaybackProgress(props: SyncPlaybackProgressProps){
             setSyncing(false)
             props.callback && props.callback()
             setShowModal(false)
-        }, true)
+        }, true, false)
     }
     function handleUpload(){
         setError("")
@@ -116,6 +121,10 @@ function ResetPlaybackProgress(){
             setAskAgain(true)
         }else{
             localStorage.removeItem("playbackProgress")
+            if(!checkSyncEnabled()){
+                setAskAgain(false)
+                alert("Playback reset locally only! Please enable progress sync and clear again to delete your progress entirely.")
+            }
             handleSyncUpload(state => {
                 if(state){
                     setAskAgain(false)
@@ -137,4 +146,4 @@ function ResetPlaybackProgress(){
 
 export default SyncPlaybackProgress
 export {handleSyncDownload, handleSyncUpload}
-export {ResetPlaybackProgress}
+export {ResetPlaybackProgress, checkSyncEnabled}
