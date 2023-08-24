@@ -10,3 +10,8 @@ def favicon():
 @app.route("/icon")
 def icon():
     return send_file("static/img/icon.png")
+
+
+@app.route("/offline")
+def offline():
+    return send_file("static/pwa/offline.html")

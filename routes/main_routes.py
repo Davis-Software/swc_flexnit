@@ -21,6 +21,15 @@ def route_index(page=None):
     return resp
 
 
+@app.route("/sw")
+def route_service_worker():
+    resp = app.send_static_file("pwa/sw.js")
+    resp.headers.set("Service-Worker-Allowed", "/")
+    resp.headers.set("Content-Type", "application/javascript")
+
+    return resp
+
+
 @app.route("/home")
 def route_home():
     return redirect("/")
