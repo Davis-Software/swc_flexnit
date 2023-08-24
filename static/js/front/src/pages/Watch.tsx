@@ -372,9 +372,15 @@ function Home(){
 
     return (
         <PageBase className="d-flex flex-md-row flex-column" style={{backgroundColor: "black"}}>
-            <div className="overflow-hidden position-relative" style={{height: "100vh", width: "100vw"}}>
+            <div
+                className="overflow-hidden position-relative"
+                style={{height: "100vh", width: "100vw"}}
+                onMouseMove={handleMouseMove}
+                onTouchStart={handleMouseMove}
+                onClick={handleMouseMove}
+            >
                 {!showNSFWModal && (
-                    <video ref={videoRef} style={{width: "100%", height: "100%", objectFit: "contain", zIndex: 0}} />
+                    <video className="position-absolute top-0 start-0" ref={videoRef} style={{width: "100%", height: "100%", objectFit: "contain", zIndex: 0}} />
                 )}
                 <Fade in={!loading && showSkipIntro}>
                     <div
@@ -407,10 +413,7 @@ function Home(){
                     </div>
                 </Fade>
                 <div
-                    className="position-absolute start-0 top-0 w-100 h-100"
-                    onMouseMove={handleMouseMove}
-                    onTouchStart={handleMouseMove}
-                    onClick={handleMouseMove}
+                    className="w-100 h-100"
                     style={{zIndex: 1000}}
                 >
                     <Fade in={(showControls || !playing || loading) && !showNSFWModal}>
@@ -468,15 +471,21 @@ function Home(){
                                         }}
                                         onMouseEnter={() => setShowTimelineFramePreview(true)}
                                         onMouseLeave={() => setShowTimelineFramePreview(false)}
-                                        onTouchStart={() => setShowTimelineFramePreview(true)}
-                                        onTouchEnd={() => setShowTimelineFramePreview(false)}
                                         onMouseMove={(e) => {
                                             const rect = e.currentTarget.getBoundingClientRect()
                                             const x = e.clientX - rect.left
                                             setTimelineFramePreviewLocation(x)
                                         }}
+                                        onTouchStart={() => setShowTimelineFramePreview(true)}
+                                        onTouchEnd={() => setShowTimelineFramePreview(false)}
+                                        onTouchMove={(e) => {
+                                            const rect = e.currentTarget.getBoundingClientRect()
+                                            const x = e.touches[0].clientX - rect.left
+                                            setTimelineFramePreviewLocation(x)
+                                        }}
                                         sx={{width: "100%"}}
                                         max={videoRef.current?.duration || 0}
+                                        step={.01}
                                     />
                                     <Fade in={showTimelineFramePreview}>
                                         <div
@@ -492,7 +501,9 @@ function Home(){
                                             {(() => {
                                                 if(!videoRef.current || !timelineFramePreviewLocation) return null;
                                                 const frameNumber = Math.floor((timelineFramePreviewLocation / window.innerWidth) * videoRef.current!.duration)
-                                                const nearestFrameInStorage = Math.floor(frameNumber / 25) * 25
+                                                let splittingAmount = Math.floor(videoRef.current!.duration / 10)
+                                                splittingAmount = splittingAmount > 25 ? 25 : splittingAmount
+                                                const nearestFrameInStorage = Math.floor(frameNumber / splittingAmount) * splittingAmount
 
                                                 return (
                                                     <img
