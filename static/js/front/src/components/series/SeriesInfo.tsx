@@ -156,7 +156,7 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
                 </div>
             </div>
 
-            <SwcFabContainer hide={!isAdmin}>
+            <SwcFabContainer>
                 <SwcFab
                     color="primary"
                     icon={<i className="material-icons">play_arrow</i>}
