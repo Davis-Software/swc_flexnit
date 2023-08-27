@@ -13,6 +13,10 @@
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+cd static/js/front
+npm i
+npm run build
+cd ../../..
 python3 main.py
 ```
 
