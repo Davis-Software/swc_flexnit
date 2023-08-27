@@ -19,6 +19,7 @@ class SeriesModel(BaseModel):
     added_on = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     intro_skip = Column(Boolean, nullable=False, default=False)
+    intro_global = Column(Boolean, nullable=False, default=False)
     intro_start = Column(Integer, nullable=True)
     intro_length = Column(Integer, nullable=True)
     endcard = Column(Boolean, nullable=False, default=False)
@@ -26,6 +27,7 @@ class SeriesModel(BaseModel):
 
     thumbnail = Column(BLOB, nullable=True)
     poster = Column(BLOB, nullable=True)
+    intro_audio = Column(BLOB, nullable=True)
 
     episodes = relationship("EpisodeModel", back_populates="series")
 

@@ -209,19 +209,25 @@ function Watch(){
         if(!videoRef.current) return;
         setTimePlayed(videoRef.current.currentTime)
 
+        const searchParams = new URLSearchParams(window.location.search)
+
         if(mode === "series" && extVideoInfo){
             let info = extVideoInfo as SeriesType
+            let episode = info.episodes.find(e => e.uuid === searchParams.get("episode"))
             setShowSkipIntro(
-                info.intro_skip &&
-                videoRef.current.currentTime >= info.intro_start &&
-                videoRef.current.currentTime < info.intro_start + info.intro_length
+                info.intro_skip && info.intro_global ?
+                (videoRef.current.currentTime >= info.intro_start &&
+                videoRef.current.currentTime < info.intro_start + info.intro_length) : (
+                    (episode?.has_intro || false) &&
+                    videoRef.current.currentTime >= episode?.intro_start &&
+                    videoRef.current.currentTime < episode?.intro_start + info.intro_length
+                )
             )
             setShowPlayNextEpisode(videoRef.current.currentTime >= videoRef.current.duration - (
                 info.endcard ? info.endcard_length : 60
             ))
         }
 
-        const searchParams = new URLSearchParams(window.location.search)
         const uuid = searchParams.get("movie") || searchParams.get("series")
 
         if(videoRef.current?.paused) return
@@ -242,8 +248,14 @@ function Watch(){
 
     function handleSkipIntro(){
         if(!videoRef.current) return;
+        const searchParams = new URLSearchParams(window.location.search)
+
         let info = extVideoInfo as SeriesType
-        videoRef.current.currentTime = info.intro_start + info.intro_length
+        let episode = info.episodes.find(e => e.uuid === searchParams.get("episode"))
+
+        videoRef.current.currentTime = info.intro_skip && info.intro_global ?
+            info.intro_start + info.intro_length :
+            (episode?.intro_start || 0) + info.intro_length
     }
     function handlePlayNextEpisode(){
         if(mode !== "series" || !videoInfo) return;

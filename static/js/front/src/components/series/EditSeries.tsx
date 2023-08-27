@@ -1,6 +1,6 @@
 import React, {useMemo} from "react";
 import SeriesType, {EpisodeType} from "../../types/seriesType";
-import {Button, Checkbox, Collapse, FormControlLabel, TextField} from "@mui/material";
+import {Button, Checkbox, Collapse, Fade, FormControlLabel, TextField} from "@mui/material";
 
 const AddEpisode = React.lazy(() => import("./EditEpisode").then(module => ({default: module.AddEpisode})));
 const EditEpisode = React.lazy(() => import("./EditEpisode"));
@@ -19,6 +19,18 @@ function SeasonOverview(props: SeasonOverviewProps){
         props.seriesProps.series.episodes.sort((a, b) => a.episode - b.episode).filter(episode => episode.season === props.season + 1)
     ), [props.seriesProps.series.episodes, props.season, props.seriesProps.series.season_count])
 
+    function handleDetectEpisodeIntros(){
+        if(!confirm("Are you sure you want to detect intros for all episodes in this season?")) return
+        const formData = new FormData()
+        formData.append("season", (props.season + 1).toString())
+        fetch(`/series/${props.seriesProps.series.uuid}/detect`, {
+            method: "POST",
+            body: formData
+        }).then(() => {
+            alert("Detection might be done, check manually. Also you might need to refresh the page.")
+        })
+        alert("Detection started, warning: this will take a while and there is no way to track progress.")
+    }
     function handleConvertSeason(reEncode: boolean = false){
         if(!confirm("Are you sure you want to convert all episodes in this season to HLS?")) return
         if(reEncode){
@@ -31,7 +43,7 @@ function SeasonOverview(props: SeasonOverviewProps){
             method: "POST",
             body: formData
         }).then(() => {
-            alert("Conversion might be done, check manually.")
+            alert("Conversion might be done, check manually. Also you might need to refresh the page.")
         })
         alert("Conversion started, warning: this will take a while and there is no way to track progress.")
     }
@@ -66,6 +78,9 @@ function SeasonOverview(props: SeasonOverviewProps){
                         </Button>
                     </div>
                     <div className="d-flex">
+                        <Button className="flex-grow-1" variant="contained" color="info" onClick={handleDetectEpisodeIntros}>
+                            Detect All Intros
+                        </Button>
                         <Button className="flex-grow-1" variant="contained" color="warning" onClick={() => handleConvertSeason()}>
                             Convert All to HLS
                         </Button>
@@ -109,10 +124,13 @@ function EditSeries(props: EditSeriesProps){
     const [language, setLanguage] = React.useState<string>(props.series.language || "")
     const [isVisible, setIsVisible] = React.useState<boolean>(props.series.is_visible || false)
     const [isNsfw, setIsNsfw] = React.useState<boolean>(props.series.is_nsfw || false)
+
     const [newThumbnail, setNewThumbnail] = React.useState<File | null | undefined>(null)
     const [newPoster, setNewPoster] = React.useState<File | null | undefined>(null)
+    const [newIntro, setNewIntro] = React.useState<File | null | undefined>(null)
 
     const [introSkip, setIntroSkip] = React.useState<boolean>(props.series.intro_skip)
+    const [introGlobal, setIntroGlobal] = React.useState<boolean>(props.series.intro_global)
     const [introStart, setIntroStart] = React.useState<number | null>(props.series.intro_start || 0)
     const [introLength, setIntroLength] = React.useState<number | null>(props.series.intro_length || 0)
     const [endcard, setEndcard] = React.useState<boolean>(props.series.endcard)
@@ -171,12 +189,15 @@ function EditSeries(props: EditSeriesProps){
         formData.append("is_visible", isVisible.toString())
         formData.append("is_nsfw", isNsfw.toString())
         formData.append("intro_skip", introSkip.toString())
+        formData.append("intro_global", introGlobal.toString())
         formData.append("intro_start", introStart !== null ? introStart.toString() : "0")
         formData.append("intro_length", introLength !== null ? introLength.toString() : "0")
         formData.append("endcard", endcard.toString())
         formData.append("endcard_length", endcardLength !== null ? endcardLength.toString() : "0")
+
         if(newThumbnail) formData.append("thumbnail", newThumbnail)
         if(newPoster) formData.append("poster", newPoster)
+        if(newIntro) formData.append("intro_audio", newIntro)
 
         fetch(`/series/${props.series.uuid}/edit`, {
             method: "POST",
@@ -271,8 +292,17 @@ function EditSeries(props: EditSeriesProps){
                                 />}
                             label="Skip Intro"
                         />
-                        <Collapse in={introSkip} className="mb-3">
-                            <div className="d-flex">
+                        <Fade in={introSkip}>
+                            <FormControlLabel
+                                control={<Checkbox
+                                        checked={introGlobal}
+                                        onChange={e => setIntroGlobal(e.target.checked)}
+                                    />}
+                                label="Gloabl Intro"
+                            />
+                        </Fade>
+                        <div className="d-flex">
+                            <Collapse in={introSkip && introGlobal} className="mb-3" unmountOnExit mountOnEnter>
                                 <TextField
                                     variant="standard"
                                     label="Intro Start"
@@ -280,6 +310,8 @@ function EditSeries(props: EditSeriesProps){
                                     onChange={e => setIntroStart(parseInt(e.target.value))}
                                     error={Number.isNaN(introStart!)}
                                 />
+                            </Collapse>
+                            <Collapse in={introSkip} className="mb-3">
                                 <TextField
                                     variant="standard"
                                     label="Intro Length"
@@ -287,8 +319,17 @@ function EditSeries(props: EditSeriesProps){
                                     onChange={e => setIntroLength(parseInt(e.target.value))}
                                     error={Number.isNaN(introLength!)}
                                 />
-                            </div>
-                        </Collapse>
+                            </Collapse>
+                            <Collapse in={introSkip && !introGlobal} className="mb-3" unmountOnExit mountOnEnter>
+                                <div className="d-flex">
+                                    <audio controls src={`/series/${props.series.uuid}?intro_audio`} />
+                                    <Button className="flex-grow-1" variant="contained" component="label" fullWidth>
+                                        {newIntro ? "Change Selected Intro" : "Upload Intro"}
+                                        <input hidden accept="audio/wav" type="file" onChange={e => setNewIntro(e.target.files?.item(0))} />
+                                    </Button>
+                                </div>
+                            </Collapse>
+                        </div>
                     </div>
                     <div className="col-6 p-0">
                         <FormControlLabel

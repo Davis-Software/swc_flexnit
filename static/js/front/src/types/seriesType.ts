@@ -8,6 +8,8 @@ interface EpisodeType{
     video_file: string;
     video_info: any;
     video_hls: boolean;
+    has_intro: boolean;
+    intro_start: number;
 }
 
 interface SeriesType{
@@ -23,6 +25,7 @@ interface SeriesType{
     episodes: EpisodeType[];
     season_count: number;
     intro_skip: boolean;
+    intro_global: boolean;
     intro_start: number;
     intro_length: number;
     endcard: boolean;

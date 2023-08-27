@@ -23,6 +23,9 @@ class EpisodeModel(BaseModel):
     video_info = Column(NestedMutableJson, nullable=False, default={})
     video_hls = Column(Boolean, nullable=False, default=False)
 
+    has_intro = Column(Boolean, nullable=False, default=False)
+    intro_start = Column(Integer, nullable=True)
+
     def __init__(self, title, season, episode, series_id):
         self.uuid = str(uuid4())
         self.title = title

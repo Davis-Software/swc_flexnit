@@ -159,7 +159,7 @@ function MovieInfo(props: MovieInfoProps){
                     </div>
                 </Fade>
             </TransitionGroup>
-            <SwcModal show={showEdit} onHide={() => {}}>
+            <SwcModal show={showEdit} onHide={() => {}} width="95%">
                 <React.Suspense fallback={<PageLoader />}>
                     <EditMovie movie={movie} setMovie={setMovie} setShowEdit={setShowEdit} />
                 </React.Suspense>

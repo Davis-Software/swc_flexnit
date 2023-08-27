@@ -233,7 +233,7 @@ function SeriesInfo(props: SeriesInfoProps){
                     </div>
                 </Fade>
             </TransitionGroup>
-            <SwcModal show={showEdit} onHide={() => {}}>
+            <SwcModal show={showEdit} onHide={() => {}} width="95%">
                 <React.Suspense fallback={<PageLoader />}>
                     <EditSeries series={series} setSeries={setSeries} setShowEdit={setShowEdit} />
                 </React.Suspense>

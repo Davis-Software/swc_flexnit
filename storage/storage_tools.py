@@ -2,7 +2,9 @@ import subprocess
 from __init__ import config
 import os
 import json
+from uuid import uuid4
 
+from utils.wsl_compatability import make_wsl_command, get_wsl_path, get_local_wsl_temp_dir
 
 frame_cache = {}
 
@@ -80,6 +82,42 @@ def get_video_frame(file_path: str, time_index: int):
     frame_cache[key] = frame
 
     return frame
+
+
+def detect_audio_offsets(search_file: bytes, video_folder: str, ignore_files: str = "m3u8,ts"):
+    ffmpeg = config.get("FFMPEG_PATH")
+
+    file = str(uuid4()) + ".wav"
+    with open(get_local_wsl_temp_dir() + file, "wb") as f:
+        f.write(search_file)
+
+    aivd = subprocess.Popen(make_wsl_command([
+        config.get("AIVD_PATH"),
+        "--find-offset-of",
+        f"/tmp/{file}",
+        "--within",
+        get_wsl_path(video_folder),
+        "--extension-skip",
+        ignore_files,
+        "--recursive",
+        "true",
+        "--window",
+        "240",
+        "--log-level",
+        "error",
+        "--raw",
+        "true",
+        "--ffmpeg",
+        ffmpeg if not config["USE_WSL"] else "/usr/bin/ffmpeg"
+    ]),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT
+    )
+
+    resp = aivd.stdout.read()
+    os.remove(get_local_wsl_temp_dir() + file)
+
+    return json.loads(resp)
 
 
 def convert_file_to_hls(input_file: str, output_file: str, re_encode: bool = False):
