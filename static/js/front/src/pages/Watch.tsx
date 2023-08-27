@@ -685,7 +685,7 @@ function Watch(){
                 </div>
                 <div className="d-flex justify-content-between">
                     <Button variant="text" onClick={() => navigateTo(history.state || "/")} color="secondary">Go back</Button>
-                    <Button variant="contained" color="primary" onClick={() => navigateTo("/logout")}>Switch account</Button>
+                    <Button variant="contained" color="primary" onClick={() => window.location.href = "/logout"}>Switch account</Button>
                 </div>
             </SwcModal>
         </PageBase>
