@@ -9,7 +9,7 @@ def get_wsl_path(path: str):
     return f"/mnt/{path_parts[0].lower()}/" + path_parts[1].replace('\\', '/')
 
 
-def make_wsl_command(command: list[str]):
+def make_wsl_command(command: list):
     if not config.get_bool("USE_WSL", False):
         return command
 
