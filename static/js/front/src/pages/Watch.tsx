@@ -132,7 +132,7 @@ function Watch(){
             }
         }else{
             videoRef.current.src = path
-            videoRef.current.addEventListener("loadeddata", startPlayback)
+            videoRef.current.addEventListener("loadeddata", waitForVideo)
         }
     }, [window.location.search]);
 

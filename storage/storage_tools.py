@@ -102,7 +102,7 @@ def detect_audio_offsets(search_file: bytes, video_folder: str, ignore_files: st
         "--recursive",
         "true",
         "--window",
-        "240",
+        "900",
         "--log-level",
         "fatal",
         "--raw",
