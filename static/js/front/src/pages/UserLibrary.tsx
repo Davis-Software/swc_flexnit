@@ -6,6 +6,7 @@ import SeriesType, {EpisodeType} from "../types/seriesType";
 import {Button, LinearProgress, Skeleton, Tooltip, Zoom} from "@mui/material";
 import {TransitionGroup} from "react-transition-group";
 import {navigateTo} from "../utils/navigation";
+import {handleSyncUpload} from "../components/SyncPlaybackProgress";
 
 interface TitleDisplayProps {
     titles: TitleEntryType[]
@@ -23,7 +24,12 @@ function TitleDisplay(props: TitleDisplayProps){
             props.setLibrary(prev => {
                 let newLibrary = {...prev};
                 newLibrary[title.type][title.uuid].showInLibrary = false;
+
                 localStorage.setItem("library", JSON.stringify(newLibrary));
+                handleSyncUpload(state => {
+                    if(!state)alert("Failed to sync library")
+                }, false, true)
+
                 return newLibrary;
             })
         }

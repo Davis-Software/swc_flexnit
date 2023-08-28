@@ -9,6 +9,7 @@ import {SwcFab, SwcFabContainer} from "../SwcFab";
 import {isAdmin} from "../../utils/constants";
 import {navigateTo} from "../../utils/navigation";
 import TitleProgress, {InfoCallbackType} from "../other/TitleProgress";
+import {handleSyncUpload} from "../SyncPlaybackProgress";
 
 const EditSeries = React.lazy(() => import("./EditSeries"));
 
@@ -82,6 +83,9 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
                 newLibrary.series[props.series.uuid].showInLibrary = !newLibrary.series[props.series.uuid].showInLibrary
             }
             localStorage.setItem("library", JSON.stringify(newLibrary))
+            handleSyncUpload(state => {
+                if(!state)alert("Failed to sync library")
+            }, false, true)
             return newLibrary
         })
     }
