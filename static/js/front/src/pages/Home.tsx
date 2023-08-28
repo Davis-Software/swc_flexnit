@@ -40,7 +40,15 @@ function Home(){
                     return <span>Something went wrong</span>
             }
         }else{
-            return <News />
+            return <>
+                <div className="rounded-3 bg-dark p-3 m-4">
+                    <h3 className="text-center text-info">No Title selected</h3>
+                    <hr/>
+                    <span>You can select a title through the sidebar on the left!</span>
+                </div>
+
+                <News />
+            </>
         }
     }, [selectedTitle])
 
