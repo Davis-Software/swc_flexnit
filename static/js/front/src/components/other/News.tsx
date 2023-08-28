@@ -54,6 +54,7 @@ function News(){
                     <li>Intro location can now be set on a per-episode basis</li>
                     <li>Play next episode button can now be displayed as episode endcard starts</li>
                     <li>Added intro detection for series using <a href="https://projects.software-city.org/p/aivd" target="_blank">AIVD</a></li>
+                    <li>User Library is now also auto-syncing with server</li>
 
                 </ul>
 
