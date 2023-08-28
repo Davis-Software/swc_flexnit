@@ -3,6 +3,7 @@ import MovieType from "../../types/movieType";
 import {Button, Checkbox, FormControlLabel, TextField} from "@mui/material";
 import FileTable from "../FileTable";
 import FileType from "../../types/fileType";
+import {hasNSFWPermission} from "../../utils/permissionChecks";
 
 interface EditMovieProps{
     movie: MovieType;
@@ -191,6 +192,7 @@ function EditMovie(props: EditMovieProps){
             <FormControlLabel
                 control={<Checkbox
                         checked={isNsfw}
+                        disabled={!hasNSFWPermission()}
                         onChange={e => setIsNsfw(e.target.checked)}
                     />}
                 label="Is NSFW"

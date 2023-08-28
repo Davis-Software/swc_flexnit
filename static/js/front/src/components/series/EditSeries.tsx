@@ -1,6 +1,7 @@
 import React, {useMemo} from "react";
 import SeriesType, {EpisodeType} from "../../types/seriesType";
 import {Button, Checkbox, Collapse, Fade, FormControlLabel, TextField} from "@mui/material";
+import {hasNSFWPermission} from "../../utils/permissionChecks";
 
 const AddEpisode = React.lazy(() => import("./EditEpisode").then(module => ({default: module.AddEpisode})));
 const EditEpisode = React.lazy(() => import("./EditEpisode"));
@@ -264,6 +265,7 @@ function EditSeries(props: EditSeriesProps){
                 <FormControlLabel
                     control={<Checkbox
                             checked={isNsfw}
+                            disabled={!hasNSFWPermission()}
                             onChange={e => setIsNsfw(e.target.checked)}
                         />}
                     label="Is NSFW"
