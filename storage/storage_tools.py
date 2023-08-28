@@ -108,7 +108,7 @@ def detect_audio_offsets(search_file: bytes, video_folder: str, ignore_files: st
         "--raw",
         "true",
         "--ffmpeg",
-        ffmpeg if not config["USE_WSL"] else "/usr/local/bin/ffmpeg"
+        ffmpeg if not config.get_bool("USE_WSL") else config.get("WSL_FFMPEG")
     ]),
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT
