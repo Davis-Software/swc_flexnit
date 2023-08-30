@@ -15,6 +15,8 @@ import {
 import SwcLoader from "../SwcLoader";
 import {SwcFab, SwcFabContainer} from "../SwcFab";
 import {TransitionGroup} from "react-transition-group";
+import SwcModal from "../SwcModal";
+import FileManagerConverter from "./FileManagerConverter";
 
 function hrPath(path: string, files: AdvancedFileType[]){
     return path.split("/").map(p => {
@@ -141,6 +143,7 @@ interface FileManagerFileTableProps{
     path: string
     setPath: (path: (prevState: string) => string) => void
     loading: boolean
+    passedValue: string
 }
 function FileManagerFileTable(props: FileManagerFileTableProps){
     const [files, setFiles] = useState<AdvancedFileType[]>(props.files)
@@ -148,6 +151,7 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
     const [sortBy, setSortBy] = useState<string>("display_name")
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
     const [search, setSearch] = useState<string>("")
+    const [showConverterModal, setShowConverterModal] = useState<boolean>(false)
 
     useEffect(() => {
         setFiles(() => {
@@ -180,6 +184,40 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
         })
     }, [props.files, sortBy, sortOrder, search])
 
+    function deleteSelected(){
+        let sFiles = files.filter(f => selected.includes(f.filename) && !f.not_found)
+        if(sFiles.length === 0) return;
+
+        const formData = new FormData()
+        formData.append("files", sFiles.map(f => f.filename).join("//"))
+        formData.append("mode", props.passedValue)
+        fetch(`/files/delete/${props.path}`, {
+            method: "POST",
+            body: formData
+        })
+            .then(() => {
+                window.location.reload()
+            })
+
+    }
+
+    function remoteUploadSelected(){
+        let file = files.find(f => f.filename === selected[0])
+        if(!file || file.is_dir) return;
+
+        const formData = new FormData()
+        formData.append("mode", props.passedValue)
+        formData.append("path", props.path + (props.path.endsWith("/") ? "" : "/") + file.filename)
+        fetch("/files/converter/upload", {
+            method: "POST",
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                alert(`File "${data.name}" has been uploaded to the converter server`)
+            })
+    }
+
     return (
         <>
             <Table>
@@ -203,6 +241,7 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
                                     <TableCell
                                         onClick={() => {
                                             if(props.path !== "/"){
+                                                setSelected(() => [])
                                                 props.setPath(prevState => prevState.substring(0, prevState.lastIndexOf("/")))
                                             }
                                         }}
@@ -218,7 +257,10 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
                                     file={file}
                                     selected={selected}
                                     setSelected={setSelected}
-                                    setPath={props.setPath}
+                                    setPath={(path: (prevState: string) => string) => {
+                                        setSelected(() => [])
+                                        props.setPath(path)
+                                    }}
                                 />
                             ))}
                         </>
@@ -252,9 +294,20 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
                     />
                 </Fade>
             </TransitionGroup>
-            <SwcFabContainer hide={selected.length === 0}>
-                <SwcFab icon={<i className="material-icons">delete</i>} onClick={() => {}} color="error" />
+            <SwcFabContainer>
+                <SwcFab icon={<i className="material-icons">cloud_upload</i>} onClick={remoteUploadSelected} color="primary"
+                    show={selected.length > 0 && files.filter(f => selected.includes(f.filename)).filter(f => f.is_dir || f.not_found).length === 0}
+                    tooltip="Remote upload" tooltipPlacement="top"
+                />
+                <SwcFab icon={<i className="material-icons">sync</i>} onClick={() => {
+                    setShowConverterModal(true)
+                }} color="primary" tooltip="Converter" tooltipPlacement="top" />
+                <SwcFab icon={<i className="material-icons">delete</i>} onClick={deleteSelected} color="error" hide={selected.length === 0} />
             </SwcFabContainer>
+
+            <SwcModal show={showConverterModal} onHide={() => setShowConverterModal(false)} width="90%">
+                <FileManagerConverter path={props.path} mode={props.passedValue} />
+            </SwcModal>
         </>
     )
 }

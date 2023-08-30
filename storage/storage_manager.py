@@ -54,8 +54,16 @@ def get_storage_info(force=False):
     }
 
 
+def get_movie_path(path_var):
+    return os.path.join(MOVIE_STORAGE_PATH, path_var)
+
+
+def get_series_path(path_var):
+    return os.path.join(SERIES_STORAGE_PATH, path_var)
+
+
 def get_movie_files(path_var):
-    path = os.path.join(MOVIE_STORAGE_PATH, path_var)
+    path = get_movie_path(path_var)
 
     if not os.path.exists(path):
         return []
@@ -102,7 +110,7 @@ def get_movie_files(path_var):
 
 
 def get_series_files(path_var):
-    path = os.path.join(SERIES_STORAGE_PATH, path_var)
+    path = get_series_path(path_var)
 
     if not os.path.exists(path):
         return []
@@ -154,3 +162,18 @@ def get_series_files(path_var):
             })
 
     return ret_files
+
+
+def delete_file(path, file, mode):
+    path = get_movie_path(path) if mode == "movie" else get_series_path(path)
+    file = os.path.join(path, file)
+
+    if not os.path.exists(file):
+        return False
+
+    if os.path.isdir(file):
+        os.rmdir(file)
+    else:
+        os.remove(file)
+
+    return True

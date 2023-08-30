@@ -21,6 +21,7 @@ interface SwcModalProps {
     onHide: () => void
     children: React.ReactNode
     width?: string
+    keepMounted?: boolean
 }
 function SwcModal(props: SwcModalProps) {
     return (
@@ -32,6 +33,7 @@ function SwcModal(props: SwcModalProps) {
             componentsProps={{
                 backdrop: {timeout: 500}
             }}
+            keepMounted={props.keepMounted}
         >
             <Fade in={props.show}>
                 <Box sx={{

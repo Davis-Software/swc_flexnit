@@ -34,17 +34,18 @@ interface SwcFabProps {
     tooltip?: string
     tooltipPlacement?: "top" | "right" | "bottom" | "left"
     hide?: boolean
+    show?: boolean
     [key: string]: any
 }
 function SwcFab(props: SwcFabProps) {
     const eProps = gatherSubProps(
         props,
-        ["icon", "onClick", "color", "tooltip", "tooltipPlacement", "hide"],
+        ["icon", "onClick", "color", "tooltip", "tooltipPlacement", "hide", "show"],
     )
 
     return (
         <Zoom {...eProps}>
-            {!props.hide ? (
+            {(props.show !== undefined ? props.show : !props.hide) ? (
                 <Tooltip
                     title={props.tooltip || ""}
                     placement={props.tooltipPlacement || "top"}
