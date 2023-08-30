@@ -287,6 +287,13 @@ function Watch(){
         })
     }
 
+    function handleTimelineFramePreview(e: React.TouchEvent<HTMLSpanElement> | React.MouseEvent<HTMLSpanElement> | any){
+        const rect = e.currentTarget.getBoundingClientRect()
+        const x = e.clientX - rect.left
+        setTimelineFramePreviewLocation(x)
+        setShowControls(true)
+    }
+
     useEffect(() => {
         if(!videoRef.current) return;
         if(episodeEnded){
@@ -488,18 +495,10 @@ function Watch(){
                                         }}
                                         onMouseEnter={() => setShowTimelineFramePreview(true)}
                                         onMouseLeave={() => setShowTimelineFramePreview(false)}
-                                        onMouseMove={(e) => {
-                                            const rect = e.currentTarget.getBoundingClientRect()
-                                            const x = e.clientX - rect.left
-                                            setTimelineFramePreviewLocation(x)
-                                        }}
+                                        onMouseMove={handleTimelineFramePreview}
                                         onTouchStart={() => setShowTimelineFramePreview(true)}
                                         onTouchEnd={() => setShowTimelineFramePreview(false)}
-                                        onTouchMove={(e) => {
-                                            const rect = e.currentTarget.getBoundingClientRect()
-                                            const x = e.touches[0].clientX - rect.left
-                                            setTimelineFramePreviewLocation(x)
-                                        }}
+                                        onTouchMove={handleTimelineFramePreview}
                                         sx={{width: "100%"}}
                                         max={videoRef.current?.duration || 0}
                                         step={.01}
