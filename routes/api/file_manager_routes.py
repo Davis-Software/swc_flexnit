@@ -5,7 +5,7 @@ from utils.password_manager import admin_required
 from storage.storage_manager import get_storage_info, get_movie_files, get_series_files, get_movie_path, get_series_path, \
     delete_file
 from storage.remote_tools import info, connect, disconnect, upload_file_to_remote, delete_file_from_remote, \
-    convert_file_on_remote, download_file_from_remote
+    download_file_from_remote
 from utils.request_codes import RequestCode
 
 
@@ -90,17 +90,3 @@ def file_manager_converter(mode=None, uuid=None):
             return make_response("Missing uuid", RequestCode.ClientError.BadRequest)
 
         return delete_file_from_remote(uuid)
-
-    elif mode == "convert":
-        if uuid is None:
-            return make_response("Missing uuid", RequestCode.ClientError.BadRequest)
-
-        return convert_file_on_remote(
-            uuid,
-            request.form.get("transcodeAudio") == "true",
-            request.form.get("transcodeVideo") == "true",
-            request.form.get("accelerator"),
-            request.form.get("encoderPreset"),
-            request.form.get("outputFormat"),
-            request.form.get("stream") == "true"
-        )

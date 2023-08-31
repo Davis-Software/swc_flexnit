@@ -1,11 +1,9 @@
 import os
-import time
 import requests
 import socketio
 import mimetypes
 
 from __init__ import config
-from flask import copy_current_request_context, Response
 
 
 AUTO_CONNECT_IN_DEBUG = config.get_bool("REMOTE_CONVERSION") and \
@@ -48,6 +46,9 @@ def disconnect():
 
 
 def upload_file_to_remote(file):
+    if not socket.connected:
+        raise Exception("Not connected to remote conversion server.")
+
     if not os.path.exists(file):
         raise FileNotFoundError(f"File {file} does not exist.")
 
@@ -70,36 +71,6 @@ def upload_file_to_remote(file):
 
 def delete_file_from_remote(file_uuid):
     return socket.call("delete", file_uuid)
-
-
-def convert_file_on_remote(file_uuid, transcode_audio, transcode_video, accelerator, encoder_preset, output_format, stream=False):
-    call_options = (file_uuid, transcode_audio, transcode_video, accelerator, encoder_preset, output_format)
-
-    if stream:
-        progress = 0
-
-        def update_progress(data):
-            nonlocal progress
-            progress = data["progress"]
-
-        @copy_current_request_context
-        def progress_callback():
-            while True:
-                yield progress
-
-                if progress >= 100:
-                    break
-
-                time.sleep(1)
-
-            return progress
-
-        socket.on("progress", update_progress)
-        socket.emit("convert", call_options)
-
-        return Response(progress_callback(), mimetype="text/event-stream")
-
-    return socket.call("convert", call_options)
 
 
 def download_file_from_remote(to):
