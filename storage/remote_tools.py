@@ -19,7 +19,8 @@ socket = socketio.Client(
     reconnection_attempts=5
 )
 state = {
-    "enabled": config.get_bool("REMOTE_CONVERSION")
+    "enabled": config.get_bool("REMOTE_CONVERSION"),
+    "uri": REMOTE_URI
 }
 
 

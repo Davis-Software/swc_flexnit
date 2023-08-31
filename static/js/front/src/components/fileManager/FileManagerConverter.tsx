@@ -9,12 +9,14 @@ interface FileManagerConverterProps {
 function FileManagerConverter(props: FileManagerConverterProps){
     const [loading, setLoading] = useState(false)
     const [enabled, setEnabled] = useState(false)
+    const [uri, setUri] = useState<string>("")
     const [connected, setConnected] = useState(false)
     const [files, setFiles] = useState([])
     const [outputFile, setOutputFile] = useState<any>({})
 
     function setData(data: any){
         setEnabled(data.enabled)
+        setUri(data.uri)
         setConnected(data.connected)
         setFiles(data.files)
         setOutputFile(data.output)
@@ -73,7 +75,10 @@ function FileManagerConverter(props: FileManagerConverterProps){
                 </Button>
                 {!connected ? <>
                     <p>Not connected to the converter server</p>
-                </> : <Button variant="contained" onClick={updateInfo}>Update</Button>}
+                </> : <>
+                    <Button variant="contained" onClick={updateInfo}>Update</Button>
+                    <a className="float-end" href={uri} target="_blank" rel="noreferrer">Open converter</a>
+                </>}
 
                 <div className="row m-0" hidden={!connected}>
                     <div className="col-lg-6 col-12">
