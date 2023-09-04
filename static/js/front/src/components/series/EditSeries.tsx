@@ -143,21 +143,29 @@ function EditSeries(props: EditSeriesProps){
     const [episodeUploadProgress, setEpisodeUploadProgress] = React.useState<{[filename: string]: number}>({})
 
     function handleAddEpisodes(season: number, episode_count: number, episodes: FileList){
-        let semaphore = 0
-        for(let i = 0; i < episodes.length; i++){
-            while(semaphore >= 3){}
-            semaphore++;
+        interface UploadEpisode{
+            file: File,
+            season: number,
+            episode: number
+        }
 
-            const episode = episodes.item(i)!
+        let uploadEpisodes: UploadEpisode[] = Array.from(episodes).map((episode, i) => ({
+            file: episode,
+            season,
+            episode: episode_count + i + 1
+        }))
+        let semaphore = 0
+
+        function upload(episode: UploadEpisode){
             const req = new XMLHttpRequest()
             const formData = new FormData()
 
-            formData.append("season", season.toString())
-            formData.append("episode", (episode_count + i + 1).toString())
-            formData.append("episode_file", episode)
+            formData.append("season", episode.season.toString())
+            formData.append("episode", episode.episode.toString())
+            formData.append("episode_file", episode.file)
 
             req.upload.addEventListener("progress", e => {
-                setEpisodeUploadProgress(pv => ({...pv, [episode.name]: e.loaded / e.total * 100}))
+                setEpisodeUploadProgress(pv => ({...pv, [episode.file.name]: e.loaded / e.total * 100}))
             })
             req.addEventListener("load", () => {
                 props.setSeries(pv => pv !== null ? ({
@@ -165,13 +173,28 @@ function EditSeries(props: EditSeriesProps){
                     episodes: [...pv.episodes, JSON.parse(req.responseText)]
                 }) : null)
                 setEpisodeUploadProgress(pv => {
-                    delete pv[episode.name]
+                    delete pv[episode.file.name]
                     return {...pv}
                 })
+                semaphore--
             })
             req.open("POST", `/series/${props.series.uuid}/upload`)
             req.send(formData)
         }
+
+        function queueUploads(){
+            while(semaphore < 3 && uploadEpisodes.length > 0){
+                let episode = uploadEpisodes.shift()
+                if(episode){
+                    upload(episode)
+                    semaphore++
+                }
+            }
+            if(uploadEpisodes.length > 0){
+                setTimeout(queueUploads, 1000)
+            }
+        }
+        queueUploads()
     }
 
     function handleAddSeason(){
