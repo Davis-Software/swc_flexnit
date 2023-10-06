@@ -51,7 +51,8 @@ function CreateNewModal(props: CreateNewModalProps){
                         props.setSelectedResult({
                             uuid: res.uuid,
                             title: title,
-                            type: createMode
+                            type: createMode,
+                            description: ""
                         });
                         props.onHide();
                     })

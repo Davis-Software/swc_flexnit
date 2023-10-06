@@ -74,9 +74,11 @@ def delete_movie(uuid: str):
     return True
 
 
-def base_query():
-    query = MovieModel.query.order_by(MovieModel.title)
+def base_query(order: bool = True):
+    query = MovieModel.query
 
+    if order:
+        query = query.order_by(MovieModel.title.asc())
     if not check_admin():
         query = query.filter_by(is_visible=True)
 
@@ -85,6 +87,10 @@ def base_query():
 
 def get_movies(limit: int = 25):
     return base_query().limit(limit).all()
+
+
+def latest_movies(limit: int = 25):
+    return base_query(False).order_by(MovieModel.added_on.desc()).limit(limit).all()
 
 
 def search_movies(search_term: str, limit: int = 25):

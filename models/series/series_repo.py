@@ -182,9 +182,11 @@ def get_episodes(series_uuid: str, season: int = None):
     return query.all()
 
 
-def base_query():
-    query = SeriesModel.query.order_by(SeriesModel.title)
+def base_query(order: bool = True):
+    query = SeriesModel.query
 
+    if order:
+        query = query.order_by(SeriesModel.title.asc())
     if not check_admin():
         query = query.filter_by(is_visible=True)
 
@@ -193,6 +195,16 @@ def base_query():
 
 def get_all_series(limit: int = 25):
     return base_query().limit(limit).all()
+
+
+def latest_series(both: bool = True, limit: int = 25):
+    result = []
+
+    if both:
+        result.extend(EpisodeModel.query.order_by(EpisodeModel.added_on.desc()).limit(limit).all())
+    result.extend(base_query(False).order_by(SeriesModel.added_on.desc()).limit(limit).all())
+
+    return result
 
 
 def search_series(search: str, limit: int = 25):
