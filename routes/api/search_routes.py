@@ -34,6 +34,7 @@ def make_title_entry(title: MovieModel or SeriesModel or EpisodeModel):
         entry["season_count"] = title.season_count
     else:
         entry["series"] = make_title_entry(title.series)
+        entry["hls"] = title.video_hls
 
     return entry
 

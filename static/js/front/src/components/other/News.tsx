@@ -30,7 +30,7 @@ function News(props: NewsProps){
 
     function handleTitleLink(title: TitleEntryType){
         if(title.type === "episode" && title.series){
-            navigateTo(`/watch?series=${title.series.uuid}&episode=${title.uuid}`)
+            navigateTo(`/watch?series=${title.series.uuid}&episode=${title.uuid}${title.hls ? "&hls" : ""}`)
         }
         if(window.innerWidth < 840) {
             navigateTo(`/info?mode=${title.type}&uuid=${title.uuid}`)

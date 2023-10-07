@@ -7,7 +7,8 @@ interface TitleEntryType{
     is_nsfw?: boolean
     runtime?: number
     season_count?: number
-    series?: TitleEntryType
+    series?: TitleEntryType,
+    hls?: boolean
 }
 
 export default TitleEntryType;
