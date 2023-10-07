@@ -2,6 +2,7 @@ import React, {MouseEventHandler, useEffect, useRef} from "react";
 
 interface EffectGeneratorProps{
     children: React.ReactNode | React.ReactNode[];
+    style?: React.CSSProperties;
     rippleEffect?: boolean;
     candleEffect?: boolean;
     candleSize?: number;
@@ -21,6 +22,8 @@ function EffectGenerator(props: EffectGeneratorProps){
     }
 
     function handleRipple(e: React.MouseEvent<HTMLDivElement, MouseEvent>){
+        if(!divRef.current) return
+
         if(!props.rippleEffect || !divRef.current) return
         if(divRef.current.className.includes("disabled")) return
 
@@ -76,6 +79,8 @@ function EffectGenerator(props: EffectGeneratorProps){
         props.onClick?.()
     }
     function handleMouseEnter(){
+        if(!divRef.current) return
+
         if(divRef.current.className.includes("disabled")) return
         if(!props.candleEffect || !divRef.current) return
 
@@ -86,6 +91,8 @@ function EffectGenerator(props: EffectGeneratorProps){
         candle.classList.add("candle-anim")
     }
     function handleMouseLeave(){
+        if(!divRef.current) return
+
         if(divRef.current.className.includes("disabled")) return
         if(!props.candleEffect || !divRef.current) return
 
@@ -96,6 +103,8 @@ function EffectGenerator(props: EffectGeneratorProps){
         candle.classList.add("candle-anim-back")
     }
     function handleMouseMove(e: React.MouseEvent<HTMLDivElement, MouseEvent>){
+        if(!divRef.current) return
+
         if(divRef.current.className.includes("disabled")) return
         if(!props.candleEffect || !divRef.current) return
 
@@ -122,6 +131,7 @@ function EffectGenerator(props: EffectGeneratorProps){
             onMouseMove={handleMouseMove}
             onMouseDown={props.onMouseDown}
             ref={divRef}
+            style={props.style}
         >
             {props.children}
         </div>
