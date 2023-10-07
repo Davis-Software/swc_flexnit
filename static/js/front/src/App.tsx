@@ -38,10 +38,15 @@ function App(){
     const [page, setPage] = useState(window.location.pathname || "/")
 
     useEffect(() => {
-        window.addEventListener("popstate", () => {
+        function pageSetter(){
             setPage(window.location.pathname)
-        })
+        }
         handleSyncDownload(undefined, false, true)
+        window.addEventListener("popstate", pageSetter)
+
+        return () => {
+            window.removeEventListener("popstate", pageSetter)
+        }
     }, [])
     useEffect(() => {
         setWindowTitle(pageNames[page] || page)

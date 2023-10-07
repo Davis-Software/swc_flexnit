@@ -47,7 +47,7 @@ function Home(){
                     <span>You can select a title through the sidebar on the left!</span>
                 </div>
 
-                <News />
+                <News setSelectedTitle={setSelectedTitle} />
             </>
         }
     }, [selectedTitle])

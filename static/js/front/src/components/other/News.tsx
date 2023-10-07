@@ -2,22 +2,58 @@ import React, {useEffect, useState} from "react";
 import {Container} from "@mui/material";
 import TitleEntryType from "../../types/titleEntryType";
 import SwcLoader from "../SwcLoader";
+import EffectGenerator from "../EffectGenerator";
+import {navigateTo} from "../../utils/navigation";
 
-function News(){
+interface NewsProps {
+    setSelectedTitle: (title: TitleEntryType | null) => void
+}
+function News(props: NewsProps){
+    const [latestRelease, setLatestRelease] = useState<TitleEntryType | null>(null)
     const [latestReleases, setLatestReleases] = useState<TitleEntryType[]>([])
 
     useEffect(() => {
         fetch("/search/latest")
             .then(res => res.json())
-            .then(setLatestReleases)
+            .then((releases) => {
+                setLatestReleases(releases)
+                setLatestRelease(releases.at(0))
+            })
     }, []);
 
     function getTitleImage(title: TitleEntryType){
         if(title.type === "episode" && title.series){
-            // title is an episode entry
             title = title.series
         }
         return `/${title.type === "movie" ? "movies" : "series"}/${title.uuid}?thumbnail`
+    }
+
+    function handleTitleLink(title: TitleEntryType){
+        if(title.type === "episode" && title.series){
+            navigateTo(`/watch?series=${title.series.uuid}&episode=${title.uuid}`)
+        }
+        if(window.innerWidth < 840) {
+            navigateTo(`/info?mode=${title.type}&uuid=${title.uuid}`)
+        }else{
+            props.setSelectedTitle(title)
+        }
+    }
+
+    function TitleView(title: TitleEntryType, imageHeight: number = 100){
+        return (
+            <>
+                <img alt={title.title} height={imageHeight} width="auto" style={{objectFit: "cover"}} src={getTitleImage(title)}/>
+                <div className="ms-3 flex-grow-1">
+                    {title.type === "episode" ? (
+                        <small className="text-white-50">{title.series?.title}</small>
+                    ) : (
+                        <small className="text-white-50">New {title.type === "movie" ? "Movie" : "Series"}</small>
+                    )}
+                    <h5>{title.type === "episode" && "New Episode: "}{title.title}</h5>
+                    <p>{title.description.length > 100 ? title.description.slice(0, 100).trimEnd() + "..." : title.description}</p>
+                </div>
+            </>
+        )
     }
 
     return (
@@ -27,22 +63,29 @@ function News(){
                 <hr/>
                 {latestReleases.length > 0 ? (
                     <>
-                        <div className="d-flex mb-4">
-                            <img height={200} width="auto" style={{objectFit: "cover"}} src={getTitleImage(latestReleases.at(0)!)}/>
-                            <div className="ms-3 flex-grow-1">
-                                <h5>{latestReleases.at(0)!.title}</h5>
-                                <p>{latestReleases.at(0)!.description}</p>
-                            </div>
-                        </div>
+                        {!!latestRelease && (
+                            <EffectGenerator
+                                className="d-flex mb-4 p-2"
+                                style={{cursor: "pointer"}}
+                                rippleEffect
+                                candleEffect
+                                onClick={() => handleTitleLink(latestRelease)}
+                            >
+                                {TitleView(latestRelease, 200)}
+                            </EffectGenerator>
+                        )}
                         <div className="row m-0">
                             {latestReleases.slice(1).map((title, i) => (
-                                <div className="col-6 d-flex p-1" key={i}>
-                                    <img height={100} width="auto" style={{objectFit: "cover"}} src={getTitleImage(title)}/>
-                                    <div className="ms-3 flex-grow-1">
-                                        <h5>{title.title}</h5>
-                                        <p>{title.description.slice(0, 100)}</p>
-                                    </div>
-                                </div>
+                                <EffectGenerator
+                                    className="col-6 d-flex p-1"
+                                    style={{cursor: "pointer"}}
+                                    key={i}
+                                    rippleEffect
+                                    candleEffect
+                                    onClick={() => handleTitleLink(title)}
+                                >
+                                    {TitleView(title)}
+                                </EffectGenerator>
                             ))}
                         </div>
                     </>
