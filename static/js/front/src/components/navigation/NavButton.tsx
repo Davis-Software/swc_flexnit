@@ -22,7 +22,11 @@ function NavButton(props: NavButtonProps){
 
     function handleClick(){
         props.onClick?.()
-        navigateTo(props.target)
+        if(props.target.startsWith("/")){
+            navigateTo(props.target)
+        }else{
+            window.open(props.target, "_blank")
+        }
     }
     function handleMiddleClick(e: React.MouseEvent<HTMLButtonElement, MouseEvent> | any){
         if(e.button !== 1 && e.buttons !== 4) return

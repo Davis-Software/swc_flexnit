@@ -14,7 +14,8 @@ function InfoPage(){
     const [title, setTitle] = React.useState<TitleEntryType | null>({
         uuid: uuid as string,
         type: type as "movie" | "series",
-        title: ""
+        title: "",
+        description: ""
     })
 
     return (
