@@ -197,7 +197,7 @@ def recover_file(folder_name, mode):
 
         movie.uuid = folder_name
         movie.video_file = find_video_file(path)
-        movie.video_info = get_video_file_info(os.path.join(path, movie.video_file))
+        movie.video_info = get_video_file_info(os.path.join(path, movie.video_file)) if movie.video_file else {}
         movie.video_hls = "index.m3u8" in os.listdir(path)
 
         movie.add()
@@ -223,7 +223,7 @@ def recover_file(folder_name, mode):
 
                 episode_obj = EpisodeModel(f"Episode {episode_number}", season_number, episode_number, series.id)
                 episode_obj.video_file = find_video_file(episode_path)
-                episode_obj.video_info = get_video_file_info(os.path.join(episode_path, episode_obj.video_file))
+                episode_obj.video_info = get_video_file_info(os.path.join(episode_path, episode_obj.video_file)) if episode_obj.video_file else {}
                 episode_obj.video_hls = "index.m3u8" in os.listdir(episode_path)
                 episode_obj.add()
 
