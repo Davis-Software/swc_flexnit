@@ -28,13 +28,15 @@ def make_title_entry(title: MovieModel or SeriesModel or EpisodeModel):
         entry["year"] = title.year
         entry["is_nsfw"] = title.is_nsfw
 
+    if type(title) is not SeriesModel:
+        entry["hls"] = title.video_hls
+
     if type(title) is MovieModel:
         entry["runtime"] = title.video_info["format"]["duration"] if title.video_info is not None and title.video_info != {} else None
     elif type(title) is SeriesModel:
         entry["season_count"] = title.season_count
-    else:
+    elif type(title) is EpisodeModel:
         entry["series"] = make_title_entry(title.series)
-        entry["hls"] = title.video_hls
 
     return entry
 
