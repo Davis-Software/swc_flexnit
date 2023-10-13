@@ -50,7 +50,7 @@ function News(props: NewsProps){
                         <small className="text-white-50">New {title.type === "movie" ? "Movie" : "Series"}</small>
                     )}
                     <h5>{title.type === "episode" && "New Episode: "}{title.title}</h5>
-                    <p>{title.description.length > 100 ? title.description.slice(0, 100).trimEnd() + "..." : title.description}</p>
+                    <p>{title.description ? (title.description.length > 100 ? title.description.slice(0, 100).trimEnd() + "..." : title.description) : ""}</p>
                 </div>
             </>
         )
