@@ -2,6 +2,7 @@ import {AdvancedFileType} from "../../types/fileType";
 import React, {useEffect, useState} from "react";
 import hrFileSize from "../../utils/hrFileSize";
 import {
+    Button,
     Checkbox, Fade,
     IconButton,
     InputAdornment,
@@ -10,7 +11,7 @@ import {
     TableCell,
     TableHead,
     TableRow,
-    TextField
+    TextField, Tooltip
 } from "@mui/material";
 import SwcLoader from "../SwcLoader";
 import {SwcFab, SwcFabContainer} from "../SwcFab";
@@ -37,24 +38,34 @@ interface FileTableEntryProps{
     selected: string[]
     setSelected: (selected: (prevState: string[]) => string[]) => void
     setPath: (path: (prevState: string) => string) => void
+    onRecover?: (file: AdvancedFileType) => void
 }
-function FileTableEntry({file, selected, setSelected, setPath}: FileTableEntryProps){
+function FileTableEntry({file, selected, setSelected, setPath, onRecover}: FileTableEntryProps){
     return (
         <TableRow
             hover
             selected={selected.includes(file.filename)}
         >
             <TableCell padding="checkbox">
-                <Checkbox
-                    checked={selected.includes(file.filename)}
-                    onChange={e => {
-                        if(e.target.checked){
-                            setSelected(prevState => [...prevState, file.filename])
-                        }else{
-                            setSelected(prevState => prevState.filter(f => f !== file.filename))
-                        }
-                    }}
-                />
+                <div className="d-flex flex-row">
+                    <Checkbox
+                        checked={selected.includes(file.filename)}
+                        onChange={e => {
+                            if(e.target.checked){
+                                setSelected(prevState => [...prevState, file.filename])
+                            }else{
+                                setSelected(prevState => prevState.filter(f => f !== file.filename))
+                            }
+                        }}
+                    />
+                    {onRecover && file.not_found && (
+                        <Tooltip title="Recover from Files">
+                            <Button onClick={() => onRecover(file)}>
+                                <i className="material-icons">unarchive</i>
+                            </Button>
+                        </Tooltip>
+                    )}
+                </div>
             </TableCell>
             <TableCell
                 onClick={() => {
@@ -144,6 +155,7 @@ interface FileManagerFileTableProps{
     setPath: (path: (prevState: string) => string) => void
     loading: boolean
     passedValue: string
+    onRecover?: (file: AdvancedFileType) => void
 }
 function FileManagerFileTable(props: FileManagerFileTableProps){
     const [files, setFiles] = useState<AdvancedFileType[]>(props.files)
@@ -261,6 +273,7 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
                                         setSelected(() => [])
                                         props.setPath(path)
                                     }}
+                                    onRecover={props.onRecover}
                                 />
                             ))}
                         </>
@@ -299,7 +312,7 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
                     show={selected.length > 0 && files.filter(f => selected.includes(f.filename)).filter(f => f.is_dir || f.not_found).length === 0}
                     tooltip="Remote upload" tooltipPlacement="top"
                 />
-                <SwcFab icon={<i className="material-icons">sync</i>} onClick={() => {
+                <SwcFab icon={<i className="material-icons">mediation</i>} onClick={() => {
                     setShowConverterModal(true)
                 }} color="primary" tooltip="Converter" tooltipPlacement="top" />
                 <SwcFab icon={<i className="material-icons">delete</i>} onClick={deleteSelected} color="error" hide={selected.length === 0} />

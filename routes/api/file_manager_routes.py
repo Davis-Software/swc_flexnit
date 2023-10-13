@@ -3,14 +3,14 @@ from flask import request, make_response
 
 from utils.password_manager import admin_required
 from storage.storage_manager import get_storage_info, get_movie_files, get_series_files, get_movie_path, get_series_path, \
-    delete_file
+    delete_file, recover_file
 from storage.remote_tools import info, connect, disconnect, upload_file_to_remote, delete_file_from_remote, \
     download_file_from_remote
 from utils.request_codes import RequestCode
 
 
 @app.route("/files")
-@app.route("/files/<mode>")
+@app.route("/files/<mode>", methods=["GET", "POST"])
 @app.route("/files/<mode>/<path:path>", methods=["GET", "POST"])
 @admin_required
 def file_manager_index(mode=None, path=None):
@@ -37,6 +37,16 @@ def file_manager_index(mode=None, path=None):
                 return make_response("Deleted", RequestCode.Success.OK)
 
         return make_response("Failed to delete", RequestCode.ServerError.InternalServerError)
+
+    elif mode == "recover":
+        m_mode = request.form.get("mode")
+        file = request.form.get("file")
+
+        if m_mode is None or file is None:
+            return make_response("Missing mode or file", RequestCode.ClientError.BadRequest)
+
+        if recover_file(file, m_mode):
+            return make_response("Recovered", RequestCode.Success.OK)
 
     return make_response("Invalid mode", RequestCode.ClientError.BadRequest)
 
