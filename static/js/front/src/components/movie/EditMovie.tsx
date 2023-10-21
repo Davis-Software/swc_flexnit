@@ -12,7 +12,7 @@ interface EditMovieProps{
 }
 function EditMovie(props: EditMovieProps){
     const [title, setTitle] = React.useState<string>(props.movie.title)
-    const [year, setYear] = React.useState<string>((props.movie.year || 0).toString())
+    const [year, setYear] = React.useState<string>(props.movie.year || "")
     const [description, setDescription] = React.useState<string>(props.movie.description || "")
     const [language, setLanguage] = React.useState<string>(props.movie.language || "")
     const [subtitles, setSubtitles] = React.useState<boolean>(props.movie.subtitles || false)

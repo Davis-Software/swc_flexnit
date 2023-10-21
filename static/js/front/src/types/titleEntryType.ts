@@ -3,7 +3,7 @@ interface TitleEntryType{
     type: "movie" | "series" | "episode"
     title: string
     description: string
-    year?: number
+    year?: string
     is_nsfw?: boolean
     runtime?: number
     season_count?: number

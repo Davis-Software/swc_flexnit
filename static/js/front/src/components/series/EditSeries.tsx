@@ -120,7 +120,7 @@ interface EditSeriesProps{
 }
 function EditSeries(props: EditSeriesProps){
     const [title, setTitle] = React.useState<string>(props.series.title)
-    const [year, setYear] = React.useState<number>(props.series.year || 0)
+    const [year, setYear] = React.useState<string>(props.series.year || "")
     const [description, setDescription] = React.useState<string>(props.series.description || "")
     const [language, setLanguage] = React.useState<string>(props.series.language || "")
     const [isVisible, setIsVisible] = React.useState<boolean>(props.series.is_visible || false)
@@ -210,7 +210,6 @@ function EditSeries(props: EditSeriesProps){
 
         const formData = new FormData()
         formData.append("imdb_id", id)
-
         fetch(`/series/${props.series.uuid}/scrape_imdb`, {
             method: "POST",
             body: formData
@@ -277,8 +276,7 @@ function EditSeries(props: EditSeriesProps){
                     variant="standard"
                     label="Year"
                     value={year}
-                    onChange={e => setYear(parseInt(e.target.value))}
-                    error={Number.isNaN(year)}
+                    onChange={e => setYear(e.target.value)}
                     fullWidth
                 />
                 <TextField

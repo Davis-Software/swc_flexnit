@@ -16,7 +16,7 @@ interface SeriesType{
     id: number;
     uuid: string;
     title: string;
-    year: number;
+    year: string;
     description: string;
     language: string;
     is_visible: boolean;
