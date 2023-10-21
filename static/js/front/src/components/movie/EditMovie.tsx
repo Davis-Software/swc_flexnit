@@ -119,6 +119,24 @@ function EditMovie(props: EditMovieProps){
         }
     }
 
+    function handleScrapeIMDB(){
+        let id = prompt("Enter IMDB ID")
+        if(!id || id === "") return
+
+        const formData = new FormData()
+        formData.append("imdb_id", id)
+
+        fetch(`/movies/${props.movie.uuid}/scrape_imdb`, {
+            method: "POST",
+            body: formData
+        })
+            .then(res => res.json())
+            .then((data: MovieType) => {
+                props.setMovie(data)
+                props.setShowEdit(false)
+            })
+    }
+
     function handleSave(){
         const formData = new FormData()
         formData.append("title", title)
@@ -227,6 +245,9 @@ function EditMovie(props: EditMovieProps){
                 <Button variant="contained" color="warning" disabled={mainFile === file.name || file.name.endsWith(".m3u8")} onClick={() => handleSetMainFile(file)}>Set as Main</Button>
             )} sx={{maxHeight: "350px", overflow: "auto"}} />
 
+            <div className="d-flex flex-row float-start mt-5">
+                <Button variant="contained" onClick={handleScrapeIMDB}>Scrape IMDB</Button>
+            </div>
             <div className="d-flex flex-row float-end mt-5">
                 <Button variant="contained" onClick={() => props.setShowEdit(false)}>Close</Button>
                 <Button variant="contained" color="warning" onClick={handleSave}>Save</Button>

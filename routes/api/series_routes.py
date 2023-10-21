@@ -6,6 +6,7 @@ from storage.series_storage import upload_episode_file, convert_episode_to_hls, 
     get_episode_files, \
     get_episode_file, delete_episode, get_episode_part, delete_episode_file, set_main_file, create_and_upload_episode, \
     convert_season_to_hls, delete_episode_hls_files, get_episode_frame, detect_season_intros
+from scraper.imdb_scraper import IMDBScraper
 from utils.adv_responses import send_binary_image
 from utils.password_manager import auth_required, admin_required, check_permission
 from utils.request_codes import RequestCode
@@ -58,6 +59,12 @@ def series_actions(uuid, action):
 
     if action == "edit":
         return edit_series(series.uuid, **request.form, **request.files).to_json()
+
+    if action == "scrape_imdb":
+        if "imdb_id" not in request.form:
+            return make_response("Invalid request", RequestCode.ClientError.BadRequest)
+        scraper = IMDBScraper(request.form.get("imdb_id"))
+        return scraper.link_to_series(series).to_json()
 
     if action == "detect":
         season = request.form.get("season")

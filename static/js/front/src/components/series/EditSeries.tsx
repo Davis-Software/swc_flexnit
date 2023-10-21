@@ -204,6 +204,24 @@ function EditSeries(props: EditSeriesProps){
         }) : null)
     }
 
+    function handleScrapeIMDB(){
+        let id = prompt("Enter IMDB ID")
+        if(!id || id === "") return
+
+        const formData = new FormData()
+        formData.append("imdb_id", id)
+
+        fetch(`/series/${props.series.uuid}/scrape_imdb`, {
+            method: "POST",
+            body: formData
+        })
+            .then(res => res.json())
+            .then((data: SeriesType) => {
+                props.setSeries(prevState => data)
+                props.setShowEdit(false)
+            })
+    }
+
     function handleSave(){
         const formData = new FormData()
         formData.append("title", title)
@@ -391,6 +409,9 @@ function EditSeries(props: EditSeriesProps){
                     />
                 ))}
 
+                <div className="d-flex flex-row float-start mt-5">
+                    <Button variant="contained" onClick={handleScrapeIMDB}>Scrape IMDB</Button>
+                </div>
                 <div className="d-flex flex-row float-end mt-5">
                     <Button variant="contained" onClick={() => props.setShowEdit(false)}>Close</Button>
                     <Button variant="contained" color="warning" onClick={handleSave}>Save</Button>

@@ -5,6 +5,7 @@ from models.movie import get_movie, add_movie, edit_movie
 from storage.movie_storage import upload_movie, convert_movie_to_hls, revert_movie_to_mp4, get_movie_files, \
     get_movie_file, delete_movie, get_movie_part, delete_movie_file, set_main_file, delete_movie_hls_files, \
     get_movie_frame
+from scraper.imdb_scraper import IMDBScraper
 from utils.adv_responses import send_binary_image
 from utils.password_manager import auth_required, admin_required, check_permission
 from utils.request_codes import RequestCode
@@ -52,6 +53,12 @@ def movie_actions(uuid, action):
 
     if action == "files":
         return get_movie_files(movie.uuid)
+
+    if action == "scrape_imdb":
+        if "imdb_id" not in request.form:
+            return make_response("Invalid request", RequestCode.ClientError.BadRequest)
+        scraper = IMDBScraper(request.form.get("imdb_id"))
+        return scraper.link_to_movie(movie).to_json()
 
     if action == "upload":
         movie_file = request.files.get("movie")

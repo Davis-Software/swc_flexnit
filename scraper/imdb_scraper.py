@@ -1,6 +1,9 @@
 import bs4
 import requests
 
+from models.movie import MovieModel
+from models.series import SeriesModel, get_episode_by_season_and_episode
+
 
 class IMDBScraper:
     def __init__(self, title_id):
@@ -42,11 +45,17 @@ class IMDBScraper:
             return tag.attrs.get(attr)
         return None
 
+    @staticmethod
+    def get_file(url):
+        with requests.get(url, stream=True) as r:
+            r.raise_for_status()
+            return r.content
+
     def get(self):
         if self.soup is None:
             self._fetch("")
 
-        data = {
+        return {
             "title": self.find("h1 > span"),
             "year": self.find("section > section > div > section > section > div > div > ul > li > a"),
             "description": self.find("section > section > div > section > section > div > div > div > section > p > span"),
@@ -54,19 +63,62 @@ class IMDBScraper:
             "type": "series" if self.find("section > div > section > div > div > section > div > a > h3 > span") == "Episodes" else "movie"
         }
 
-        return data
-
-    def get_episodes(self, season=1):
-        if self.get().get("type") != "series":
+    def get_episodes(self, season=1, skip_check=False):
+        if not skip_check and self.get().get("type") != "series":
             return None
 
         self._fetch(f"episodes/?season={season}")
 
         episodes = []
         for episode in self.soup.select("section > div > section > div > div > section > section > article"):
+            def sub_find(selector, text=True):
+                tag = episode.select_one(selector)
+                if text:
+                    return tag.text.strip() if tag else ""
+                return tag
+
             episodes.append({
-                "title": episode.select_one("div > div > div > div > h4 > a").text.strip().split("∙ ")[1],
-                "description": episode.select_one("div > div > div > div > div > div > div > div").text.strip(),
+                "title": sub_find("div > div > div > div > h4 a").split("∙ ").pop(),
+                "description": sub_find("div > div > div > div > div > div > div > div"),
             })
 
         return episodes
+
+    def link_to_movie(self, movie: MovieModel):
+        data = self.get()
+        if data.get("type") != "movie":
+            return None
+
+        movie.title = data.get("title")
+        movie.year = data.get("year")
+        movie.description = data.get("description")
+        movie.thumbnail = self.get_file(data.get("thumbnail"))
+
+        movie.commit()
+        return movie
+
+    def link_to_series(self, series: SeriesModel):
+        data = self.get()
+        if data.get("type") != "series":
+            return None
+
+        series.title = data.get("title")
+        series.year = data.get("year")
+        series.description = data.get("description")
+        series.thumbnail = self.get_file(data.get("thumbnail"))
+
+        for season in range(series.season_count):
+            season_data = self.get_episodes(season + 1, skip_check=True)
+
+            for i, episode in enumerate(season_data):
+                episode_model = get_episode_by_season_and_episode(series.uuid, season + 1, i + 1)
+
+                if episode_model is None:
+                    continue
+
+                episode_model.title = episode.get("title")
+                episode_model.description = episode.get("description")
+                episode_model.commit()
+
+        series.commit()
+        return series
