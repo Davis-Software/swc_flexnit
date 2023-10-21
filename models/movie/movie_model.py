@@ -11,7 +11,7 @@ class MovieModel(BaseModel):
     id = Column(Integer, primary_key=True)
     uuid = Column(String(36), nullable=False, unique=True)
     title = Column(String(255), nullable=False)
-    year = Column(Integer, nullable=True)
+    year = Column(String(64), nullable=True)
     description = Column(Text, nullable=True)
     language = Column(String(255), nullable=True)
     subtitles = Column(Boolean, nullable=False, default=False)

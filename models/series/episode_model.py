@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from models.base_model import BaseModel
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy_json import NestedMutableJson
 from uuid import uuid4
@@ -13,7 +13,7 @@ class EpisodeModel(BaseModel):
     id = Column(Integer, primary_key=True)
     uuid = Column(String(36), unique=True, nullable=False)
     title = Column(String(255), nullable=False)
-    description = Column(String(255), nullable=False, default="")
+    description = Column(Text, nullable=False, default="")
     added_on = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     season = Column(Integer, nullable=False)

@@ -1,5 +1,5 @@
 from models.base_model import BaseModel
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, BLOB
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, BLOB, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from uuid import uuid4
@@ -11,8 +11,8 @@ class SeriesModel(BaseModel):
     id = Column(Integer, primary_key=True)
     uuid = Column(String(36), unique=True, nullable=False)
     title = Column(String(255), nullable=False)
-    year = Column(Integer, nullable=True)
-    description = Column(String(255), nullable=True)
+    year = Column(String(64), nullable=True)
+    description = Column(Text, nullable=True)
     language = Column(String(255), nullable=True)
     is_visible = Column(Boolean, nullable=False, default=False)
     is_nsfw = Column(Boolean, nullable=False, default=False)
