@@ -23,16 +23,23 @@ function TitleProgress(props: TitleProgressProps){
 
     useEffect(() => {
         if(progress[props.title.uuid]){
+            function episodeProgress(episode: EpisodeType){
+                return progress[props.title.uuid][episode.uuid] > (episode.video_info.format?.duration - (props.title as SeriesType).endcard_length) ? 100 : (
+                    progress[props.title.uuid][episode.uuid] / episode.video_info.format?.duration * 100
+                )
+            }
             if((props.title as SeriesType).episodes && !props.episode){
                 const episode = (props.title as SeriesType).episodes.filter(e => progress[props.title.uuid][e.uuid] && progress[props.title.uuid].latestEpisode === e.uuid).pop()!
                 if(!episode) return
-                setProgressValue(progress[props.title.uuid][episode.uuid] / episode.video_info.format?.duration * 100)
+                setProgressValue(episodeProgress(episode))
             }else{
                 if(props.episode){
                     const episode = (props.title as SeriesType).episodes.filter(e => progress[props.title.uuid][e.uuid] && props.episode?.uuid === e.uuid).pop()!
-                    episode && setProgressValue(progress[props.title.uuid][episode.uuid] / episode.video_info.format?.duration * 100)
+                    episode && setProgressValue(episodeProgress(episode))
                 }else{
-                    setProgressValue(progress[props.title.uuid] / (props.title as MovieType).video_info.format?.duration * 100)
+                    setProgressValue(progress[props.title.uuid] > (props.title as MovieType).video_info.format?.duration - 180 ? 100 : (
+                        progress[props.title.uuid] / (props.title as MovieType).video_info.format?.duration * 100
+                    ))
                 }
             }
         }

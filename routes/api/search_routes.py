@@ -3,7 +3,7 @@ from flask import request, make_response
 
 from models.movie import MovieModel
 from models.movie import get_movies, latest_movies, search_movies
-from models.series import SeriesModel, EpisodeModel
+from models.series import SeriesModel, EpisodeModel, EpisodeGroup
 from models.series import get_all_series, latest_series, search_series
 from utils.password_manager import auth_required
 from utils.request_codes import RequestCode
@@ -12,24 +12,31 @@ from utils.request_codes import RequestCode
 TYPE_NAME_MAP = {
     "MovieModel": "movie",
     "SeriesModel": "series",
-    "EpisodeModel": "episode"
+    "EpisodeModel": "episode",
+    "EpisodeGroup": "episode_group"
 }
 
 
-def make_title_entry(title: MovieModel or SeriesModel or EpisodeModel):
+def make_title_entry(title: MovieModel or SeriesModel or EpisodeModel or EpisodeGroup):
     entry = {
         "uuid": title.uuid,
-        "type": TYPE_NAME_MAP[type(title).__name__],
-        "title": title.title,
-        "description": title.description
+        "type": TYPE_NAME_MAP[type(title).__name__]
     }
 
-    if type(title) is not EpisodeModel:
+    if type(title) is not EpisodeGroup:
+        entry["title"] = title.title
+        entry["description"] = title.description
+
+    if type(title) is not EpisodeModel and type(title) is not EpisodeGroup:
         entry["year"] = title.year
         entry["is_nsfw"] = title.is_nsfw
 
-    if type(title) is not SeriesModel:
+    if type(title) is not SeriesModel and type(title) is not EpisodeGroup:
         entry["hls"] = title.video_hls
+
+    if type(title) is EpisodeGroup:
+        entry["series"] = make_title_entry(title.series)
+        entry["episodes"] = len(title.episodes)
 
     if type(title) is MovieModel:
         entry["runtime"] = title.video_info["format"]["duration"] if title.video_info is not None and title.video_info != {} else None
@@ -52,7 +59,7 @@ def search_title(mode):
 
     if mode == "latest":
         latest = []
-        for movie in latest_movies(5):
+        for movie in latest_movies(limit=5):
             latest.append(movie)
         for series in latest_series(limit=5):
             latest.append(series)

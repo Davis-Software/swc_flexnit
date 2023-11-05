@@ -1,9 +1,19 @@
+from datetime import timedelta
+
 from werkzeug.datastructures import FileStorage
 from sqlalchemy import or_
 
 from utils.password_manager import check_admin
 from .series_model import SeriesModel
 from .episode_model import EpisodeModel
+
+
+class EpisodeGroup:
+    def __init__(self, uuid: str, series: SeriesModel, episodes: list[EpisodeModel], added_on: str):
+        self.uuid = uuid
+        self.series = series
+        self.episodes = episodes
+        self.added_on = added_on
 
 
 def add_series(title: str):
@@ -197,11 +207,28 @@ def get_all_series(limit: int = 25):
     return base_query().limit(limit).all()
 
 
-def latest_series(both: bool = True, limit: int = 25):
+def latest_series(both: bool = True, limit: int = 25, grouping_time: int = 30):
     result = []
 
     if both:
-        result.extend(EpisodeModel.query.order_by(EpisodeModel.added_on.desc()).limit(limit).all())
+        episodes = EpisodeModel.query.order_by(EpisodeModel.added_on.desc()).limit(limit).all()
+        episode_groups = []
+
+        for episode in episodes:
+            episode_group = EpisodeGroup(episode.uuid, episode.series, [episode], episode.added_on)
+            for ep in episodes:
+                if ep.uuid == episode.uuid:
+                    continue
+                if episode.added_on - timedelta(minutes=grouping_time) < ep.added_on < episode.added_on + timedelta(minutes=grouping_time) and \
+                        ep.series_id == episode.series_id:
+                    episode_group.episodes.append(ep)
+            if len(episode_group.episodes) > 1:
+                episode_groups.append(episode_group)
+                for ep in episode_group.episodes:
+                    episodes.remove(ep)
+
+        result.extend(episode_groups)
+        result.extend(episodes)
     result.extend(base_query(False).order_by(SeriesModel.added_on.desc()).limit(limit).all())
 
     return result
