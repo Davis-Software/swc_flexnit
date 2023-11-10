@@ -3,7 +3,10 @@ from __init__ import config
 import os
 import json
 from uuid import uuid4
+from hashlib import md5
 
+from models.movie import MovieModel
+from models.series import SeriesModel
 from utils.wsl_compatability import make_wsl_command, get_wsl_path, get_local_wsl_temp_dir
 
 frame_cache = {}
@@ -179,3 +182,68 @@ def remove_hls_files(file_path: str):
     for file in os.listdir(file_path):
         if file.endswith(".ts") or file.endswith(".m3u8"):
             os.remove(os.path.join(file_path, file))
+
+
+def get_sized_thumbnail(title: MovieModel or SeriesModel, quality: str = "o"):
+    thumbnail_cache = os.path.join(config.get("VIDEO_DIR"), "thumbnail_cache")
+
+    if not os.path.exists(thumbnail_cache):
+        os.makedirs(thumbnail_cache)
+
+    if quality == "o":
+        return title.thumbnail
+
+    key = f"{md5(title.title).hexdigest()}_{quality}"
+    path = os.path.join(thumbnail_cache, key)
+
+    if os.path.exists(path):
+        with open(path, "rb") as f:
+            return f.read()
+
+    temp_target = os.path.join(thumbnail_cache, f"{key}_conv-temp")
+
+    with open(temp_target, "wb") as f:
+        f.write(title.thumbnail)
+
+    conversion = None
+
+    if quality == "h":
+        conversion = "iw/2:ih/2"
+
+    elif quality == "m":
+        conversion = "iw/4:ih/4"
+
+    elif quality == "l":
+        conversion = "iw/8:ih/8"
+
+    elif quality == "s":
+        conversion = "iw/16:ih/16"
+
+    ffmpeg = subprocess.Popen(
+        [
+            config.get("FFMPEG_PATH"),
+            "-y",
+            "-loglevel",
+            "quiet",
+            "-i",
+            temp_target,
+            "-vf",
+            f"scale={conversion}",
+            "-f",
+            "image2",
+            "-preset",
+            "ultrafast",
+            "-",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+
+    frame = ffmpeg.stdout.read()
+
+    with open(path, "wb") as f:
+        f.write(frame)
+
+    os.remove(temp_target)
+
+    return frame
