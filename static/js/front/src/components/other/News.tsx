@@ -57,7 +57,7 @@ function News(props: NewsProps){
                     alt={title.type !== "episode_group" ? title.title : title.series?.title}
                     height={imageHeight}
                     width="auto"
-                    style={{objectFit: "cover"}}
+                    style={{objectFit: "cover", zIndex: 1000}}
                     src={getTitleImage(title)}
                 />
                 <div className="ms-3 flex-grow-1">

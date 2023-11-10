@@ -68,7 +68,7 @@ function TitleProgress(props: TitleProgressProps){
     }, [props.title, props.episode, progressValue, lastEpisode, episodesWatched])
 
     return (
-        progressValue > 0 && <>
+        progressValue > 1 && <>
             <p className="text-muted">
                 {(props.title as SeriesType).episodes && !props.episode && (
                     <>

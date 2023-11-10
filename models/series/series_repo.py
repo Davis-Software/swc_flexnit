@@ -211,7 +211,7 @@ def latest_series(both: bool = True, limit: int = 25, grouping_time: int = 30):
     result = []
 
     if both:
-        episodes = EpisodeModel.query.order_by(EpisodeModel.added_on.desc()).limit(limit).all()
+        episodes = EpisodeModel.query.order_by(EpisodeModel.added_on.desc()).limit(limit**2).all()
         episode_groups = []
 
         for episode in episodes:

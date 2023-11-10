@@ -76,7 +76,7 @@ function MovieInfoDisplay(props: MovieInfoDisplayProps){
                             <img className="m-5" src={`/movies/${props.movie.uuid}?thumbnail`} alt={props.movie.title} />
                             <div className="m-5 pt-5 w-100 pe-5">
                                 <h1>{props.movie.title}</h1>
-                                <p className="text-muted">{props.movie.year > 0 && props.movie.year}</p>
+                                <p className="text-muted">{props.movie.year > "0" && props.movie.year}</p>
                                 <hr />
                                 {props.movie.language && <Chip label={props.movie.language} className="me-2" />}
                                 <Chip label={props.movie.subtitles ? "Has subtitles" : "No subtitles"} className="me-2" />
@@ -90,7 +90,9 @@ function MovieInfoDisplay(props: MovieInfoDisplayProps){
                                     onClick={handlePlay}
                                     className="mt-3"
                                     size="large"
-                                >{progressInfo?.progress ? "Continue Watching" : "Play"}</Button>
+                                >{progressInfo?.progress && progressInfo.progress > 1 ? (
+                                    progressInfo.progress < 100 ? "Continue Watching" : "Watch Again"
+                                ) : "Play"}</Button>
                             </div>
                         </div>
                         <div className="m-5">
@@ -105,7 +107,9 @@ function MovieInfoDisplay(props: MovieInfoDisplayProps){
                     color="primary"
                     icon={<i className="material-icons">play_arrow</i>}
                     onClick={handlePlay}
-                    tooltip={progressInfo?.progress ? "Continue Watching" : "Play"}
+                    tooltip={progressInfo?.progress && progressInfo.progress > 1 ? (
+                        progressInfo.progress < 100 ? "Continue Watching" : "Watch Again"
+                    ) : "Play"}
                 />
                 <SwcFab
                     color="secondary"

@@ -129,7 +129,7 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
                             <img className="m-5" src={`/series/${props.series.uuid}?thumbnail`} alt={props.series.title} />
                             <div className="m-5 pt-5 w-100 pe-5">
                                 <h1>{props.series.title}</h1>
-                                <p className="text-muted">{props.series.year > 0 && props.series.year}</p>
+                                <p className="text-muted">{props.series.year > "0" && props.series.year}</p>
                                 <hr />
                                 {props.series.language && <Chip label={props.series.language} className="me-2" />}
                                 <Chip label={`${props.series.season_count} Season${props.series.season_count > 1 ? "s" : ""}`} className="me-2" />
