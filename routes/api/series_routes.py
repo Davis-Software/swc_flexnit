@@ -6,6 +6,7 @@ from storage.series_storage import upload_episode_file, convert_episode_to_hls, 
     get_episode_files, \
     get_episode_file, delete_episode, get_episode_part, delete_episode_file, set_main_file, create_and_upload_episode, \
     convert_season_to_hls, delete_episode_hls_files, get_episode_frame, detect_season_intros
+from storage.storage_tools import get_sized_thumbnail
 from scraper.imdb_scraper import IMDBScraper
 from utils.adv_responses import send_binary_image
 from utils.password_manager import auth_required, admin_required, check_permission
@@ -36,7 +37,10 @@ def series_info(uuid):
         return send_binary_image(series.poster)
 
     if "thumbnail" in request.args:
-        return send_binary_image(series.thumbnail)
+        return send_binary_image(get_sized_thumbnail(
+            series,
+            request.args.get("q", "h")
+        ))
 
     if "intro_audio" in request.args:
         if series.intro_audio is None:

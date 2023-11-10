@@ -216,7 +216,7 @@ function EditMovie(props: EditMovieProps){
                 label="Is NSFW"
             />
             <div className="d-flex">
-                <img style={{width: "40px", height: "40px"}} src={`/movies/${props.movie.uuid}?thumbnail`} alt="thumbnail" />
+                <img style={{width: "40px", height: "40px"}} src={`/movies/${props.movie.uuid}?thumbnail&q=s`} alt="thumbnail" />
                 <Button className="flex-grow-1" variant="contained" component="label" fullWidth>
                     {newThumbnail ? "Change Selected Thumbnail" : "Upload Thumbnail"}
                     <input hidden accept="image/png" type="file" onChange={e => setNewThumbnail(e.target.files?.item(0))} />

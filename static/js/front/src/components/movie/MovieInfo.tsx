@@ -73,7 +73,7 @@ function MovieInfoDisplay(props: MovieInfoDisplayProps){
                 <div className="content-info rounded-top rounded-3 d-lg-flex d-block">
                     <div className="d-flex flex-column">
                         <div className="info-inner d-flex flex-column flex-lg-row">
-                            <img className="m-5" src={`/movies/${props.movie.uuid}?thumbnail`} alt={props.movie.title} />
+                            <img className="m-5" src={`/movies/${props.movie.uuid}?thumbnail&q=h`} alt={props.movie.title} />
                             <div className="m-5 pt-5 w-100 pe-5">
                                 <h1>{props.movie.title}</h1>
                                 <p className="text-muted">{props.movie.year > "0" && props.movie.year}</p>

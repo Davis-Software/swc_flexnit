@@ -126,7 +126,7 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
                 <div className="content-info rounded-top rounded-3 d-lg-flex d-block">
                     <div className="d-flex flex-column">
                         <div className="info-inner d-flex flex-column flex-lg-row">
-                            <img className="m-5" src={`/series/${props.series.uuid}?thumbnail`} alt={props.series.title} />
+                            <img className="m-5" src={`/series/${props.series.uuid}?thumbnail&q=h`} alt={props.series.title} />
                             <div className="m-5 pt-5 w-100 pe-5">
                                 <h1>{props.series.title}</h1>
                                 <p className="text-muted">{props.series.year > "0" && props.series.year}</p>

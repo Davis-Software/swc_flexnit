@@ -5,6 +5,7 @@ from models.movie import get_movie, add_movie, edit_movie
 from storage.movie_storage import upload_movie, convert_movie_to_hls, revert_movie_to_mp4, get_movie_files, \
     get_movie_file, delete_movie, get_movie_part, delete_movie_file, set_main_file, delete_movie_hls_files, \
     get_movie_frame
+from storage.storage_tools import get_sized_thumbnail
 from scraper.imdb_scraper import IMDBScraper
 from utils.adv_responses import send_binary_image
 from utils.password_manager import auth_required, admin_required, check_permission
@@ -35,7 +36,10 @@ def movie_info(uuid):
         return send_binary_image(movie.poster)
 
     if "thumbnail" in request.args:
-        return send_binary_image(movie.thumbnail)
+        return send_binary_image(get_sized_thumbnail(
+            movie,
+            request.args.get("q", "h")
+        ))
 
     return make_response(movie.to_json(), RequestCode.Success.OK)
 

@@ -10,6 +10,11 @@ from models.series import SeriesModel
 from utils.wsl_compatability import make_wsl_command, get_wsl_path, get_local_wsl_temp_dir
 
 frame_cache = {}
+thumbnail_cache = os.path.join(config.get("VIDEO_DIR"), "thumbnail_cache")
+
+
+for file in os.listdir(thumbnail_cache):
+    os.remove(os.path.join(thumbnail_cache, file))
 
 
 def get_video_file_info(file_path: str):
@@ -185,7 +190,8 @@ def remove_hls_files(file_path: str):
 
 
 def get_sized_thumbnail(title: MovieModel or SeriesModel, quality: str = "o"):
-    thumbnail_cache = os.path.join(config.get("VIDEO_DIR"), "thumbnail_cache")
+    if title is None or title.thumbnail is None:
+        return None
 
     if not os.path.exists(thumbnail_cache):
         os.makedirs(thumbnail_cache)
@@ -193,7 +199,7 @@ def get_sized_thumbnail(title: MovieModel or SeriesModel, quality: str = "o"):
     if quality == "o":
         return title.thumbnail
 
-    key = f"{md5(title.title).hexdigest()}_{quality}"
+    key = f"{md5(title.title.encode('utf-8')).hexdigest()}_{quality}"
     path = os.path.join(thumbnail_cache, key)
 
     if os.path.exists(path):
@@ -205,19 +211,20 @@ def get_sized_thumbnail(title: MovieModel or SeriesModel, quality: str = "o"):
     with open(temp_target, "wb") as f:
         f.write(title.thumbnail)
 
-    conversion = None
-
     if quality == "h":
-        conversion = "iw/2:ih/2"
+        conversion = "iw/1.5:ih/1.5"
 
     elif quality == "m":
-        conversion = "iw/4:ih/4"
+        conversion = "iw/2:ih/2"
 
     elif quality == "l":
-        conversion = "iw/8:ih/8"
+        conversion = "iw/4:ih/4"
 
     elif quality == "s":
-        conversion = "iw/16:ih/16"
+        conversion = "iw/8:ih/8"
+
+    else:
+        return None
 
     ffmpeg = subprocess.Popen(
         [

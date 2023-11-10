@@ -131,7 +131,7 @@ function Sidebar(props: SidebarProps){
                             candleEffect
                             candleSize={2}
                         >
-                            <img src={`/${searchResult.type === "movie" ? "movies" : "series"}/${searchResult.uuid}?thumbnail`} alt="title" />
+                            <img src={`/${searchResult.type === "movie" ? "movies" : "series"}/${searchResult.uuid}?thumbnail&q=m`} alt="title" />
                             <div className="ms-3">
                                 <div className="fw-bold">{searchResult.title}</div>
                                 {searchResult.type === "movie" ? (
