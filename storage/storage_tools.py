@@ -13,8 +13,9 @@ frame_cache = {}
 thumbnail_cache = os.path.join(config.get("VIDEO_DIR"), "thumbnail_cache")
 
 
-for file in os.listdir(thumbnail_cache):
-    os.remove(os.path.join(thumbnail_cache, file))
+if os.path.exists(thumbnail_cache):
+    for file in os.listdir(thumbnail_cache):
+        os.remove(os.path.join(thumbnail_cache, file))
 
 
 def get_video_file_info(file_path: str):

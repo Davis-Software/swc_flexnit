@@ -33,7 +33,7 @@ function News(props: NewsProps){
         if(["episode", "episode_group"].includes(title.type) && title.series){
             title = title.series
         }
-        return `/${title.type === "movie" ? "movies" : "series"}/${title.uuid}?thumbnail`
+        return `/${title.type === "movie" ? "movies" : "series"}/${title.uuid}?thumbnail&q=h`
     }
 
     function handleTitleLink(title: TitleEntryType){
