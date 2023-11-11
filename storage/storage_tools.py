@@ -213,16 +213,16 @@ def get_sized_thumbnail(title: MovieModel or SeriesModel, quality: str = "o"):
         f.write(title.thumbnail)
 
     if quality == "h":
-        conversion = "iw/1.5:ih/1.5"
+        conversion = "'min(561,-1)':'min(801,800)'"
 
     elif quality == "m":
-        conversion = "iw/2:ih/2"
+        conversion = "'min(401,-1)':'min(581,580)'"
 
     elif quality == "l":
-        conversion = "iw/4:ih/4"
+        conversion = "'min(201,-1)':'min(301,300)'"
 
     elif quality == "s":
-        conversion = "iw/8:ih/8"
+        conversion = "'min(101,-1)':'min(141,140)'"
 
     else:
         return None
