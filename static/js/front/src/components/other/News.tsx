@@ -1,10 +1,9 @@
 import React, {useEffect, useState} from "react";
-import {Container} from "@mui/material";
+import {Container, Skeleton} from "@mui/material";
 import TitleEntryType from "../../types/titleEntryType";
 import SwcLoader from "../SwcLoader";
 import EffectGenerator from "../EffectGenerator";
 import {navigateTo} from "../../utils/navigation";
-import titleEntryType from "../../types/titleEntryType";
 
 const nameMapping = {
     "movie": "Movie",
@@ -50,15 +49,24 @@ function News(props: NewsProps){
         }
     }
 
-    function TitleView(title: TitleEntryType, imageHeight: number = 100){
+    interface TitleViewProps {
+        title: TitleEntryType
+        imageHeight?: number
+    }
+    function TitleView({title, imageHeight = 100}: TitleViewProps){
+        const [loading, setLoading] = useState(true)
+
         return (
             <>
+                {loading && <Skeleton variant="rectangular" width={imageHeight * 11/16} height={imageHeight} animation="wave" />}
                 <img
                     alt={title.type !== "episode_group" ? title.title : title.series?.title}
                     height={imageHeight}
-                    width="auto"
+                    width={imageHeight * 11/16}
                     style={{objectFit: "cover", zIndex: 1000}}
                     src={getTitleImage(title)}
+                    onLoad={() => setLoading(false)}
+                    hidden={loading}
                 />
                 <div className="ms-3 flex-grow-1">
                     {title.type === "episode" ? (
@@ -92,7 +100,7 @@ function News(props: NewsProps){
                                 candleEffect
                                 onClick={() => handleTitleLink(latestRelease)}
                             >
-                                {TitleView(latestRelease, 200)}
+                                <TitleView title={latestRelease} imageHeight={200} />
                             </EffectGenerator>
                         )}
                         <div className="row m-0">
@@ -105,7 +113,7 @@ function News(props: NewsProps){
                                     candleEffect
                                     onClick={() => handleTitleLink(title)}
                                 >
-                                    {TitleView(title)}
+                                    <TitleView title={title} />
                                 </EffectGenerator>
                             ))}
                         </div>

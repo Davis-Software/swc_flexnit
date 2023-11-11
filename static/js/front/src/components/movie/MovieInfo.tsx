@@ -3,7 +3,7 @@ import MovieType from "../../types/movieType";
 import TitleEntryType from "../../types/titleEntryType";
 import PageLoader from "../PageLoader";
 import {TransitionGroup} from "react-transition-group";
-import {Button, Chip, Fade} from "@mui/material";
+import {Button, Chip, Fade, Skeleton} from "@mui/material";
 import SwcModal from "../SwcModal";
 import {SwcFab, SwcFabContainer} from "../SwcFab";
 import {isAdmin} from "../../utils/constants";
@@ -21,6 +21,7 @@ interface MovieInfoDisplayProps{
 function MovieInfoDisplay(props: MovieInfoDisplayProps){
     const [progressInfo, setProgressInfo] = useState<InfoCallbackType | null>(null)
     const [library, setLibrary] = useState<{[key: string]: any}>(JSON.parse(localStorage.getItem("library") || "{}"))
+    const [loading, setLoading] = useState<boolean>(true)
 
     function toggleLibrary(){
         setLibrary(prevState => {
@@ -73,7 +74,13 @@ function MovieInfoDisplay(props: MovieInfoDisplayProps){
                 <div className="content-info rounded-top rounded-3 d-lg-flex d-block">
                     <div className="d-flex flex-column">
                         <div className="info-inner d-flex flex-column flex-lg-row">
-                            <img className="m-5" src={`/movies/${props.movie.uuid}?thumbnail&q=h`} alt={props.movie.title} />
+                            {loading && <Skeleton variant="rectangular" sx={{minWidth: "300px", minHeight: "450px"}} className="m-5" animation="wave" />}
+                            <img
+                                className="m-5" src={`/movies/${props.movie.uuid}?thumbnail&q=h`}
+                                alt={props.movie.title}
+                                onLoad={() => setLoading(false)}
+                                hidden={loading}
+                            />
                             <div className="m-5 pt-5 w-100 pe-5">
                                 <h1>{props.movie.title}</h1>
                                 <p className="text-muted">{props.movie.year > "0" && props.movie.year}</p>

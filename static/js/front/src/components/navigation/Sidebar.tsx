@@ -1,5 +1,5 @@
 import React, {useEffect} from "react";
-import {Button, FormControl, MenuItem, Select, TextField} from "@mui/material";
+import {Button, FormControl, MenuItem, Select, Skeleton, TextField} from "@mui/material";
 import SwcModal from "../SwcModal";
 import TitleEntryType from "../../types/titleEntryType";
 import EffectGenerator from "../EffectGenerator";
@@ -62,6 +62,33 @@ function CreateNewModal(props: CreateNewModalProps){
                 Create
             </Button>
         </SwcModal>
+    )
+}
+
+interface TitleEntryProps {
+    searchResult: TitleEntryType;
+}
+function TitleEntry({searchResult}: TitleEntryProps){
+    const [loading, setLoading] = React.useState(true)
+
+    return (
+        <>
+            {loading && <Skeleton variant="rectangular" sx={{minWidth: "70px"}} height="100%" animation="wave" />}
+            <img
+                src={`/${searchResult.type === "movie" ? "movies" : "series"}/${searchResult.uuid}?thumbnail&q=l`}
+                alt="title"
+                onLoad={() => setLoading(false)}
+                hidden={loading}
+            />
+            <div className="ms-3">
+                <div className="fw-bold">{searchResult.title}</div>
+                {searchResult.type === "movie" ? (
+                    <div className="text-muted">Runtime: {getTimeString(searchResult.runtime!)}</div>
+                ) : (
+                    <div className="text-muted">Seasons: {searchResult.season_count}</div>
+                )}
+            </div>
+        </>
     )
 }
 
@@ -131,15 +158,7 @@ function Sidebar(props: SidebarProps){
                             candleEffect
                             candleSize={2}
                         >
-                            <img src={`/${searchResult.type === "movie" ? "movies" : "series"}/${searchResult.uuid}?thumbnail&q=l`} alt="title" />
-                            <div className="ms-3">
-                                <div className="fw-bold">{searchResult.title}</div>
-                                {searchResult.type === "movie" ? (
-                                    <div className="text-muted">Runtime: {getTimeString(searchResult.runtime!)}</div>
-                                ) : (
-                                    <div className="text-muted">Seasons: {searchResult.season_count}</div>
-                                )}
-                            </div>
+                            <TitleEntry searchResult={searchResult} />
                         </EffectGenerator>
                     ))}
                 </div>
