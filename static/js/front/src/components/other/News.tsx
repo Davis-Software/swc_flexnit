@@ -106,7 +106,7 @@ function News(props: NewsProps){
                         <div className="row m-0">
                             {latestReleases.slice(1).map((title, i) => (
                                 <EffectGenerator
-                                    className="col-6 d-flex p-1"
+                                    className="col-lg-6 col-12 d-flex p-1"
                                     style={{cursor: "pointer"}}
                                     key={i}
                                     rippleEffect

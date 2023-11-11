@@ -9,6 +9,7 @@ import {handleSyncDownload} from "./components/SyncPlaybackProgress";
 import {isAdmin} from "./utils/constants";
 
 const Home = lazy(() => import("./pages/Home"));
+const News = lazy(() => import("./pages/NewsPage"));
 const About = lazy(() => import("./pages/About"));
 const Watch = lazy(() => import("./pages/Watch"));
 const Info = lazy(() => import("./pages/InfoPage"));
@@ -21,6 +22,7 @@ const NotFound = lazy(() => import("./pages/other/NotFound"));
 
 const pageNames: {[key: string]: string} = {
     "/": "Home",
+    "/news": "News",
     "/about": "About",
     "/watch": "Watch",
     "/info": "Info",
@@ -59,6 +61,8 @@ function App(){
         switch(page){
             case "/":
                 return <Home />
+            case "/news":
+                return <News />
             case "/about":
                 return <About />
             case "/watch":

@@ -71,6 +71,7 @@ function UserInfo(){
                 anchorEl={anchorEl} onClose={() => setAnchorEl(null)}
                 keepMounted
             >
+                <NavButton target="/news" onClick={() => setAnchorEl(null)} noButton>News</NavButton>
                 <NavButton target="/about" onClick={() => setAnchorEl(null)} noButton>About</NavButton>
                 <Divider />
                 <NavButton target={`https://interface.software-city.org/user/${user}`} onClick={() => setAnchorEl(null)} noButton>Profile</NavButton>

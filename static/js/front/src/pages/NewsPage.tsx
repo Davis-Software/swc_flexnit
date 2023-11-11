@@ -1,0 +1,13 @@
+import React from "react";
+import PageBase from "./PageBase";
+import News from "../components/other/News";
+
+function NewsPage(){
+    return (
+        <PageBase>
+            <News setSelectedTitle={() => {}} />
+        </PageBase>
+    )
+}
+
+export default NewsPage;
