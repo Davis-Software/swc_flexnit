@@ -1,6 +1,6 @@
 import React, {useEffect} from "react";
 import MovieType from "../../types/movieType";
-import {Button, Checkbox, FormControlLabel, TextField} from "@mui/material";
+import {Button, Checkbox, Collapse, FormControlLabel, TextField} from "@mui/material";
 import FileTable from "../FileTable";
 import FileType from "../../types/fileType";
 import {hasNSFWPermission} from "../../utils/permissionChecks";
@@ -16,6 +16,7 @@ function EditMovie(props: EditMovieProps){
     const [description, setDescription] = React.useState<string>(props.movie.description || "")
     const [language, setLanguage] = React.useState<string>(props.movie.language || "")
     const [subtitles, setSubtitles] = React.useState<boolean>(props.movie.subtitles || false)
+    const [subtitleLanguage, setSubtitleLanguage] = React.useState<string>(props.movie.subtitle_language || "")
     const [isVisible, setIsVisible] = React.useState<boolean>(props.movie.is_visible || false)
     const [isNsfw, setIsNsfw] = React.useState<boolean>(props.movie.is_nsfw || false)
     const [newThumbnail, setNewThumbnail] = React.useState<File | null | undefined>(null)
@@ -144,6 +145,7 @@ function EditMovie(props: EditMovieProps){
         formData.append("description", description)
         formData.append("language", language)
         formData.append("subtitles", subtitles.toString())
+        formData.append("subtitle_language", subtitleLanguage)
         formData.append("is_visible", isVisible.toString())
         formData.append("is_nsfw", isNsfw.toString())
         if(newThumbnail) formData.append("thumbnail", newThumbnail)
@@ -193,13 +195,26 @@ function EditMovie(props: EditMovieProps){
                 onChange={e => setLanguage(e.target.value)}
                 fullWidth
             />
-            <FormControlLabel
-                control={<Checkbox
-                        checked={subtitles}
-                        onChange={e => setSubtitles(e.target.checked)}
-                    />}
-                label="Has subtitles"
-            />
+            <div className="row m-0">
+                <FormControlLabel
+                    className="col-3"
+                    control={<Checkbox
+                            checked={subtitles}
+                            onChange={e => setSubtitles(e.target.checked)}
+                        />}
+                    label="Has subtitles"
+                />
+                <Collapse in={subtitles} className="col-5">
+                    <TextField
+                        variant="standard"
+                        label="Subtitle Language Code"
+                        value={subtitleLanguage}
+                        onChange={e => setSubtitleLanguage(e.target.value)}
+                        error={subtitles && subtitleLanguage.length === 0}
+                        fullWidth
+                    />
+                </Collapse>
+            </div>
             <FormControlLabel
                 control={<Checkbox
                         checked={isVisible}

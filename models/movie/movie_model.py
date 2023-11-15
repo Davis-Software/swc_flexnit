@@ -9,6 +9,7 @@ class MovieModel(TitleModel):
     year = Column(String(64), nullable=True)
     language = Column(String(255), nullable=True)
     subtitles = Column(Boolean, nullable=False, default=False)
+    subtitle_language = Column(String(255), nullable=True)
     is_visible = Column(Boolean, nullable=False, default=False)
     is_nsfw = Column(Boolean, nullable=False, default=False)
 

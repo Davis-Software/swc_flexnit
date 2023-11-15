@@ -86,7 +86,11 @@ function MovieInfoDisplay(props: MovieInfoDisplayProps){
                                 <p className="text-muted">{props.movie.year > "0" && props.movie.year}</p>
                                 <hr />
                                 {props.movie.language && <Chip label={props.movie.language} className="me-2" />}
-                                <Chip label={props.movie.subtitles ? "Has subtitles" : "No subtitles"} className="me-2" />
+                                <Chip label={
+                                    props.movie.subtitles ?
+                                        (props.movie.subtitle_language === "" ? "Has subtitles" : "Has " + props.movie.subtitle_language + " subtitles") :
+                                        "No subtitles"
+                                } className="me-2" />
                                 <Chip label={props.movie.is_nsfw ? "NSFW" : "SFW"} color={props.movie.is_nsfw ? "warning" : "secondary"} className="me-2" />
 
                                 <br /><br />

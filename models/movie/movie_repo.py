@@ -18,6 +18,7 @@ def edit_movie(
         description: str = None,
         language: str = None,
         subtitles: str = None,
+        subtitle_language: str = None,
         is_visible: str = None,
         is_nsfw: str = None,
         thumbnail: FileStorage = None,
@@ -48,6 +49,8 @@ def edit_movie(
         movie.language = language
     if check_for_change("subtitles", subtitles):
         movie.subtitles = subtitles
+    if check_for_change("subtitle_language", subtitle_language):
+        movie.subtitle_language = subtitle_language
     if check_for_change("is_visible", is_visible):
         movie.is_visible = is_visible
     if check_for_change("is_nsfw", is_nsfw):

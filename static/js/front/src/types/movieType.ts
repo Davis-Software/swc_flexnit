@@ -6,6 +6,7 @@ interface MovieType{
     description: string;
     language: string;
     subtitles: boolean;
+    subtitle_language: string;
     is_visible: boolean;
     is_nsfw: boolean;
     added_on: number;
