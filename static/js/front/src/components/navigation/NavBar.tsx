@@ -1,5 +1,5 @@
 import React from "react";
-import {isAdmin, user} from "../../utils/constants";
+import {isAdmin, isAdminSet, user} from "../../utils/constants";
 import {
     Typography,
     SxProps,
@@ -58,9 +58,8 @@ function UserInfo(){
                         overlap="circular"
                         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                         color="primary"
-                        badgeContent={isAdmin ? "A" : ""}
-                        // variant="dot"
-                        invisible={!isAdmin}
+                        badgeContent={isAdminSet ? "A" : ""}
+                        invisible={!isAdminSet}
                     >
                         <Avatar alt={user} src={`https://interface.software-city.org/user?avatar=${user}`} />
                     </Badge>

@@ -1,5 +1,7 @@
 import React, {Suspense, lazy, useEffect, useState, useMemo} from "react"
-import defaultTheme from "./themes/defaultTheme";
+
+import lightTheme from "./themes/lightTheme";
+import darkTheme from "./themes/darkTheme";
 
 import NavBar from "./components/navigation/NavBar";
 import PageLoader from "./components/PageLoader";
@@ -19,6 +21,20 @@ const Settings = lazy(() => import("./pages/Settings"));
 const FileManager = lazy(() => import("./pages/FileManager"));
 
 const NotFound = lazy(() => import("./pages/other/NotFound"));
+
+function getTheme(){
+    const theme = localStorage.getItem("theme") || "dark"
+    switch (theme) {
+        case "light":
+            return lightTheme
+        case "amoled":
+            return darkTheme
+        case "dark":
+        default:
+            return darkTheme
+
+    }
+}
 
 const pageNames: {[key: string]: string} = {
     "/": "Home",
@@ -81,7 +97,7 @@ function App(){
     }, [page])
 
     return (
-        <ThemeProvider theme={defaultTheme}>
+        <ThemeProvider theme={getTheme()}>
             {page !== "/watch" && <NavBar navItems={navItems} />}
             <Suspense fallback={<PageLoader />}>
                 {RenderPage}
