@@ -5,7 +5,7 @@ import News from "../components/other/News";
 function NewsPage(){
     return (
         <PageBase>
-            <News setSelectedTitle={() => {}} />
+            <News setSelectedTitle={() => {}} count={15} />
         </PageBase>
     )
 }

@@ -8,6 +8,12 @@ from .series_model import SeriesModel
 from .episode_model import EpisodeModel
 
 
+EPISODE_GROUP_CACHE = {
+    "episode_groups": [],
+    "set": -1
+}
+
+
 class EpisodeGroup:
     def __init__(self, uuid: str, series: SeriesModel, episodes: list[EpisodeModel], added_on: str):
         self.uuid = uuid
@@ -208,7 +214,23 @@ def get_all_series(limit: int = 25):
 
 
 def latest_series(both: bool = True, limit: int = 25, grouping_time: int = 30):
-    result = []
+    set_check = (
+            len(EPISODE_GROUP_CACHE["episode_groups"]) == 0 or
+            EPISODE_GROUP_CACHE["set"] !=
+            (both + limit + grouping_time * (EpisodeModel.query.count() + SeriesModel.query.count()))
+    )
+
+    if set_check:
+        EPISODE_GROUP_CACHE["set"] = \
+            both + limit + grouping_time * (EpisodeModel.query.count() + SeriesModel.query.count())
+    else:
+        return EPISODE_GROUP_CACHE["episode_groups"]
+
+    result = \
+        base_query(False) \
+        .order_by(SeriesModel.added_on.desc()) \
+        .limit(limit) \
+        .all()
 
     if both:
         episodes = EpisodeModel.query.order_by(EpisodeModel.added_on.desc()).limit(limit**2).all()
@@ -216,21 +238,26 @@ def latest_series(both: bool = True, limit: int = 25, grouping_time: int = 30):
 
         for episode in episodes:
             episode_group = EpisodeGroup(episode.uuid, episode.series, [episode], episode.added_on)
+
             for ep in episodes:
                 if ep.uuid == episode.uuid:
                     continue
                 if episode.added_on - timedelta(minutes=grouping_time) < ep.added_on < episode.added_on + timedelta(minutes=grouping_time) and \
                         ep.series_id == episode.series_id:
                     episode_group.episodes.append(ep)
+
             if len(episode_group.episodes) > 1:
                 episode_groups.append(episode_group)
                 for ep in episode_group.episodes:
                     episodes.remove(ep)
 
+            if episode_group.series in result:
+                result.remove(episode_group.series)
+
         result.extend(episode_groups)
         result.extend(episodes)
-    result.extend(base_query(False).order_by(SeriesModel.added_on.desc()).limit(limit).all())
 
+    EPISODE_GROUP_CACHE["episode_groups"] = result
     return result
 
 

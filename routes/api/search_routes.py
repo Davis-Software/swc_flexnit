@@ -58,13 +58,14 @@ def search_title(mode):
     search_term = request.args.get("q")
 
     if mode == "latest":
+        count = int(request.args.get("count", 5))
         latest = []
-        for movie in latest_movies(limit=5):
+        for movie in latest_movies(limit=count):
             latest.append(movie)
-        for series in latest_series(limit=5):
+        for series in latest_series(limit=count):
             latest.append(series)
 
-        results = list(sorted(latest, key=lambda x: x.added_on, reverse=True))[:5]
+        results = list(sorted(latest, key=lambda x: x.added_on, reverse=True))[:count]
 
     elif search_term is None:
         if mode in ["movie", "all"]:

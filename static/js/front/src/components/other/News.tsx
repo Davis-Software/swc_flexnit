@@ -14,13 +14,14 @@ const nameMapping = {
 
 interface NewsProps {
     setSelectedTitle: (title: TitleEntryType | null) => void
+    count?: number
 }
 function News(props: NewsProps){
     const [latestRelease, setLatestRelease] = useState<TitleEntryType | null>(null)
     const [latestReleases, setLatestReleases] = useState<TitleEntryType[]>([])
 
     useEffect(() => {
-        fetch("/search/latest")
+        fetch(`/search/latest?count=${props.count || 5}`)
             .then(res => res.json())
             .then((releases) => {
                 setLatestReleases(releases)
