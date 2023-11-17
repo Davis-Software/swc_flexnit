@@ -66,7 +66,7 @@ function TitleDisplay(props: TitleDisplayProps){
             <div className="card position-relative" onClick={handleShowInfo}>
                 {!imageLoaded && <Skeleton animation="wave" variant="rectangular" width="100%" height={180} />}
                 <img
-                    src={`/${title.type === "movie" ? "movies" : "series"}/${title.uuid}?poster`}
+                    src={`/${title.type === "movie" ? "movies" : "series"}/${title.uuid}?thumbnail&q=h`}
                     className="card-img-top"
                     alt={title.title}
                     onLoad={() => setImageLoaded(true)}
@@ -99,12 +99,12 @@ function TitleDisplay(props: TitleDisplayProps){
 
     return (
         <div className="row m-0">
-            <TransitionGroup component={null}>
+            <TransitionGroup component={null} enter={false} exit>
                 {props.titles
                     .filter(title => props.library[title.type] && props.library[title.type][title.uuid] && props.library[title.type][title.uuid].showInLibrary)
                     .map((title, i) => (
                     <Zoom key={i}>
-                        <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-3">
+                        <div className="col-xxl-2 col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-3">
                             <InnerTitleDisplay title={title} />
                         </div>
                     </Zoom>
