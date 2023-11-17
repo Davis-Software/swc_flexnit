@@ -124,7 +124,7 @@ function Sidebar(props: SidebarProps){
     return (
         <>
             <div className="sidebar d-flex flex-column border-end border-secondary">
-                <div>
+                <div className="sidebar-form">
                     <FormControl fullWidth>
                         <TextField
                             variant="standard"

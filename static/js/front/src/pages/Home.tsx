@@ -66,7 +66,7 @@ function Home(){
                 searchResults={searchResults}
                 setSearchResults={setSearchResults}
             />
-            <div className="content d-none d-lg-block">
+            <div className="content d-none d-md-block">
                 <Suspense fallback={<PageLoader />}>
                     {RenderContent}
                 </Suspense>

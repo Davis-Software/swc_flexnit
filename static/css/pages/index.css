@@ -73,6 +73,14 @@
 }
 
 
+.sidebar, .sidebar *{
+    overflow-x: clip;
+}
+.sidebar .sidebar-form{
+    overflow: hidden;
+}
+
+
 @media screen and (max-width: 850px){
     .page-home > .sidebar{
         width: 100%;
