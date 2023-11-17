@@ -19,7 +19,7 @@ function SwcFabContainer(props: SwcFabContainerProps) {
     }
 
     return !props.hide ? (
-        <div className="position-absolute" style={style}>
+        <div className="position-fixed" style={style}>
             <TransitionGroup component={null}>
                 {props.children}
             </TransitionGroup>
