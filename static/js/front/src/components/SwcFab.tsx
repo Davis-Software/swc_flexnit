@@ -9,6 +9,7 @@ interface SwcFabContainerProps {
     bottom?: number
     right?: number
     hide?: boolean
+    position?: "fixed" | "absolute"
 }
 function SwcFabContainer(props: SwcFabContainerProps) {
     const style = {
@@ -19,7 +20,7 @@ function SwcFabContainer(props: SwcFabContainerProps) {
     }
 
     return !props.hide ? (
-        <div className="position-fixed" style={style}>
+        <div className={`position-${props.position || "fixed"}`} style={style}>
             <TransitionGroup component={null}>
                 {props.children}
             </TransitionGroup>

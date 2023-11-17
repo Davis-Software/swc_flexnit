@@ -163,7 +163,7 @@ function Sidebar(props: SidebarProps){
                     ))}
                 </div>
 
-                <SwcFabContainer hide={!isAdmin}>
+                <SwcFabContainer hide={!isAdmin} position="absolute">
                     <SwcFab
                         icon={<i className="material-icons">add</i>}
                         onClick={() => setCreateNewModal(true)}
