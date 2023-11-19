@@ -2,13 +2,14 @@ import React, {Suspense, lazy, useEffect, useState, useMemo} from "react"
 
 import lightTheme from "./themes/lightTheme";
 import darkTheme from "./themes/darkTheme";
+import amoledTheme from "./themes/amoledTheme";
 
 import NavBar from "./components/navigation/NavBar";
 import PageLoader from "./components/PageLoader";
 import {CssBaseline, ThemeProvider} from "@mui/material";
 import {setWindowTitle} from "./utils/navigation";
 import {handleSyncDownload} from "./components/SyncPlaybackProgress";
-import {isAdmin} from "./utils/constants";
+import {isAdmin, systemThemeIsDark} from "./utils/constants";
 
 const Home = lazy(() => import("./pages/Home"));
 const News = lazy(() => import("./pages/NewsPage"));
@@ -23,12 +24,14 @@ const FileManager = lazy(() => import("./pages/FileManager"));
 const NotFound = lazy(() => import("./pages/other/NotFound"));
 
 function getTheme(){
-    const theme = localStorage.getItem("theme") || "dark"
+    const theme = localStorage.getItem("theme") || "system"
     switch (theme) {
         case "light":
             return lightTheme
         case "amoled":
-            return darkTheme
+            return amoledTheme
+        case "system":
+            return systemThemeIsDark ? darkTheme : lightTheme
         case "dark":
         default:
             return darkTheme

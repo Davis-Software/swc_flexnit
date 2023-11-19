@@ -17,7 +17,7 @@ import {isAdminSet} from "../utils/constants";
 function Settings(){
     const [syncPlayback, setSyncPlayback] = useState(localStorage.getItem("syncPlayback") !== null ? localStorage.getItem("syncPlayback") === "true" : true)
     const [showAdminMode, setShowAdminMode] = useState(localStorage.getItem("showAdminOptions") !== null ? localStorage.getItem("showAdminOptions") === "true" : false)
-    const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark")
+    const [theme, setTheme] = useState(localStorage.getItem("theme") || "system")
 
     useEffect(() => {
         localStorage.setItem("syncPlayback", syncPlayback.toString());
@@ -79,8 +79,8 @@ function Settings(){
                         >
                             <MenuItem value="light">Light</MenuItem>
                             <MenuItem value="dark">Dark</MenuItem>
-                            <MenuItem disabled value="amoled">AMOLED</MenuItem>
-                            <MenuItem disabled value="system">System</MenuItem>
+                            <MenuItem value="amoled">AMOLED</MenuItem>
+                            <MenuItem value="system">System</MenuItem>
                         </Select>
                     </FormControl>
                 </Paper>

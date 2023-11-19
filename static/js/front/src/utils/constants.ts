@@ -8,9 +8,11 @@ const isCloud = global.hasOwnProperty("cloud") && global.cloud
 // @ts-ignore
 const permissions = global.hasOwnProperty("permissions") && global.permissions
 
+const systemThemeIsDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+
 function hasPermission(permission: string) {
     return permissions && permissions.includes(permission)
 }
 
-export { user, isAdminSet, isAdmin, isCloud, permissions }
+export { user, isAdminSet, isAdmin, isCloud, permissions, systemThemeIsDark }
 export { hasPermission }
