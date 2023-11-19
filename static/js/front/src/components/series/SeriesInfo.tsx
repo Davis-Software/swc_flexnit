@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import SeriesType, {EpisodeType} from "../../types/seriesType";
 import TitleEntryType from "../../types/titleEntryType";
 import PageLoader from "../PageLoader";
@@ -20,6 +20,7 @@ import {isAdmin} from "../../utils/constants";
 import {navigateTo} from "../../utils/navigation";
 import TitleProgress, {InfoCallbackType} from "../other/TitleProgress";
 import {handleSyncUpload} from "../SyncPlaybackProgress";
+import {hasNSFWPermission} from "../../utils/permissionChecks";
 
 const EditSeries = React.lazy(() => import("./EditSeries"));
 
@@ -60,9 +61,13 @@ function EpisodeList(props: EpisodeListProps){
                             key={i}
                             selected={props.selectedEpisode?.uuid === episode.uuid}
                             onClick={() => props.handlePlayEpisode(episode)}
-                            className="d-flex flex-column"
+                            className="d-flex flex-column align-items-start"
+                            disabled={episode.is_nsfw && !hasNSFWPermission()}
                         >
-                            <h5>{episode.episode} - {episode.title}</h5>
+                            <div className="d-flex justify-content-between w-100">
+                                <Typography variant="h5">{episode.episode} - {episode.title}</Typography>
+                                <Chip size="small" label={episode.is_nsfw ? "NSFW" : "SFW"} color={episode.is_nsfw ? "warning" : "secondary"} className="ms-3" />
+                            </div>
                             <div className="w-100">
                                 <TitleProgress title={props.series} episode={episode} />
                                 <p>{episode.description}</p>
@@ -86,6 +91,11 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
     const [library, setLibrary] = useState<{[key: string]: any}>(JSON.parse(localStorage.getItem("library") || "{}"))
     const [loading, setLoading] = useState<boolean>(true)
     const theme = useTheme()
+
+    const nsfwEpisodes = useMemo(
+        () => props.series.episodes.filter(episode => episode.is_nsfw),
+        [props.series.episodes]
+    )
 
     function toggleLibrary(){
         setLibrary(prevState => {
@@ -158,7 +168,11 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
                                 <hr />
                                 {props.series.language && <Chip label={props.series.language} className="me-2" />}
                                 <Chip label={`${props.series.season_count} Season${props.series.season_count > 1 ? "s" : ""}`} className="me-2" />
-                                <Chip label={props.series.is_nsfw ? "NSFW" : "SFW"} color={props.series.is_nsfw ? "warning" : "secondary"} className="me-2" />
+                                <Chip label={props.series.is_nsfw ? "NSFW" : (
+                                    nsfwEpisodes.length > 0 ? `${nsfwEpisodes.length} NSFW Episode${nsfwEpisodes.length > 1 ? "s" : ""}` : "SFW"
+                                )} color={props.series.is_nsfw ? "error" : (
+                                    nsfwEpisodes.length > 0 ? "warning" : "secondary"
+                                )} className="me-2" />
 
                                 <br /><br />
                                 <TitleProgress title={props.series} infoCallback={setProgressInfo} />

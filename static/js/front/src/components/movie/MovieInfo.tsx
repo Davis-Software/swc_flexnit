@@ -92,7 +92,7 @@ function MovieInfoDisplay(props: MovieInfoDisplayProps){
                                         (props.movie.subtitle_language === "" ? "Has subtitles" : "Has " + props.movie.subtitle_language + " subtitles") :
                                         "No subtitles"
                                 } className="me-2" />
-                                <Chip label={props.movie.is_nsfw ? "NSFW" : "SFW"} color={props.movie.is_nsfw ? "warning" : "secondary"} className="me-2" />
+                                <Chip label={props.movie.is_nsfw ? "NSFW" : "SFW"} color={props.movie.is_nsfw ? "error" : "secondary"} className="me-2" />
 
                                 <br /><br />
                                 <TitleProgress title={props.movie} infoCallback={setProgressInfo} />

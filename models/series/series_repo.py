@@ -128,6 +128,7 @@ def edit_episode(
         description: str = None,
         season: str = None,
         episode: str = None,
+        is_nsfw: bool = None,
         has_intro: bool = None,
         intro_start: int = None,
 ):
@@ -138,6 +139,7 @@ def edit_episode(
     season = int(season) if season is not None and season.isdigit() else None
     episode = int(episode) if episode is not None and episode.isdigit() else None
 
+    is_nsfw = is_nsfw == "true"
     has_intro = has_intro == "true"
 
     def check_for_change(attr, value):
@@ -151,6 +153,8 @@ def edit_episode(
         episode_model.season = season
     if check_for_change("episode", episode):
         episode_model.episode = episode
+    if check_for_change("is_nsfw", is_nsfw):
+        episode_model.is_nsfw = is_nsfw
     if check_for_change("has_intro", has_intro):
         episode_model.has_intro = has_intro
     if check_for_change("intro_start", intro_start):

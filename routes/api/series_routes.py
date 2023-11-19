@@ -204,6 +204,9 @@ def deliver_episode_file(uuid, episode_uuid, file_name=None, frame=None):
     if episode is None:
         return make_response("Episode not found", RequestCode.ClientError.NotFound)
 
+    if episode.is_nsfw and not check_permission("nsfw"):
+        return make_response("Age-Restricted Content", RequestCode.ClientError.Forbidden)
+
     if frame is not None and frame.isdigit():
         response = make_response(get_episode_frame(series.uuid, episode_uuid, int(frame)))
         response.cache_control.max_age = 60 * 60 * 24 * 365

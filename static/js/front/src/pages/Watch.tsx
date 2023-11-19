@@ -126,6 +126,13 @@ function Watch(){
             hls.loadSource(path + "?hls")
             hls.attachMedia(videoRef.current)
             hls.on(Hls.Events.MEDIA_ATTACHED, waitForVideo)
+            hls.on(Hls.Events.ERROR, (_, data) => {
+                if(data.response?.code === 403){
+                    setShowNSFWModal(true)
+                }else{
+                    setDisplayError(true)
+                }
+            })
 
             return () => {
                 hls.destroy()
@@ -257,7 +264,7 @@ function Watch(){
             info.intro_start + info.intro_length :
             (episode?.intro_start || 0) + info.intro_length
     }
-    function handlePlayNextEpisode(){
+    function handlePlayNextEpisode(force?: boolean){
         if(mode !== "series" || !videoInfo) return;
         videoRef.current?.pause()
         setEpisodeEnded(false)
@@ -285,6 +292,12 @@ function Watch(){
                 navigateTo(`/watch?series=${uuid}&episode=${nextEpisode?.uuid}${nextEpisode?.video_hls ? "&hls" : ""}`, true)
             }
         })
+
+        if(force){
+            setTimeout(() => {
+                window.location.reload()
+            }, 150)
+        }
     }
 
     function handleTimelineFramePreview(e: React.TouchEvent<HTMLSpanElement> | React.MouseEvent<HTMLSpanElement> | any){
@@ -401,7 +414,11 @@ function Watch(){
                 onClick={handleMouseMove}
             >
                 {!showNSFWModal && (
-                    <video className="position-absolute top-0 start-0" ref={videoRef} style={{width: "100%", height: "100%", objectFit: "contain", zIndex: 0}} />
+                    <video
+                        className="position-absolute top-0 start-0"
+                        ref={videoRef}
+                        style={{width: "100%", height: "100%", objectFit: "contain", zIndex: 0}}
+                    />
                 )}
                 <Fade in={!loading && showSkipIntro}>
                     <div
@@ -427,7 +444,7 @@ function Watch(){
                             variant="contained"
                             color="secondary"
                             size="large"
-                            onClick={handlePlayNextEpisode}
+                            onClick={() => handlePlayNextEpisode()}
                         >
                             Play next episode
                         </Button>
@@ -696,6 +713,9 @@ function Watch(){
                 </div>
                 <div className="d-flex justify-content-between">
                     <Button variant="text" onClick={() => navigateTo(history.state || "/")} color="secondary">Go back</Button>
+                    {mode === "series" && (
+                        <Button variant="text" onClick={() => handlePlayNextEpisode(true)} color="primary">Next Episode</Button>
+                    )}
                     <Button variant="contained" color="primary" onClick={() => window.location.href = "/logout"}>Switch account</Button>
                 </div>
             </SwcModal>

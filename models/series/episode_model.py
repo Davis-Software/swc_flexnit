@@ -17,6 +17,7 @@ class EpisodeModel(TitleModel):
     video_info = Column(NestedMutableJson, nullable=False, default={})
     video_hls = Column(Boolean, nullable=False, default=False)
 
+    is_nsfw = Column(Boolean, nullable=False, default=False)
     has_intro = Column(Boolean, nullable=False, default=False)
     intro_start = Column(Integer, nullable=True)
 

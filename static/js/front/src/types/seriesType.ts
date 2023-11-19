@@ -8,6 +8,7 @@ interface EpisodeType{
     video_file: string;
     video_info: any;
     video_hls: boolean;
+    is_nsfw: boolean;
     has_intro: boolean;
     intro_start: number;
 }
