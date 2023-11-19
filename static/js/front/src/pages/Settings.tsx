@@ -1,6 +1,16 @@
 import React, {useEffect, useState} from "react";
 import PageBase from "./PageBase";
-import {Checkbox, Container, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Tooltip} from "@mui/material";
+import {
+    Checkbox,
+    Container,
+    FormControl,
+    FormControlLabel,
+    InputLabel,
+    MenuItem,
+    Paper,
+    Select,
+    Tooltip
+} from "@mui/material";
 import SyncPlaybackProgress, {ResetPlaybackProgress} from "../components/SyncPlaybackProgress";
 import {isAdminSet} from "../utils/constants";
 
@@ -25,7 +35,7 @@ function Settings(){
                 <h3>Settings</h3>
                 <hr/>
 
-                <div className="ps-5 p-3 bg-dark mb-3">
+                <Paper elevation={3} className="ps-5 p-3 mb-3">
                     <h5>Playback progress synchronization</h5>
                     <p>When enabled, playback progress will be synchronized across all devices.</p>
                     <Tooltip title="This setting is saved on a per-device basis">
@@ -39,9 +49,9 @@ function Settings(){
                     </Tooltip>
                     <SyncPlaybackProgress text="Sync progress now"/>
                     <ResetPlaybackProgress/>
-                </div>
+                </Paper>
 
-                <div className="ps-5 p-3 bg-dark mb-3">
+                <Paper elevation={3} className="ps-5 p-3 mb-3">
                     <h5>UI Config</h5>
                     <p>Some options to change how the UI looks. <br/> All settings are saved on a per-device basis.</p>
                     <div>
@@ -67,13 +77,13 @@ function Settings(){
                             }}
                             variant="standard"
                         >
-                            <MenuItem disabled value="light">Light</MenuItem>
+                            <MenuItem value="light">Light</MenuItem>
                             <MenuItem value="dark">Dark</MenuItem>
                             <MenuItem disabled value="amoled">AMOLED</MenuItem>
                             <MenuItem disabled value="system">System</MenuItem>
                         </Select>
                     </FormControl>
-                </div>
+                </Paper>
             </Container>
         </PageBase>
     )

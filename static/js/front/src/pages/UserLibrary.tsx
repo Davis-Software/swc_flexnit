@@ -3,7 +3,7 @@ import TitleEntryType from "../types/titleEntryType";
 import TitleProgress, {InfoCallbackType} from "../components/other/TitleProgress";
 import MovieType from "../types/movieType";
 import SeriesType, {EpisodeType} from "../types/seriesType";
-import {Button, LinearProgress, Skeleton, Tooltip, Zoom} from "@mui/material";
+import {Button, Card, CardContent, CardMedia, LinearProgress, Paper, Skeleton, Tooltip, Zoom} from "@mui/material";
 import {TransitionGroup} from "react-transition-group";
 import {navigateTo} from "../utils/navigation";
 import {handleSyncUpload} from "../components/SyncPlaybackProgress";
@@ -63,25 +63,26 @@ function TitleDisplay(props: TitleDisplayProps){
         }, [title])
 
         return (
-            <div className="card position-relative" onClick={handleShowInfo}>
-                {!imageLoaded && <Skeleton animation="wave" variant="rectangular" width="100%" height={180} />}
+            // <Card className="position-relative" onClick={handleShowInfo}>
+            <Card className="position-relative">
+                {!imageLoaded && <Skeleton animation="wave" variant="rectangular" width="100%" height={300} />}
                 <img
                     src={`/${title.type === "movie" ? "movies" : "series"}/${title.uuid}?thumbnail&q=h`}
-                    className="card-img-top"
                     alt={title.title}
+                    className="card-img-top"
                     onLoad={() => setImageLoaded(true)}
                     hidden={!imageLoaded}
                 />
                 <LinearProgress variant="determinate" value={titleProgressInfo?.seriesWatched !== undefined ? titleProgressInfo?.seriesWatched : (titleProgressInfo?.progress || 0)} />
-                <div className="card-body">
+                <CardContent>
                     <h5 className="card-title">{title.title}</h5>
                     {actualTitle ?
                         <TitleProgress title={actualTitle} infoCallback={setTitleProgressInfo} hideProgress /> :
                         <Skeleton animation="wave" variant="text" width="100%" height={30} />
                     }
-                </div>
+                </CardContent>
 
-                <div className="position-absolute top-0 end-0 p-2" style={{backgroundColor: "rgba(0,0,0,.7)", borderBottomLeftRadius: "5px"}}>
+                <div className="position-absolute top-0 end-0 p-2" style={{borderBottomLeftRadius: "5px"}}>
                     <Tooltip title={titleProgressInfo?.progress ? "Continue watching" : "Play"}>
                         <Button variant="outlined" color="primary" className="me-2" onClick={playTitle}>
                             <i className="material-icons">play_arrow</i>
@@ -93,7 +94,7 @@ function TitleDisplay(props: TitleDisplayProps){
                         </Button>
                     </Tooltip>
                 </div>
-            </div>
+            </Card>
         )
     }
 
@@ -134,11 +135,10 @@ function UserLibrary(){
 
     return (
         <div className="mt-3">
-            <div className="container d-flex justify-content-center py-3 mb-3">
+            <Paper elevation={4} className="container d-flex justify-content-center py-3 mb-3">
                 <h4>My Library</h4>
-            </div>
-            <TitleDisplay titles={libraryTitles.filter(title => title.type === "movie")} library={library} setLibrary={setLibrary} />
-            <TitleDisplay titles={libraryTitles.filter(title => title.type === "series")}  library={library} setLibrary={setLibrary} />
+            </Paper>
+            <TitleDisplay titles={libraryTitles} library={library} setLibrary={setLibrary} />
         </div>
     )
 }

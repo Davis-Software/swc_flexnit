@@ -1,6 +1,6 @@
 import React, {useEffect, useMemo} from "react";
 import PageBase from "./PageBase";
-import {Skeleton, Tab, Tabs} from "@mui/material";
+import {Paper, Skeleton, Tab, Tabs} from "@mui/material";
 import hrFileSize from "../utils/hrFileSize";
 import MovieFileManager from "../components/fileManager/MovieFileManager";
 import SeriesFileManager from "../components/fileManager/SeriesFileManager";
@@ -53,7 +53,7 @@ function Overview() {
     ), [overviewData])
 
     return (
-        <div className="container mt-5 p-3">
+        <Paper elevation={2} className="container mt-5 p-3">
             <div className="border-secondary border-bottom">
                 <h4>Drive Usage</h4>
                 <div className="ms-2">
@@ -70,7 +70,7 @@ function Overview() {
                     <p>Thread Count: {threadCount}</p>
                 </div>
             </div>
-        </div>
+        </Paper>
     )
 }
 

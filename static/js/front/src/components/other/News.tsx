@@ -1,9 +1,52 @@
 import React, {useEffect, useState} from "react";
-import {Container, Skeleton} from "@mui/material";
+import {Container, Skeleton, Typography} from "@mui/material";
 import TitleEntryType from "../../types/titleEntryType";
 import SwcLoader from "../SwcLoader";
 import EffectGenerator from "../EffectGenerator";
 import {navigateTo} from "../../utils/navigation";
+
+function getTitleImage(title: TitleEntryType){
+    if(["episode", "episode_group"].includes(title.type) && title.series){
+        title = title.series
+    }
+    return `/${title.type === "movie" ? "movies" : "series"}/${title.uuid}?thumbnail&q=h`
+}
+
+interface TitleViewProps {
+    title: TitleEntryType
+    imageHeight?: number
+}
+function TitleView({title, imageHeight = 100}: TitleViewProps){
+    const [loading, setLoading] = useState(true)
+
+    return (
+        <>
+            {loading && <Skeleton variant="rectangular" width={imageHeight * 11/16} height={imageHeight} animation="wave" />}
+            <img
+                alt={title.type !== "episode_group" ? title.title : title.series?.title}
+                height={imageHeight}
+                width={imageHeight * 11/16}
+                style={{objectFit: "cover", zIndex: 1000}}
+                src={getTitleImage(title)}
+                onLoad={() => setLoading(false)}
+                hidden={loading}
+            />
+            <div className="ms-3 flex-grow-1">
+                {title.type === "episode" ? (
+                    <Typography variant="overline">{title.series?.title}</Typography>
+                ) : (
+                    <Typography variant="overline">New {nameMapping[title.type]}</Typography>
+                )}
+                <Typography variant="h5">{title.type === "episode" && "New Episode: "}{title.type !== "episode_group" ? title.title : title.series?.title}</Typography>
+                <p>{title.type === "episode_group" ? (
+                    title.episodes + " New Episodes Available"
+                ) : (
+                    title.description ? (title.description.length > 100 ? title.description.slice(0, 100).trimEnd() + "..." : title.description) : ""
+                )}</p>
+            </div>
+        </>
+    )
+}
 
 const nameMapping = {
     "movie": "Movie",
@@ -29,13 +72,6 @@ function News(props: NewsProps){
             })
     }, []);
 
-    function getTitleImage(title: TitleEntryType){
-        if(["episode", "episode_group"].includes(title.type) && title.series){
-            title = title.series
-        }
-        return `/${title.type === "movie" ? "movies" : "series"}/${title.uuid}?thumbnail&q=h`
-    }
-
     function handleTitleLink(title: TitleEntryType){
         if(title.type === "episode" && title.series){
             navigateTo(`/watch?series=${title.series.uuid}&episode=${title.uuid}${title.hls ? "&hls" : ""}`)
@@ -48,42 +84,6 @@ function News(props: NewsProps){
         }else{
             props.setSelectedTitle(title)
         }
-    }
-
-    interface TitleViewProps {
-        title: TitleEntryType
-        imageHeight?: number
-    }
-    function TitleView({title, imageHeight = 100}: TitleViewProps){
-        const [loading, setLoading] = useState(true)
-
-        return (
-            <>
-                {loading && <Skeleton variant="rectangular" width={imageHeight * 11/16} height={imageHeight} animation="wave" />}
-                <img
-                    alt={title.type !== "episode_group" ? title.title : title.series?.title}
-                    height={imageHeight}
-                    width={imageHeight * 11/16}
-                    style={{objectFit: "cover", zIndex: 1000}}
-                    src={getTitleImage(title)}
-                    onLoad={() => setLoading(false)}
-                    hidden={loading}
-                />
-                <div className="ms-3 flex-grow-1">
-                    {title.type === "episode" ? (
-                        <small className="text-white-50">{title.series?.title}</small>
-                    ) : (
-                        <small className="text-white-50">New {nameMapping[title.type]}</small>
-                    )}
-                    <h5>{title.type === "episode" && "New Episode: "}{title.type !== "episode_group" ? title.title : title.series?.title}</h5>
-                    <p>{title.type === "episode_group" ? (
-                        title.episodes + " New Episodes Available"
-                    ) : (
-                        title.description ? (title.description.length > 100 ? title.description.slice(0, 100).trimEnd() + "..." : title.description) : ""
-                    )}</p>
-                </div>
-            </>
-        )
     }
 
     return (

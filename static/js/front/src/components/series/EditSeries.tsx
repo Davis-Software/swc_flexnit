@@ -1,6 +1,16 @@
 import React, {useMemo} from "react";
 import SeriesType, {EpisodeType} from "../../types/seriesType";
-import {Button, Checkbox, Collapse, Fade, FormControlLabel, TextField} from "@mui/material";
+import {
+    Button,
+    Card,
+    CardContent,
+    CardHeader,
+    Checkbox,
+    Collapse,
+    Fade,
+    FormControlLabel, List, ListItemButton,
+    TextField
+} from "@mui/material";
 import {hasNSFWPermission} from "../../utils/permissionChecks";
 
 const AddEpisode = React.lazy(() => import("./EditEpisode").then(module => ({default: module.AddEpisode})));
@@ -61,12 +71,14 @@ function SeasonOverview(props: SeasonOverviewProps){
     }
 
     return (
-        <div className="card">
-            <div className="card-header" onClick={() => {setOpen(pv => !pv)}}>
-                <h5>Season {props.season + 1}</h5>
-            </div>
+        <Card>
+            <CardHeader
+                onClick={() => {setOpen(pv => !pv)}}
+                title={`Season ${props.season + 1}`}
+                subheader={`${episodes.length} Episodes`}
+            />
             <Collapse in={open}>
-                <div className="card-body">
+                <CardContent>
                     <div className="d-flex">
                         <Button className="flex-grow-1" variant="contained" component="label" onClick={() => {
                             props.handleAddEpisode(props.season + 1, episodes.length)
@@ -96,20 +108,20 @@ function SeasonOverview(props: SeasonOverviewProps){
                             <br/>
                         </React.Fragment>
                     ))}
-                    <ul className="list-unstyled list-group">
+                    <List>
                         {episodes.map((episode, i) => (
-                            <li key={i} className="list-group-item">
+                            <ListItemButton key={i} onClick={() => props.setSelectedEpisode(episode)}>
+                                <h5 className="flex-grow-1">{episode.episode}: {episode.title}</h5>
                                 <div className="d-flex flex-row">
-                                    <h5 className="flex-grow-1">{episode.episode}: {episode.title}</h5>
                                     <Button variant="contained" color="warning" onClick={() => props.setSelectedEpisode(episode)}>Edit</Button>
                                     <Button variant="contained" color="error" onClick={() => handleDeleteEpisode(episode)}>Delete</Button>
                                 </div>
-                            </li>
+                            </ListItemButton>
                         ))}
-                    </ul>
-                </div>
+                    </List>
+                </CardContent>
             </Collapse>
-        </div>
+        </Card>
     )
 }
 
@@ -216,7 +228,7 @@ function EditSeries(props: EditSeriesProps){
         })
             .then(res => res.json())
             .then((data: SeriesType) => {
-                props.setSeries(prevState => data)
+                props.setSeries(_ => data)
                 props.setShowEdit(false)
             })
     }

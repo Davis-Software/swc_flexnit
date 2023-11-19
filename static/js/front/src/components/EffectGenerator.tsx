@@ -1,4 +1,5 @@
-import React, {MouseEventHandler, useEffect, useRef} from "react";
+import React, {useEffect, useRef} from "react";
+import {useTheme} from "@mui/material";
 
 interface EffectGeneratorProps{
     children: React.ReactNode | React.ReactNode[];
@@ -9,9 +10,11 @@ interface EffectGeneratorProps{
     className?: string;
     onClick?: () => void;
     onMouseDown?: (e: any) => void;
+    selected?: boolean;
 }
 function EffectGenerator(props: EffectGeneratorProps){
     const divRef = useRef() as React.MutableRefObject<HTMLDivElement>;
+    const theme = useTheme()
 
     function getElementOffset(element: HTMLDivElement){
         let de = document.documentElement
@@ -57,12 +60,7 @@ function EffectGenerator(props: EffectGeneratorProps){
         canvas.classList.add("candle-canvas")
         candle.classList.add("candle")
 
-        let elemColors = window.getComputedStyle(divRef.current).backgroundColor
-            .replace("rgba(", "")
-            .replace("rgb(", "")
-            .replace(")", "")
-            .split(",")
-            .map(x => parseInt(x))
+        let elemColors = theme.palette.mode === "dark" ? [0, 0, 0, 0] : [255, 255, 255, 0]
         let candleColor = `rgba(${255-elemColors[0]+50}, ${255-elemColors[1]+50}, ${255-elemColors[2]+50}, ${elemColors[3]+0.15 || .3})`
         candle.style.background = `radial-gradient(circle closest-side, ${candleColor}, transparent)`
 
@@ -131,7 +129,10 @@ function EffectGenerator(props: EffectGeneratorProps){
             onMouseMove={handleMouseMove}
             onMouseDown={props.onMouseDown}
             ref={divRef}
-            style={props.style}
+            style={{
+                backgroundColor: props.selected ? (theme.palette.mode === "dark" ? "var(--bs-gray-700)" : "var(--bs-gray-300)") : "",
+                ...props.style
+            }}
         >
             {props.children}
         </div>

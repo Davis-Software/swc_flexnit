@@ -3,7 +3,17 @@ import SeriesType, {EpisodeType} from "../../types/seriesType";
 import TitleEntryType from "../../types/titleEntryType";
 import PageLoader from "../PageLoader";
 import {TransitionGroup} from "react-transition-group";
-import {Button, Chip, Collapse, Fade, Skeleton} from "@mui/material";
+import {
+    Button,
+    Chip,
+    Collapse,
+    Fade,
+    List,
+    ListItemButton,
+    Skeleton,
+    Typography,
+    useTheme
+} from "@mui/material";
 import SwcModal from "../SwcModal";
 import {SwcFab, SwcFabContainer} from "../SwcFab";
 import {isAdmin} from "../../utils/constants";
@@ -39,20 +49,27 @@ function EpisodeList(props: EpisodeListProps){
 
     return (
         <>
-            <li className="list-group-item pointer-event" onClick={() => setOpen(v => !v)}>
+            <ListItemButton onClick={() => setOpen(v => !v)}>
                 <h4>Season {props.season + 1}</h4>
-            </li>
+            </ListItemButton>
             <Collapse in={open}>
-                <ul className="list-group ms-4" ref={listRef}>
+                <List className="ms-4" ref={listRef}>
                     {props.series.episodes.sort((a, b) => a.episode - b.episode)
                         .filter(episode => episode.season === props.season + 1).map((episode, i) => (
-                        <li key={i} className={`list-group-item ${props.selectedEpisode?.uuid === episode.uuid ? "active" : ""}`} onClick={() => props.handlePlayEpisode(episode)}>
+                        <ListItemButton
+                            key={i}
+                            selected={props.selectedEpisode?.uuid === episode.uuid}
+                            onClick={() => props.handlePlayEpisode(episode)}
+                            className="d-flex flex-column"
+                        >
                             <h5>{episode.episode} - {episode.title}</h5>
-                            <TitleProgress title={props.series} episode={episode} />
-                            <p>{episode.description}</p>
-                        </li>
+                            <div className="w-100">
+                                <TitleProgress title={props.series} episode={episode} />
+                                <p>{episode.description}</p>
+                            </div>
+                        </ListItemButton>
                     ))}
-                </ul>
+                </List>
             </Collapse>
         </>
     )
@@ -68,6 +85,7 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
     const [progressInfo, setProgressInfo] = useState<InfoCallbackType | null>(null)
     const [library, setLibrary] = useState<{[key: string]: any}>(JSON.parse(localStorage.getItem("library") || "{}"))
     const [loading, setLoading] = useState<boolean>(true)
+    const theme = useTheme()
 
     function toggleLibrary(){
         setLibrary(prevState => {
@@ -125,7 +143,7 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
                 }}
             >
                 <div className="content-info rounded-top rounded-3 d-lg-flex d-block">
-                    <div className="d-flex flex-column">
+                    <div className={`d-flex flex-column theme-${theme.palette.mode}`}>
                         <div className="info-inner d-flex flex-column flex-lg-row">
                             {loading && <Skeleton variant="rectangular" sx={{minWidth: "300px", minHeight: "450px"}} className="m-5" animation="wave" />}
                             <img
@@ -136,7 +154,7 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
                             />
                             <div className="m-5 pt-5 w-100 pe-5">
                                 <h1>{props.series.title}</h1>
-                                <p className="text-muted">{props.series.year > "0" && props.series.year}</p>
+                                <Typography variant="caption">{props.series.year > "0" && props.series.year}</Typography>
                                 <hr />
                                 {props.series.language && <Chip label={props.series.language} className="me-2" />}
                                 <Chip label={`${props.series.season_count} Season${props.series.season_count > 1 ? "s" : ""}`} className="me-2" />
@@ -194,7 +212,7 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
             </SwcFabContainer>
 
             <SwcModal show={showEpisodes} onHide={() => {setShowEpisodes(false)}}>
-                <ul className="list-group">
+                <List>
                     {[...Array(props.series.season_count)].map((_, season) => (
                         <EpisodeList
                             key={season}
@@ -204,7 +222,7 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
                             selectedEpisode={progressInfo?.lastEpisode}
                         />
                     ))}
-                </ul>
+                </List>
             </SwcModal>
         </>
     )

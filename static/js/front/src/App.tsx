@@ -5,7 +5,7 @@ import darkTheme from "./themes/darkTheme";
 
 import NavBar from "./components/navigation/NavBar";
 import PageLoader from "./components/PageLoader";
-import {ThemeProvider} from "@mui/material";
+import {CssBaseline, ThemeProvider} from "@mui/material";
 import {setWindowTitle} from "./utils/navigation";
 import {handleSyncDownload} from "./components/SyncPlaybackProgress";
 import {isAdmin} from "./utils/constants";
@@ -98,6 +98,8 @@ function App(){
 
     return (
         <ThemeProvider theme={getTheme()}>
+            <CssBaseline />
+
             {page !== "/watch" && <NavBar navItems={navItems} />}
             <Suspense fallback={<PageLoader />}>
                 {RenderPage}

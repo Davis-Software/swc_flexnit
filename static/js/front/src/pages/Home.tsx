@@ -5,6 +5,7 @@ import PageLoader from "../components/PageLoader";
 import TitleEntryType from "../types/titleEntryType";
 import {navigateTo} from "../utils/navigation";
 import News from "../components/other/News";
+import {Paper} from "@mui/material";
 
 const MovieInfo = React.lazy(() => import("../components/movie/MovieInfo"));
 const SeriesInfo = React.lazy(() => import("../components/series/SeriesInfo"));
@@ -41,11 +42,11 @@ function Home(){
             }
         }else{
             return <>
-                <div className="rounded-3 bg-dark p-3 m-4">
+                <Paper elevation={3} className="rounded-3 p-3 m-4">
                     <h3 className="text-center text-info">No Title selected</h3>
                     <hr/>
                     <span>You can select a title through the sidebar on the left!</span>
-                </div>
+                </Paper>
 
                 <News setSelectedTitle={setSelectedTitle} />
             </>

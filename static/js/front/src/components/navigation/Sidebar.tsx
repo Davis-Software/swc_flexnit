@@ -1,5 +1,5 @@
 import React, {useEffect} from "react";
-import {Button, FormControl, MenuItem, Select, Skeleton, TextField} from "@mui/material";
+import {Button, FormControl, MenuItem, Select, Skeleton, TextField, Typography} from "@mui/material";
 import SwcModal from "../SwcModal";
 import TitleEntryType from "../../types/titleEntryType";
 import EffectGenerator from "../EffectGenerator";
@@ -83,9 +83,12 @@ function TitleEntry({searchResult}: TitleEntryProps){
             <div className="ms-3">
                 <div className="fw-bold">{searchResult.title}</div>
                 {searchResult.type === "movie" ? (
-                    <div className="text-muted">Runtime: {getTimeString(searchResult.runtime!)}</div>
+                    <>
+                        <Typography variant="overline">Runtime: </Typography>
+                        <Typography variant="caption">{getTimeString(searchResult.runtime!)}</Typography>
+                    </>
                 ) : (
-                    <div className="text-muted">Seasons: {searchResult.season_count}</div>
+                    <Typography variant="overline">Seasons: {searchResult.season_count}</Typography>
                 )}
             </div>
         </>
@@ -155,10 +158,11 @@ function Sidebar(props: SidebarProps){
                             key={i}
                             onClick={() => handleClick(searchResult)}
                             onMouseDown={(e) => handleMiddleClick(e, searchResult)}
-                            className={`result p-2 ps-3 border-bottom border-secondary ${props.selectedTitle?.uuid === searchResult.uuid ? "selected" : ""}`}
+                            className={"result p-2 ps-3 border-bottom border-secondary"}
                             rippleEffect
                             candleEffect
                             candleSize={2}
+                            selected={props.selectedTitle?.uuid === searchResult.uuid}
                         >
                             <TitleEntry searchResult={searchResult} />
                         </EffectGenerator>

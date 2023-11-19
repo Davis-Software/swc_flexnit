@@ -1,7 +1,7 @@
 import MovieType from "../../types/movieType";
 import SeriesType, {EpisodeType} from "../../types/seriesType";
 import {useEffect, useMemo, useState} from "react";
-import {LinearProgress} from "@mui/material";
+import {LinearProgress, Typography} from "@mui/material";
 import React from "react";
 
 interface InfoCallbackType{
@@ -69,7 +69,7 @@ function TitleProgress(props: TitleProgressProps){
 
     return (
         progressValue > 1 && <>
-            <p className="text-muted">
+            <Typography variant="caption" paragraph>
                 {(props.title as SeriesType).episodes && !props.episode && (
                     <>
                         {episodesWatched} / {(props.title as SeriesType).episodes.length} episodes watched <br/>
@@ -77,7 +77,7 @@ function TitleProgress(props: TitleProgressProps){
                     </>
                 )}
                 {Math.round(progressValue)}% watched
-            </p>
+            </Typography>
             {!props.hideProgress && (
                 <LinearProgress variant="determinate" value={progressValue} />
             )}
