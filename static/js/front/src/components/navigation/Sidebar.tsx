@@ -131,6 +131,7 @@ function Sidebar(props: SidebarProps){
                             placeholder="Search"
                             value={search}
                             onChange={e => setSearch(e.target.value)}
+                            sx={{"& input": {paddingLeft: ".5rem"}}}
                         />
                     </FormControl>
                     <FormControl fullWidth>
@@ -138,6 +139,7 @@ function Sidebar(props: SidebarProps){
                             variant="standard"
                             value={searchMode}
                             onChange={e => setSearchMode(e.target.value as "all" | "movie" | "series")}
+                            sx={{paddingLeft: ".5rem"}}
                         >
                             <MenuItem value="all">All</MenuItem>
                             <MenuItem value="movie">Movie</MenuItem>
