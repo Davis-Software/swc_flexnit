@@ -11,84 +11,6 @@ body{
     background: transparent;
 }
 
-.no-link{
-    text-decoration: none !important;
-    color: red !important;
-}
-footer *{
-    font-family: 'Rubik', sans-serif;
-    font-size: 0.9375rem;
-    font-weight: 400;
-    line-height: 1.5;
-    text-decoration: none;
-}
-footer h5{
-    font-size: 1.171875rem;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    line-height: 1.2;
-}
-.footer-copyright{
-    background-color: #1a191c;
-}
-
-.row{
-    margin: 0;
-}
-.btn{
-    transition: all .2s;
-    outline: none !important;
-    box-shadow: none !important;
-}
-.pane, .container{
-    background-color: rgba(100, 100, 100, .2);
-    backdrop-filter: blur(3px);
-    border-radius: 10px;
-}
-.pane.max-out, .container.max-out{
-    height: calc(100vh - 2 * 1rem);
-}
-.pane.dark, .container.dark{
-    background-color: rgba(50, 50, 50, .25);
-}
-.pane .pane-head{
-    padding: 2rem 0;
-    text-align: center;
-}
-.pane .pane-head *{
-    width: 80%;
-}
-
-.list-group .list-group-item{
-    background-color: transparent;
-    padding: 15px 10px;
-    border: none;
-    border-radius: 0;
-    border-top: 1px rgba(255, 255, 255, .1) solid;
-    cursor: pointer;
-}
-.list-group .list-group-item.active{
-    background-color: rgba(255, 255, 255, .1);
-}
-.list-group .list-group-item-action{
-    transition: all .2s;
-}
-
-.form-control{
-    color: #fff !important;
-    transition: all .2s;
-    background-color: rgba(10, 10, 10, .4);
-    outline: none !important;
-    box-shadow: none !important;
-    border: 1px solid #222 !important;
-}
-.form-control:hover{
-    background-color: rgba(10, 10, 10, .5);
-}
-.form-control:active, .form-control:focus{
-    background-color: rgba(10, 10, 10, .6);
-}
-
 .flash{
     position: relative;
     padding: 20px 16px;
@@ -118,12 +40,14 @@ footer h5{
     width: 4px;
     height: 4px;
 }
+::-webkit-scrollbar-thumb {
+    border-radius: 25px;
+}
 ::-webkit-scrollbar-track {
     background: rgb(102, 102, 102);
 }
 ::-webkit-scrollbar-thumb {
     background: #888;
-    border-radius: 25px;
 }
 ::-webkit-scrollbar-thumb:hover {
     background: #555;

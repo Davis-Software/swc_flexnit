@@ -93,7 +93,7 @@ function App(){
             case "/settings":
                 return <Settings />
             case "/file-manager":
-                if(isAdmin) return <FileManager />
+                return isAdmin ? <FileManager /> : <NotFound />
             default:
                 return <NotFound />
         }

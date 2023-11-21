@@ -1,11 +1,14 @@
 body{
-    /*background-image: url(/static/img/bg/bg_01.svg);*/
     background-color: #222;
 }
 .form-control{
     transition: all .3s;
-    background-color: rgb(56, 62, 68, .5);
+    background-color: #272b30;
+    border: var(--bs-border-width) solid #222;
     color: #fff;
+}
+.form-control::placeholder{
+    color: #aaa;
 }
 .form-control:focus{
     background-color: rgb(57, 65, 72, .6);
@@ -17,7 +20,4 @@ body{
 .container{
     margin-top: 30vh;
     transition: all .3s;
-}
-.container:hover{
-    transform: scale(1.01);
 }
