@@ -116,6 +116,7 @@ def deliver_movie(uuid, file_name=None, frame=None):
     if frame is not None and frame.isdigit():
         response = make_response(get_movie_frame(movie.uuid, int(frame)))
         response.cache_control.max_age = 60 * 60 * 24 * 365
+        response.content_type = "image/jpeg"
         return response
 
     if file_name is None:

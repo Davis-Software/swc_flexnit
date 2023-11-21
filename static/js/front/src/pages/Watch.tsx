@@ -307,6 +307,23 @@ function Watch(){
         setShowControls(true)
     }
 
+    function TimelineFramePreview(){
+        if(!videoRef.current || !timelineFramePreviewLocation) return null;
+        const frameNumber = Math.floor((timelineFramePreviewLocation / window.innerWidth) * videoRef.current!.duration)
+        let splittingAmount = Math.floor(videoRef.current!.duration / 10)
+        splittingAmount = splittingAmount > 25 ? 25 : splittingAmount
+        const nearestFrameInStorage = Math.floor(frameNumber / splittingAmount) * splittingAmount
+
+        return (
+            <img
+                alt=""
+                className="position-absolute top-0 start-0"
+                src={videoLink + `/${nearestFrameInStorage}`}
+                style={{width: "100%", height: "100%", objectFit: "contain"}}
+            />
+        )
+    }
+
     useEffect(() => {
         if(!videoRef.current) return;
         if(episodeEnded){
@@ -531,22 +548,7 @@ function Watch(){
                                             }}
                                         >
                                             <CircularProgress />
-                                            {(() => {
-                                                if(!videoRef.current || !timelineFramePreviewLocation) return null;
-                                                const frameNumber = Math.floor((timelineFramePreviewLocation / window.innerWidth) * videoRef.current!.duration)
-                                                let splittingAmount = Math.floor(videoRef.current!.duration / 10)
-                                                splittingAmount = splittingAmount > 25 ? 25 : splittingAmount
-                                                const nearestFrameInStorage = Math.floor(frameNumber / splittingAmount) * splittingAmount
-
-                                                return (
-                                                    <img
-                                                        alt={`Frame ${nearestFrameInStorage}`}
-                                                        className="position-absolute top-0 start-0"
-                                                        src={videoLink + `/${nearestFrameInStorage}`}
-                                                        style={{width: "100%", height: "100%", objectFit: "contain"}}
-                                                    />
-                                                )
-                                            })()}
+                                            <TimelineFramePreview />
                                         </div>
                                     </Fade>
                                 </div>

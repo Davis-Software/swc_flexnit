@@ -12,10 +12,10 @@ from utils.wsl_compatability import make_wsl_command, get_wsl_path, get_local_ws
 frame_cache = {}
 thumbnail_cache = os.path.join(config.get("VIDEO_DIR"), "thumbnail_cache")
 
-
-if os.path.exists(thumbnail_cache):
-    for file in os.listdir(thumbnail_cache):
-        os.remove(os.path.join(thumbnail_cache, file))
+if not os.path.exists(thumbnail_cache):
+    os.makedirs(thumbnail_cache)
+for file in os.listdir(thumbnail_cache):
+    os.remove(os.path.join(thumbnail_cache, file))
 
 
 def get_video_file_info(file_path: str):
@@ -65,6 +65,9 @@ def get_video_frame(file_path: str, time_index: int):
     if key in frame_cache:
         return frame_cache[key]
 
+    # Preload empty frames to prevent multiple requests for the same frame
+    frame_cache[key] = None
+
     ffmpeg = subprocess.Popen(
         [
             config.get("FFMPEG_PATH"),
@@ -77,6 +80,8 @@ def get_video_frame(file_path: str, time_index: int):
             file_path,
             "-vframes",
             "1",
+            "-vf",
+            f"scale='min(101,-1)':'min(101,100)'",
             "-f",
             "image2",
             "-preset",
@@ -194,9 +199,6 @@ def get_sized_thumbnail(title: MovieModel or SeriesModel, quality: str = "o"):
     if title is None or title.thumbnail is None:
         return None
 
-    if not os.path.exists(thumbnail_cache):
-        os.makedirs(thumbnail_cache)
-
     if quality == "o":
         return title.thumbnail
 
@@ -206,11 +208,6 @@ def get_sized_thumbnail(title: MovieModel or SeriesModel, quality: str = "o"):
     if os.path.exists(path):
         with open(path, "rb") as f:
             return f.read()
-
-    temp_target = os.path.join(thumbnail_cache, f"{key}_conv-temp")
-
-    with open(temp_target, "wb") as f:
-        f.write(title.thumbnail)
 
     if quality == "h":
         conversion = "'min(561,-1)':'min(801,800)'"
@@ -234,7 +231,9 @@ def get_sized_thumbnail(title: MovieModel or SeriesModel, quality: str = "o"):
             "-loglevel",
             "quiet",
             "-i",
-            temp_target,
+            "-",
+            "-f",
+            "png_pipe",
             "-vf",
             f"scale={conversion}",
             "-f",
@@ -243,15 +242,13 @@ def get_sized_thumbnail(title: MovieModel or SeriesModel, quality: str = "o"):
             "ultrafast",
             "-",
         ],
+        stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
-
-    frame = ffmpeg.stdout.read()
+    frame = ffmpeg.communicate(input=title.thumbnail)[0]
 
     with open(path, "wb") as f:
         f.write(frame)
-
-    os.remove(temp_target)
 
     return frame
