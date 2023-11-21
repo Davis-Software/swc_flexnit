@@ -11,7 +11,7 @@ import {
     TableCell,
     TableHead,
     TableRow,
-    TextField, Tooltip
+    TextField, Tooltip, Typography
 } from "@mui/material";
 import SwcLoader from "../SwcLoader";
 import {SwcFab, SwcFabContainer} from "../SwcFab";
@@ -77,10 +77,14 @@ function FileTableEntry({file, selected, setSelected, setPath, onRecover}: FileT
                         ))
                     }
                 }}
+                sx={{cursor: file.is_dir ? "pointer" : "default"}}
             >
                 {file.not_found ? (
                     <span style={{color: "red"}}>{file.display_name}</span>
                 ) : file.display_name}
+            </TableCell>
+            <TableCell>
+                {file.display_name !== file.filename ? file.filename : "-"}
             </TableCell>
             <TableCell>
                 {hrFileSize(file.size)}
@@ -133,7 +137,10 @@ function FileManagerTableHead(props: FileManagerTableHeadProps){
                     }}
                 >
                     <i className={`material-icons ${props.sort !== "display_name" ? "text-muted" : ""}`}>{(props.sort === "display_name" && props.order === "asc") ? "arrow_upward" : "arrow_downward"}</i>Name
-                    <span className="text-muted ms-3">{hrPath(props.path, fileCache)}</span>
+                    <Typography variant="caption" className="ms-3">{hrPath(props.path, fileCache)}</Typography>
+                </TableCell>
+                <TableCell>
+                    UUID / Actual Name
                 </TableCell>
                 <TableCell
                     onClick={() => {
@@ -257,9 +264,11 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
                                                 props.setPath(prevState => prevState.substring(0, prevState.lastIndexOf("/")))
                                             }
                                         }}
+                                        sx={{cursor: "pointer"}}
                                     >
                                         ..
                                     </TableCell>
+                                    <TableCell />
                                     <TableCell />
                                 </TableRow>
                             )}
