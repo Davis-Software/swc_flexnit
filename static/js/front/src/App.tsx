@@ -16,6 +16,7 @@ const News = lazy(() => import("./pages/NewsPage"));
 const About = lazy(() => import("./pages/About"));
 const Watch = lazy(() => import("./pages/Watch"));
 const Info = lazy(() => import("./pages/InfoPage"));
+const Music = lazy(() => import("./pages/Music"))
 const UserLibrary = lazy(() => import("./pages/UserLibrary"));
 const Settings = lazy(() => import("./pages/Settings"));
 
@@ -46,12 +47,14 @@ const pageNames: {[key: string]: string} = {
     "/watch": "Watch",
     "/info": "Info",
     "/library": "Library",
+    "/music": "Music",
     "/settings": "Settings",
     "/file-manager": "File Manager",
 }
 const navItems: [string, string, boolean][] = [
     ["Home", "/", false],
     ["Library", "/library", false],
+    ["Music", "/music", false],
     ["File Manager", "/file-manager", true],
 ]
 
@@ -90,6 +93,8 @@ function App(){
                 return <Info />
             case "/library":
                 return <UserLibrary />
+            case "/music":
+                return <Music />
             case "/settings":
                 return <Settings />
             case "/file-manager":

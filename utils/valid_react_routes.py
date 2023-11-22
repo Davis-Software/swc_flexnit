@@ -4,6 +4,7 @@ VALID_REACT_ROUTES = [
     "watch",
     "info",
     "library",
+    "music",
     "settings",
     "file-manager"
 ]
