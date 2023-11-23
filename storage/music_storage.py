@@ -8,6 +8,8 @@ from models.music import add_song, get_song, delete_song as delete_song_model
 from .storage_tools import get_video_file_info
 
 MUSIC_STORAGE_PATH = path.join(config.get("VIDEO_DIR"), "music")
+if not path.exists(MUSIC_STORAGE_PATH):
+    os.makedirs(MUSIC_STORAGE_PATH)
 
 
 def get_song_storage_file(song_uuid: str, ensure_exists: bool = True):
@@ -19,10 +21,18 @@ def get_song_storage_file(song_uuid: str, ensure_exists: bool = True):
     return file if path.exists(file) else None
 
 
-def upload_song(song_uuid: str, file: FileStorage):
-    song = get_song(song_uuid)
+def upload_song(song_uuid: str or None, file: FileStorage):
+    if song_uuid is None:
+        title = ".".join(file.filename.split(".")[:-1])
+        artist = title.split(" - ")[0]
+        title = " - ".join(title.split(" - ")[1:])
+        song = add_song(title)
+        song.artists = ",".join(artist.split(", "))
+    else:
+        song = get_song(song_uuid)
+
     if song is None:
-        song = add_song(song_uuid, file.name)
+        return False
 
     file_path = path.join(MUSIC_STORAGE_PATH, song.uuid)
     file.save(file_path)

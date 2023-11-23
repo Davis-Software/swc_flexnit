@@ -1,7 +1,8 @@
 import React from "react"
 import {Tooltip} from "@mui/material";
 
-function getTimeString(seconds: number){
+function getTimeString(seconds: number, showNothing: boolean = false, nothing: string = "-"){
+    if(!seconds && showNothing) return nothing
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor(seconds / 60) % 60;
     const seconds2 = Math.round(seconds % 60);

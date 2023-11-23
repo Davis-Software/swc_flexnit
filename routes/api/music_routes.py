@@ -13,14 +13,15 @@ from utils.request_codes import RequestCode
 @app.route("/music/new", methods=["POST"])
 @admin_required
 def new_song():
-    title = request.form.get("title")
-    song = request.files.get("song")
+    songs = request.files.getlist("files")
 
-    if title is None or song is None:
+    if songs is None or len(songs) == 0:
         return make_response("Invalid request", RequestCode.ClientError.BadRequest)
 
-    song = upload_song(title, song)
-    return make_response(song.to_json(), RequestCode.Success.OK)
+    for song in songs:
+        upload_song(None, song)
+
+    return make_response("Songs uploaded", RequestCode.Success.Created)
 
 
 @app.route("/music/files", methods=["GET"])
@@ -40,10 +41,10 @@ def song_info(uuid):
     if "thumbnail" in request.args:
         return send_binary_image(song.thumbnail)
 
-    return send_file(get_song_storage_file(song), mimetype="audio/mpeg")
+    return send_file(get_song_storage_file(song.uuid), mimetype="audio/mpeg")
 
 
-@app.route("/music/<uuid>/<action>", methods=["GET", "POST"])
+@app.route("/music/<uuid>/<action>", methods=["POST"])
 @admin_required
 def song_actions(uuid, action):
     song = get_song(uuid)
@@ -55,6 +56,6 @@ def song_actions(uuid, action):
         return edit_song(song.uuid, **request.form, **request.files).to_json()
 
     if action == "delete":
-        return delete_song(song.uuid)
+        return "ok" if delete_song(song.uuid) else "error"
 
     return make_response("Invalid request", RequestCode.ClientError.BadRequest)

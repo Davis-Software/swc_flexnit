@@ -23,7 +23,7 @@ function Overview() {
 
     const totalFileSize = useMemo(() => (
         overviewData ?
-            hrFileSize(overviewData.movie_size + overviewData.series_size) :
+            hrFileSize(overviewData.movie_size + overviewData.series_size + overviewData.music_size + overviewData.thumbnail_cache_size) :
             loader
     ), [overviewData])
     const movieFileSize = useMemo(() => (
@@ -36,6 +36,17 @@ function Overview() {
             hrFileSize(overviewData.series_size) :
             loader
     ), [overviewData])
+    const musicFileSize = useMemo(() => (
+        overviewData ?
+            hrFileSize(overviewData.music_size) :
+            loader
+    ), [overviewData])
+    const thumbnailCacheSize = useMemo(() => (
+        overviewData ?
+            hrFileSize(overviewData.thumbnail_cache_size) :
+            loader
+    ), [overviewData])
+
     const cpuUsage = useMemo(() => (
         overviewData ?
             `${overviewData.process_info.cpu}%` :
@@ -60,6 +71,8 @@ function Overview() {
                     <p>Total: {totalFileSize}</p>
                     <p>Movies: {movieFileSize}</p>
                     <p>Series: {seriesFileSize}</p>
+                    <p>Music: {musicFileSize}</p>
+                    <p>Thumbnail Cache: {thumbnailCacheSize}</p>
                 </div>
             </div>
             <div className="mt-2">

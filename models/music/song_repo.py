@@ -3,11 +3,7 @@ from werkzeug.datastructures import FileStorage
 from .song_model import SongModel
 
 
-def add_song(song_uuid: str, title: str):
-    song = SongModel.query.filter_by(uuid=song_uuid).first()
-    if not song:
-        return None
-
+def add_song(title: str):
     song = SongModel(title)
     song.add()
     return song

@@ -4,9 +4,12 @@ import psutil
 from __init__ import config
 from models.movie import get_movie, MovieModel
 from models.series import get_series, SeriesModel, EpisodeModel
+
 from storage.movie_storage import MOVIE_STORAGE_PATH
 from storage.series_storage import SERIES_STORAGE_PATH
-from storage.storage_tools import get_video_file_info
+from storage.music_storage import MUSIC_STORAGE_PATH
+
+from storage.storage_tools import get_video_file_info, thumbnail_cache
 
 STATIC_PATH = config.get("VIDEO_DIR")
 
@@ -51,6 +54,8 @@ def get_storage_info(force=False):
     return {
         "movie_size": calculate_size(MOVIE_STORAGE_PATH, force_level=force),
         "series_size": calculate_size(SERIES_STORAGE_PATH, force_level=force),
+        "music_size": calculate_size(MUSIC_STORAGE_PATH, force_level=force),
+        "thumbnail_cache_size": calculate_size(thumbnail_cache, force_level=force),
         "process_info": process_info(),
     }
 
