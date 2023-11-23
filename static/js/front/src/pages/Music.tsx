@@ -53,7 +53,7 @@ function Music(){
         setShowEdit(true)
     }
     function handleDelete(song: SongType){
-        // if(!confirm(`Are you sure to delete "${song.title}"?`)) return
+        if(!confirm(`Are you sure to delete "${song.title}"?`)) return
         fetch(`/music/${song.uuid}/delete`, {method: "POST"})
             .then(() => {
                 setSongs(prev => prev.filter(s => s.uuid !== song.uuid))
