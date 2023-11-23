@@ -17,7 +17,7 @@ def edit_song(
     uuid: str,
     title: str = None,
     description: str = None,
-    artist: str = None,
+    artists: str = None,
     thumbnail: FileStorage = None,
     album: str = None
 ):
@@ -34,8 +34,8 @@ def edit_song(
         song_model.title = title
     if check_for_change("description", description):
         song_model.description = description
-    if check_for_change("artist", artist):
-        song_model.artist = artist
+    if check_for_change("artists", artists):
+        song_model.artists = artists
     if check_for_change("thumbnail", thumbnail):
         song_model.thumbnail = thumbnail
     if check_for_change("album", album):

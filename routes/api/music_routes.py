@@ -26,7 +26,7 @@ def new_song():
 @app.route("/music/files", methods=["GET"])
 @auth_required
 def song_files():
-    return make_response(get_songs(), RequestCode.Success.OK)
+    return make_response([song.to_json() for song in get_songs()], RequestCode.Success.OK)
 
 
 @app.route("/music/<uuid>", methods=["GET"])

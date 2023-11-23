@@ -3,7 +3,7 @@ interface SongType{
     uuid: string;
     title: string;
     description: string;
-    artist: string;
+    artists: string;
     album: string;
     audio_info: {[key: string]: any};
 }

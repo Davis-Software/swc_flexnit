@@ -1,7 +1,6 @@
 import datetime
 import json
 
-from flask import jsonify
 from sqlalchemy.orm.collections import InstrumentedList
 
 from __init__ import db
@@ -60,7 +59,7 @@ class BaseModel(db.Model):
         return ret_data
 
     def to_json(self, show: list = None):
-        return jsonify(self.to_dict(show=show))
+        return self.to_dict(show=show)
 
 
 class KeyedValueModel(BaseModel):
