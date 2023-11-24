@@ -261,7 +261,7 @@ def extract_song_thumbnail(song: SongModel, file_path: str):
 
     png_stream = None
     for stream in song.audio_info["streams"]:
-        if "codec_name" not in stream or stream["codec_name"] != "png":
+        if "codec_name" not in stream or stream["codec_name"] not in ["png", "mjpeg", "bmp", "gif", "tiff", "webp"]:
             continue
         png_stream = stream
         break
