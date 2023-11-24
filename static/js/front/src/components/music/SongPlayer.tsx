@@ -1,5 +1,5 @@
-import React, {useEffect} from "react"
-import {duration, IconButton, Paper, Slider, useTheme} from "@mui/material";
+import React, {useEffect, useState} from "react"
+import {IconButton, Paper, Slider, useTheme} from "@mui/material";
 import SongType from "../../types/songType";
 
 interface SongPlayerProps {
@@ -9,6 +9,7 @@ function SongPlayer(props: SongPlayerProps){
     const [playing, setPlaying] = React.useState<boolean>(false)
 
     const audioRef = React.useRef<HTMLAudioElement>(null)
+    const [volume, setVolume] = useState(parseFloat(localStorage.getItem("music-volume") || "1"))
     const [duration, setDuration] = React.useState<number>(0)
     const [position, setPosition] = React.useState<number>(0)
 
@@ -32,6 +33,11 @@ function SongPlayer(props: SongPlayerProps){
             audioRef.current.removeEventListener("timeupdate", handleSetPosition)
         }
     }, []);
+    useEffect(() => {
+        if(!audioRef.current) return;
+        audioRef.current.volume = volume
+        localStorage.setItem("music-volume", volume.toString())
+    }, [volume])
 
     return (
         <div style={{height: "64px", width: "100%", position: "fixed", bottom: 0}}>
@@ -81,6 +87,18 @@ function SongPlayer(props: SongPlayerProps){
                         min={0}
                         max={duration}
                         value={position}
+                    />
+                </div>
+                <div className="mx-3" style={{width: "10%"}}>
+                    <Slider
+                        value={volume}
+                        onChange={(_, v) => {
+                            setVolume(v as number)
+                        }}
+                        orientation="horizontal"
+                        min={0}
+                        max={1}
+                        step={0.01}
                     />
                 </div>
             </Paper>

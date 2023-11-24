@@ -14,12 +14,13 @@ from utils.request_codes import RequestCode
 @admin_required
 def new_song():
     songs = request.files.getlist("files")
+    album = request.form.get("album")
 
     if songs is None or len(songs) == 0:
         return make_response("Invalid request", RequestCode.ClientError.BadRequest)
 
     for song in songs:
-        upload_song(None, song)
+        upload_song(None, song, album)
 
     return make_response("Songs uploaded", RequestCode.Success.Created)
 

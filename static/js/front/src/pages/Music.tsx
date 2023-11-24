@@ -7,7 +7,7 @@ import {isAdmin} from "../utils/constants";
 import PageLoader from "../components/PageLoader";
 import SwcModal from "../components/SwcModal";
 import EditSong from "../components/music/EditSong";
-import {Button, ButtonGroup, List, ListItem} from "@mui/material";
+import {Button, ButtonGroup, List, ListItem, TextField} from "@mui/material";
 
 function Music(){
     const [requestUpdate, setRequestUpdate] = React.useState<boolean>(false)
@@ -18,6 +18,7 @@ function Music(){
 
     const [showAdd, setShowAdd] = React.useState<boolean>(false)
     const [newSongs, setNewSongs] = React.useState<FileList | null>()
+    const [newAlbum, setNewAlbum] = React.useState<string>("")
     const [uploading, setUploading] = React.useState<boolean>(false)
     const [uploadProgress, setUploadProgress] = React.useState<number>(0)
 
@@ -28,6 +29,9 @@ function Music(){
 
         for(let i = 0; i < newSongs.length; i++){
             formData.append("files", newSongs[i])
+        }
+        if(newAlbum && newAlbum !== ""){
+            formData.append("album", newAlbum)
         }
 
         setUploading(true)
@@ -44,6 +48,7 @@ function Music(){
             setUploading(false)
             setNewSongs(null)
             setRequestUpdate(prev => !prev)
+            setNewAlbum("")
         })
         xhr.send(formData)
     }
@@ -95,6 +100,14 @@ function Music(){
                         </ListItem>
                     )}
                 </List>
+                <TextField
+                    value={newAlbum}
+                    onChange={(e) => setNewAlbum(e.target.value)}
+                    variant="standard"
+                    label="Album Name"
+                    disabled={uploading || !newSongs || newSongs.length < 1}
+                    fullWidth
+                />
                 <ButtonGroup disabled={uploading} fullWidth>
                     <Button variant="contained" component="label">
                         {newSongs && newSongs.length > 0 ? `${newSongs.length} Song${newSongs.length > 1 ? 's' : ''} selected - Click to change` : "Select songs"}
