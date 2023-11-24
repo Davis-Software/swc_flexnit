@@ -1,7 +1,7 @@
 from __init__ import app
 
 from models.music import get_song, get_songs, edit_song
-from storage.music_storage import upload_song, get_song_storage_file, delete_song
+from storage.music_storage import upload_song, get_song_storage_file, delete_song, get_or_generate_song_thumbnail
 
 from flask import make_response, request, send_file
 
@@ -40,6 +40,8 @@ def song_info(uuid):
         return make_response("Song not found", RequestCode.ClientError.NotFound)
 
     if "thumbnail" in request.args:
+        if song.thumbnail is None:
+            return get_or_generate_song_thumbnail(song)
         return send_binary_image(song.thumbnail)
 
     return send_file(get_song_storage_file(song.uuid), mimetype="audio/mpeg")

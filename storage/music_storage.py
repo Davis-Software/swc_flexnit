@@ -4,8 +4,8 @@ import os
 from os import path
 from werkzeug.datastructures import FileStorage
 
-from models.music import add_song, get_song, delete_song as delete_song_model
-from .storage_tools import get_video_file_info
+from models.music import add_song, get_song, delete_song as delete_song_model, SongModel
+from .storage_tools import get_video_file_info, extract_song_thumbnail
 
 MUSIC_STORAGE_PATH = path.join(config.get("VIDEO_DIR"), "music")
 if not path.exists(MUSIC_STORAGE_PATH):
@@ -54,3 +54,7 @@ def delete_song(song_uuid: str):
 
     delete_song_model(song_uuid)
     return True
+
+
+def get_or_generate_song_thumbnail(song: SongModel):
+    return extract_song_thumbnail(song, get_song_storage_file(song.uuid))

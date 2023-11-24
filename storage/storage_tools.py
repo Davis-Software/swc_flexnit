@@ -6,6 +6,7 @@ from uuid import uuid4
 from hashlib import md5
 
 from models.movie import MovieModel
+from models.music import SongModel
 from models.series import SeriesModel
 from utils.wsl_compatability import make_wsl_command, get_wsl_path, get_local_wsl_temp_dir
 
@@ -252,3 +253,39 @@ def get_sized_thumbnail(title: MovieModel or SeriesModel, quality: str = "o"):
         f.write(frame)
 
     return frame
+
+
+def extract_song_thumbnail(song: SongModel, file_path: str):
+    if song.audio_info is None or "streams" not in song.audio_info:
+        return
+
+    png_stream = None
+    for stream in song.audio_info["streams"]:
+        if "codec_name" not in stream or stream["codec_name"] != "png":
+            continue
+        png_stream = stream
+        break
+
+    if png_stream is None:
+        return
+
+    png_index = png_stream["index"]
+
+    ffmpeg = subprocess.Popen([
+        config.get("FFMPEG_PATH"),
+        "-y",
+        "-loglevel", "quiet",
+        "-i", file_path,
+        "-map", f"0:{png_index}",
+        "-f", "image2",
+        "-"
+    ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT
+    )
+
+    image = ffmpeg.stdout.read()
+    song.thumbnail = image
+    song.commit()
+
+    return image
