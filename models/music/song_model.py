@@ -15,6 +15,6 @@ class SongModel(TitleModel):
     def to_dict(self, show: list = None, to_json=True, parent_type=None):
         dict_obj = super().to_dict(show, to_json, parent_type)
         dict_obj["audio_info"] = {
-            "duration": self.audio_info["format"]["duration"] if self.audio_info is not None else None
+            "duration": self.audio_info["format"]["duration"] if self.audio_info is not None and "format" in self.audio_info else None
         }
         return dict_obj

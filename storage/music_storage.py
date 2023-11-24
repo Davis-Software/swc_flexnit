@@ -45,6 +45,22 @@ def upload_song(song_uuid: str or None, file: FileStorage, album: str = None):
     file.save(file_path)
 
     song.audio_info = get_video_file_info(file_path)
+
+    if song.audio_info is not None and "format" in song.audio_info and "tags" in song.audio_info["format"]:
+        song.artists = song.audio_info["format"]["tags"].get("artist", song.artists)\
+            .replace("/", ",")\
+            .replace(";", ",")\
+            .replace(" and ", ",")\
+            .replace(" & ", ",")\
+            .replace(" ft. ", ",")\
+            .replace(" ft ", ",")\
+            .replace(" feat. ", ",")\
+            .replace(" x ", ",")
+        song.title = song.audio_info["format"]["tags"].get("title", song.title)
+
+        if album is None:
+            song.album = song.audio_info["format"]["tags"].get("album", song.album)
+
     song.add()
 
 
