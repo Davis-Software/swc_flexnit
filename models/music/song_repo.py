@@ -59,7 +59,7 @@ def get_song(song_uuid: str):
 
 
 def get_songs():
-    return SongModel.query.all()
+    return SongModel.query.order_by(SongModel.title).all()
 
 
 def get_songs_by_artist(artist: str):

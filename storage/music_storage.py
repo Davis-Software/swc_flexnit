@@ -24,8 +24,13 @@ def get_song_storage_file(song_uuid: str, ensure_exists: bool = True):
 def upload_song(song_uuid: str or None, file: FileStorage, album: str = None):
     if song_uuid is None:
         title = ".".join(file.filename.split(".")[:-1])
-        artist = title.split(" - ")[0]
-        title = " - ".join(title.split(" - ")[1:])
+        artist = title.split(" - ")[0].strip()
+        title = " - ".join(title.split(" - ")[1:]).strip()
+
+        if title == "":
+            title = artist
+            artist = "Unknown"
+
         song = add_song(title)
         song.artists = ",".join(artist.split(", "))
         if album is not None:

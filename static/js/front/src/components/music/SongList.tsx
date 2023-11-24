@@ -53,7 +53,7 @@ function rowContent(_index: number, props: RowContentProps){
                     <span style={{cursor: "pointer"}} onClick={() => props.setSearch("album:" + props.song.album)}>{props.song.album}</span>
                 </Tooltip>
             </TableCell>
-            <TableCell align="right">{getTimeString(props.song.audio_info.format?.duration, true)}</TableCell>
+            <TableCell align="right">{getTimeString(props.song.audio_info.duration, true)}</TableCell>
             {isAdmin && (
                 <TableCell align="right">
                     <Button variant="outlined" size="small" color="warning" onClick={() => props.setSelectedSong(props.song)}>Edit</Button>
