@@ -41,7 +41,7 @@ def song_info(uuid):
 
     if "thumbnail" in request.args:
         if song.thumbnail is None:
-            return get_or_generate_song_thumbnail(song)
+            return send_binary_image(get_or_generate_song_thumbnail(song))
         return send_binary_image(song.thumbnail)
 
     return send_file(get_song_storage_file(song.uuid), mimetype="audio/mpeg")

@@ -28,7 +28,7 @@ function rowContent(_index: number, props: RowContentProps){
     return (
         <>
             <TableCell padding="checkbox">
-                <img src={`/music/${props.song.uuid}?thumbnail`} alt={props.song.title} width={40} height={40} />
+                <img src={`/music/${props.song.uuid}?thumbnail`} alt="" width={40} height={40} style={{objectFit: "cover"}} />
             </TableCell>
             <TableCell
                 onClick={() => props.playSong(props.song)} sx={{cursor: "pointer"}}
