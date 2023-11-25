@@ -25,16 +25,17 @@ interface RowContentProps {
     queueSong: (song: SongType) => void
     unQueueSong: (song: SongType) => void
     queue: SongType[]
+    likeUnLikeSong: (song: SongType) => void
+    isLiked: boolean
 }
 function rowContent(_index: number, props: RowContentProps){
-    const liked = false
     const isInQueue = props.queue.includes(props.song)
 
     return (
         <>
             <TableCell padding="checkbox">
-                <IconButton color={liked ? "error" : "primary"} disabled>
-                    <i className="material-icons">{liked ? "favorite" : "favorite_border"}</i>
+                <IconButton color={props.isLiked ? "error" : "primary"} onClick={() => props.likeUnLikeSong(props.song)}>
+                    <i className="material-icons">{props.isLiked ? "favorite" : "favorite_border"}</i>
                 </IconButton>
             </TableCell>
             <TableCell padding="checkbox">
@@ -125,6 +126,8 @@ interface SongListProps {
     queuePage: boolean
     playingSong: SongType | null
     setPlayingSong: (song: SongType | null) => void
+    likeUnLikeSong: (song: SongType) => void
+    likedSongs: SongType[]
 }
 function SongList(props: SongListProps){
     const [search, setSearch] = React.useState("")
@@ -184,7 +187,9 @@ function SongList(props: SongListProps){
                         deleteSong: props.deleteSong,
                         playSong: props.setPlayingSong,
                         queuePage: props.queuePage,
-                        queue: props.queue
+                        queue: props.queue,
+                        likeUnLikeSong: props.likeUnLikeSong,
+                        isLiked: props.likedSongs.includes(song)
                     })
                 )}
                 style={{

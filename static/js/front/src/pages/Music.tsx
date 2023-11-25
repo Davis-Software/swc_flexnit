@@ -15,6 +15,7 @@ function Music(){
     const [requestUpdate, setRequestUpdate] = React.useState<boolean>(false)
     const [songs, setSongs] = React.useState<SongType[]>([])
     const [queue, setQueue] = React.useState<SongType[]>([])
+    const [liked, setLiked] = React.useState<number[]>([])
     const [playingSong, setPlayingSong] = React.useState<SongType | null>(null)
 
     const [showEdit, setShowEdit] = React.useState<boolean>(false)
@@ -56,7 +57,6 @@ function Music(){
         })
         xhr.send(formData)
     }
-
     function handleEdit(song: SongType){
         setSelectedSong(song)
         setShowEdit(true)
@@ -69,10 +69,27 @@ function Music(){
             })
     }
 
+    function handleLikeUnLike(song: SongType){
+        let action = liked.includes(song.id) ? "unlike" : "like"
+        fetch(`/music/${song.uuid}?${action}`, {method: "GET"})
+            .then(() => {
+                setLiked(prev => {
+                    if(action === "like"){
+                        return [...prev, song.id]
+                    } else {
+                        return prev.filter(uuid => uuid !== song.id)
+                    }
+                })
+            })
+    }
+
     useEffect(() => {
         fetch("/music/files")
             .then(res => res.json())
             .then(setSongs)
+        fetch("/music/liked")
+            .then(res => res.json())
+            .then(setLiked)
     }, [requestUpdate]);
 
     const songList = useMemo(() => {
@@ -81,8 +98,7 @@ function Music(){
         } else if(tab === 1){
             return queue
         } else {
-            // TODO: Liked songs
-            return []
+            return songs.filter(song => liked.includes(song.id))
         }
     }, [tab, songs, queue])
     function songEnded(){
@@ -98,7 +114,7 @@ function Music(){
             <Tabs value={tab} onChange={(e, v) => setTab(v)} variant="fullWidth">
                 <Tab label="Song Library" />
                 <Tab label={queue.length > 0 ? `Queue (${queue.length})` : "Queue"} />
-                <Tab label="Liked" />
+                <Tab label={liked.length > 0 ? `Liked (${liked.length})` : "Liked"} />
             </Tabs>
             <SongList
                 songs={songList}
@@ -109,6 +125,8 @@ function Music(){
                 queue={queue}
                 setQueue={setQueue}
                 queuePage={tab === 1}
+                likeUnLikeSong={handleLikeUnLike}
+                likedSongs={songs.filter(song => liked.includes(song.id))}
             />
 
             <SwcFabContainer bottom={6+64}>
