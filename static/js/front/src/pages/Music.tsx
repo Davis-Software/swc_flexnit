@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React, {useEffect, useMemo} from "react";
 import PageBase from "./PageBase";
 import SongType from "../types/songType";
 import SongList from "../components/music/SongList";
@@ -7,11 +7,15 @@ import {isAdmin} from "../utils/constants";
 import PageLoader from "../components/PageLoader";
 import SwcModal from "../components/SwcModal";
 import EditSong from "../components/music/EditSong";
-import {Button, ButtonGroup, List, ListItem, TextField} from "@mui/material";
+import {Button, ButtonGroup, List, ListItem, Tab, Tabs, TextField} from "@mui/material";
+import SongPlayer from "../components/music/SongPlayer";
 
 function Music(){
+    const [tab, setTab] = React.useState(0)
     const [requestUpdate, setRequestUpdate] = React.useState<boolean>(false)
     const [songs, setSongs] = React.useState<SongType[]>([])
+    const [queue, setQueue] = React.useState<SongType[]>([])
+    const [playingSong, setPlayingSong] = React.useState<SongType | null>(null)
 
     const [showEdit, setShowEdit] = React.useState<boolean>(false)
     const [selectedSong, setSelectedSong] = React.useState<SongType | null>(null)
@@ -71,9 +75,41 @@ function Music(){
             .then(setSongs)
     }, [requestUpdate]);
 
+    const songList = useMemo(() => {
+        if(tab === 0){
+            return songs
+        } else if(tab === 1){
+            return queue
+        } else {
+            // TODO: Liked songs
+            return []
+        }
+    }, [tab, songs, queue])
+    function songEnded(){
+        if(queue.length < 1) return
+        setQueue(prev => {
+            setPlayingSong(prev[0])
+            return prev.slice(1)
+        })
+    }
+
     return (
         <PageBase>
-            <SongList songs={songs} setSelectedSong={handleEdit} deleteSong={handleDelete} />
+            <Tabs value={tab} onChange={(e, v) => setTab(v)} variant="fullWidth">
+                <Tab label="Song Library" />
+                <Tab label={queue.length > 0 ? `Queue (${queue.length})` : "Queue"} />
+                <Tab label="Liked" />
+            </Tabs>
+            <SongList
+                songs={songList}
+                playingSong={playingSong}
+                setPlayingSong={setPlayingSong}
+                setSelectedSong={handleEdit}
+                deleteSong={handleDelete}
+                queue={queue}
+                setQueue={setQueue}
+                queuePage={tab === 1}
+            />
 
             <SwcFabContainer bottom={6+64}>
                 <SwcFab icon="add" onClick={() => setShowAdd(true)} color="primary" tooltip="Add song" hide={!isAdmin} />
@@ -121,6 +157,8 @@ function Music(){
                     Upload
                 </Button>
             </SwcModal>
+
+            <SongPlayer playingSong={playingSong} songEnded={songEnded} />
         </PageBase>
     )
 }

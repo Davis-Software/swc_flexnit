@@ -1,6 +1,6 @@
 import {TableComponents, TableVirtuoso} from "react-virtuoso";
 import {
-    Button,
+    Button, IconButton,
     Table,
     TableBody,
     TableCell,
@@ -14,7 +14,6 @@ import React from "react";
 import SongType from "../../types/songType";
 import {isAdmin} from "../../utils/constants";
 import {getTimeString} from "../../utils/FormatDate";
-import SongPlayer from "./SongPlayer";
 
 interface RowContentProps {
     song: SongType,
@@ -23,15 +22,29 @@ interface RowContentProps {
     playSong: (song: SongType) => void
     playingSong: SongType | null
     setSearch: (search: string) => void
+    queueSong: (song: SongType) => void
+    unQueueSong: (song: SongType) => void
+    queue: SongType[]
 }
 function rowContent(_index: number, props: RowContentProps){
+    const liked = false
+    const isInQueue = props.queue.includes(props.song)
+
     return (
         <>
+            <TableCell padding="checkbox">
+                <IconButton color={liked ? "error" : "primary"} disabled>
+                    <i className="material-icons">{liked ? "favorite" : "favorite_border"}</i>
+                </IconButton>
+            </TableCell>
             <TableCell padding="checkbox">
                 <img src={`/music/${props.song.uuid}?thumbnail`} alt="" width={40} height={40} style={{objectFit: "cover"}} />
             </TableCell>
             <TableCell
-                onClick={() => props.playSong(props.song)} sx={{cursor: "pointer"}}
+                onClick={() => {
+                    if(props.queue.at(0)?.uuid === props.song.uuid) props.unQueueSong(props.song)
+                    props.playSong(props.song)
+                }} sx={{cursor: "pointer"}}
             >
                 <Typography variant="body1">{props.song.title}</Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -60,6 +73,15 @@ function rowContent(_index: number, props: RowContentProps){
                     <Button variant="outlined" size="small" color="error" onClick={() => props.deleteSong(props.song)}>Delete</Button>
                 </TableCell>
             )}
+            <TableCell padding="checkbox">
+                <Tooltip title={(isInQueue ? "Remove from" : "Add to") + " Queue"} placement="left">
+                    <IconButton onClick={() => {
+                        isInQueue ? props.unQueueSong(props.song) : props.queueSong(props.song)
+                    }}>
+                        <i className="material-icons">{isInQueue ? "remove" : "add"}</i>
+                    </IconButton>
+                </Tooltip>
+            </TableCell>
         </>
     )
 }
@@ -68,12 +90,14 @@ function fixedHeaderContent(){
     return (
         <TableRow sx={{backgroundColor: "background.paper"}}>
             <TableCell padding="checkbox"></TableCell>
+            <TableCell padding="checkbox"></TableCell>
             <TableCell>Title</TableCell>
             <TableCell>Album</TableCell>
             <TableCell align="right">Duration</TableCell>
             {isAdmin && (
                 <TableCell align="right">Operations</TableCell>
             )}
+            <TableCell padding="checkbox"></TableCell>
         </TableRow>
     )
 }
@@ -96,11 +120,14 @@ interface SongListProps {
     songs: SongType[]
     setSelectedSong: (song: SongType) => void
     deleteSong: (song: SongType) => void
+    queue: SongType[]
+    setQueue: (queue: (prev: SongType[]) => SongType[]) => void
+    queuePage: boolean
+    playingSong: SongType | null
+    setPlayingSong: (song: SongType | null) => void
 }
 function SongList(props: SongListProps){
     const [search, setSearch] = React.useState("")
-
-    const [playingSong, setPlayingSong] = React.useState<SongType | null>(null)
 
     function filterFunc(song: SongType){
         if(!search || search.trim() === "") return true
@@ -125,6 +152,12 @@ function SongList(props: SongListProps){
             )
         }
     }
+    function queueSong(song: SongType){
+        props.setQueue(prev => [...prev, song])
+    }
+    function unQueueSong(song: SongType){
+        props.setQueue(prev => prev.filter(s => s.uuid !== song.uuid))
+    }
 
     return (
         <>
@@ -143,11 +176,15 @@ function SongList(props: SongListProps){
                 data={props.songs.filter(filterFunc).map(song =>
                     ({
                         song,
-                        playingSong,
+                        playingSong: props.playingSong,
+                        queueSong,
+                        unQueueSong,
                         setSearch,
                         setSelectedSong: props.setSelectedSong,
                         deleteSong: props.deleteSong,
-                        playSong: setPlayingSong
+                        playSong: props.setPlayingSong,
+                        queuePage: props.queuePage,
+                        queue: props.queue
                     })
                 )}
                 style={{
@@ -155,7 +192,6 @@ function SongList(props: SongListProps){
                     height: "calc(100% - 2*64px - 32px)",
                 }}
             />
-            <SongPlayer playingSong={playingSong} />
         </>
     )
 }

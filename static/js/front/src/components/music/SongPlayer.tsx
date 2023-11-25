@@ -14,6 +14,7 @@ import SongType from "../../types/songType";
 
 interface SongPlayerProps {
     playingSong: SongType | null
+    songEnded?: () => void
 }
 function SongPlayer(props: SongPlayerProps){
     const [playing, setPlaying] = React.useState<boolean>(false)
@@ -149,7 +150,7 @@ function SongPlayer(props: SongPlayerProps){
                         value={position}
                     />
                 </div>
-                <div className="mx-3" style={{width: "10%"}}>
+                <div className="mx-3" style={{width: "8%"}}>
                     <Slider
                         value={volume}
                         onChange={(_, v) => {
@@ -192,7 +193,10 @@ function SongPlayer(props: SongPlayerProps){
                 src={props.playingSong ? `/music/${props.playingSong.uuid}` : undefined}
                 onPlay={() => setPlaying(true)}
                 onPause={() => setPlaying(false)}
-                onEnded={() => setPlaying(false)}
+                onEnded={() => {
+                    setPlaying(false)
+                    if(props.songEnded) props.songEnded()
+                }}
                 ref={audioRef}
                 autoPlay
             />
