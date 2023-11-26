@@ -25,6 +25,7 @@ function SongPlayer(props: SongPlayerProps){
     const [volume, setVolume] = useState(parseFloat(localStorage.getItem("music-volume") || "1"))
     const [duration, setDuration] = React.useState<number>(0)
     const [position, setPosition] = React.useState<number>(0)
+    const [loop, setLoop] = React.useState<boolean>(false)
 
     const theme = useTheme()
 
@@ -111,6 +112,9 @@ function SongPlayer(props: SongPlayerProps){
                 >
                     <i className="material-icons">{!playing ? "play_arrow" : "pause"}</i>
                 </IconButton>
+                <IconButton onClick={() => setLoop(l => !l)} color={loop ? "primary" : "default"}>
+                    <i className="material-icons">repeat</i>
+                </IconButton>
                 <div className="me-3 flex-grow-1 d-flex flex-column ps-3">
                     {!!props.playingSong && (
                         <span>{props.playingSong?.artists} - {props.playingSong?.title}</span>
@@ -194,6 +198,12 @@ function SongPlayer(props: SongPlayerProps){
                 onPlay={() => setPlaying(true)}
                 onPause={() => setPlaying(false)}
                 onEnded={() => {
+                    if(loop){
+                        if(!audioRef.current) return
+                        audioRef.current.currentTime = 0
+                        audioRef.current.play().then()
+                        return
+                    }
                     setPlaying(false)
                     if(props.songEnded) props.songEnded()
                 }}
