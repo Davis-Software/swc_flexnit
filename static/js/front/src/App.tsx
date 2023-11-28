@@ -12,12 +12,13 @@ import {handleSyncDownload} from "./components/SyncPlaybackProgress";
 import {isAdmin, systemThemeIsDark} from "./utils/constants";
 
 const Home = lazy(() => import("./pages/Home"));
+const Info = lazy(() => import("./pages/InfoPage"));
+const Browser = lazy(() => import("./pages/ContentBrowserPage"))
+const UserLibrary = lazy(() => import("./pages/UserLibrary"));
+const Music = lazy(() => import("./pages/Music"))
+const Watch = lazy(() => import("./pages/Watch"));
 const News = lazy(() => import("./pages/NewsPage"));
 const About = lazy(() => import("./pages/About"));
-const Watch = lazy(() => import("./pages/Watch"));
-const Info = lazy(() => import("./pages/InfoPage"));
-const Music = lazy(() => import("./pages/Music"))
-const UserLibrary = lazy(() => import("./pages/UserLibrary"));
 const Settings = lazy(() => import("./pages/Settings"));
 
 const FileManager = lazy(() => import("./pages/FileManager"));
@@ -44,6 +45,7 @@ const pageNames: {[key: string]: string} = {
     "/": "Home",
     "/news": "News",
     "/about": "About",
+    "/browse": "Browse",
     "/watch": "Watch",
     "/info": "Info",
     "/library": "Library",
@@ -53,6 +55,7 @@ const pageNames: {[key: string]: string} = {
 }
 const navItems: [string, string, boolean][] = [
     ["Home", "/", false],
+    ["Browse", "/browse", false],
     ["Library", "/library", false],
     ["Music", "/music", false],
     ["File Manager", "/file-manager", true],
@@ -91,6 +94,8 @@ function App(){
                 return <Watch />
             case "/info":
                 return <Info />
+            case "/browse":
+                return <Browser />
             case "/library":
                 return <UserLibrary />
             case "/music":

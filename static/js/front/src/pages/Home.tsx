@@ -30,18 +30,26 @@ function Home(){
         setSelectedTitle(searchResults.find((title) => title.uuid === selectedUUID) || null)
     }, [searchResults]);
 
+    function navigateToTitle(title: TitleEntryType){
+        if(window.innerWidth < 840) {
+            navigateTo(`/info?mode=${title.type}&uuid=${title.uuid}`)
+        }else{
+            setSelectedTitle(title)
+        }
+    }
+
     const RenderContent = useMemo(() => {
-        if(selectedTitle){
-            switch (selectedTitle.type) {
+        if(selectedUUID || selectedTitle){
+            switch (selectedTitle?.type) {
                 case "movie":
                     return <MovieInfo title={selectedTitle} setTitle={setSelectedTitle} setSearchResults={setSearchResults} />
                 case "series":
                     return <SeriesInfo title={selectedTitle} setTitle={setSelectedTitle}  setSearchResults={setSearchResults} />
                 default:
-                    return <span>Something went wrong</span>
+                    return <PageLoader />
             }
         }else{
-            return <ContentBrowser />
+            return <ContentBrowser setSelectedTitle={navigateToTitle} />
         }
     }, [selectedTitle])
 
@@ -49,13 +57,7 @@ function Home(){
         <PageBase className="page-home flex-column flex-md-row">
             <Sidebar
                 selectedTitle={selectedTitle}
-                setSelectedTitle={(title) => {
-                    if(window.innerWidth < 840) {
-                        navigateTo(`/info?mode=${title.type}&uuid=${title.uuid}`)
-                    }else{
-                        setSelectedTitle(title)
-                    }
-                }}
+                setSelectedTitle={navigateToTitle}
                 searchResults={searchResults}
                 setSearchResults={setSearchResults}
             />

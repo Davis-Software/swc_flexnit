@@ -3,7 +3,6 @@ import {Container, Skeleton, Typography} from "@mui/material";
 import TitleEntryType from "../../types/titleEntryType";
 import SwcLoader from "../SwcLoader";
 import EffectGenerator from "../EffectGenerator";
-import {navigateTo} from "../../utils/navigation";
 
 function getTitleImage(title: TitleEntryType){
     if(["episode", "episode_group"].includes(title.type) && title.series){
@@ -56,7 +55,7 @@ const nameMapping = {
 }
 
 interface NewsProps {
-    setSelectedTitle?: (title: TitleEntryType | null) => void
+    setSelectedTitle?: (title: TitleEntryType) => void
     count?: number
 }
 function News(props: NewsProps){
@@ -73,18 +72,8 @@ function News(props: NewsProps){
     }, []);
 
     function handleTitleLink(title: TitleEntryType){
-        if(title.type === "episode" && title.series){
-            navigateTo(`/watch?series=${title.series.uuid}&episode=${title.uuid}${title.hls ? "&hls" : ""}`)
-        }
-        if(title.type === "episode_group" && title.series){
-            title = title.series
-        }
-        if(window.innerWidth < 840) {
-            navigateTo(`/info?mode=${title.type}&uuid=${title.uuid}`)
-        }else{
-            if(!props.setSelectedTitle) return
-            props.setSelectedTitle(title)
-        }
+        if(!props.setSelectedTitle) return
+        props.setSelectedTitle(title)
     }
 
     return (
