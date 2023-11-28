@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {Button, FormControl, MenuItem, Select, Skeleton, TextField, Typography} from "@mui/material";
 import SwcModal from "../SwcModal";
 import TitleEntryType from "../../types/titleEntryType";
@@ -6,6 +6,7 @@ import EffectGenerator from "../EffectGenerator";
 import {SwcFab, SwcFabContainer} from "../SwcFab";
 import {isAdmin} from "../../utils/constants";
 import {getTimeString} from "../../utils/FormatDate";
+import useIsInView from "../../hooks/useIsInView";
 
 interface CreateNewModalProps {
     show: boolean;
@@ -69,18 +70,25 @@ interface TitleEntryProps {
     searchResult: TitleEntryType;
 }
 function TitleEntry({searchResult}: TitleEntryProps){
+    const entryTextRef = useRef<HTMLDivElement>(null)
+    const inView = useIsInView(entryTextRef)
+    const [show, setShow] = useState(false)
     const [loading, setLoading] = React.useState(true)
+
+    useEffect(() => {
+        inView && setShow(true)
+    }, [inView]);
 
     return (
         <>
-            {loading && <Skeleton variant="rectangular" sx={{minWidth: "70px"}} height="100%" animation="wave" />}
+            {(loading || !inView) && <Skeleton variant="rectangular" sx={{minWidth: "70px"}} height="100%" animation="wave" />}
             <img
-                src={`/${searchResult.type === "movie" ? "movies" : "series"}/${searchResult.uuid}?thumbnail&q=l`}
+                src={show ? `/${searchResult.type === "movie" ? "movies" : "series"}/${searchResult.uuid}?thumbnail&q=l` : ""}
                 alt="title"
                 onLoad={() => setLoading(false)}
-                hidden={loading}
+                hidden={loading || !inView}
             />
-            <div className="ms-3">
+            <div className="ms-3" ref={entryTextRef}>
                 <div className="fw-bold">{searchResult.title}</div>
                 {searchResult.type === "movie" ? (
                     <>

@@ -11,7 +11,7 @@ class LikedSongsModel(BaseModel):
 
     def __init__(self, username, liked_songs: list):
         self.username = username
-        self.liked_songs = ",".join(liked_songs)
+        self.liked_songs = ",".join(str(liked_songs))
 
     def list(self):
         return list(map(int, self.liked_songs.split(","))) if self.liked_songs != "" else []

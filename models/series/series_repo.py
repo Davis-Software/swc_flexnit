@@ -213,8 +213,8 @@ def base_query(order: bool = True):
     return query
 
 
-def get_all_series(limit: int = 25):
-    return base_query().limit(limit).all()
+def get_all_series(limit: int = 25, page: int = 0):
+    return base_query().paginate(page, limit, False).items
 
 
 def latest_series(both: bool = True, limit: int = 25, grouping_time: int = 30):
