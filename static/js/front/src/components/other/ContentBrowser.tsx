@@ -30,7 +30,7 @@ function TitlePreview(props: TitlePreviewProps){
                     style={{width: "100%", height: "100%", maxHeight: "100%", objectFit: "cover"}}
                     hidden={!loaded}
                     onLoad={() => setLoaded(true)}
-                    src={`/${props.title.type === "movie" ? "movies" : "series"}/${props.title.uuid}?thumbnail`}
+                    src={`/${props.title.type === "movie" ? "movies" : "series"}/${props.title.uuid}?thumbnail&q=h`}
                 />
             </div>
         </Box>
