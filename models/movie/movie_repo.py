@@ -88,7 +88,7 @@ def base_query(order: bool = True):
     return query
 
 
-def get_movies(limit: int = 25, page: int = 0):
+def get_movies(limit: int = 25, page: int = 1):
     if limit == -1:
         return base_query().all()
     return base_query().paginate(page, limit, False).items

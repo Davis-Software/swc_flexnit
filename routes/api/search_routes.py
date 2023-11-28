@@ -71,13 +71,13 @@ def search_title(mode):
         if mode in ["movie", "all"]:
             for movie in get_movies(
                 request.args.get("c", 25, type=int),
-                request.args.get("p", 0, type=int)
+                request.args.get("p", 1, type=int)
             ):
                 results.append(movie)
         if mode in ["series", "all"]:
             for series in get_all_series(
                 request.args.get("c", 25, type=int),
-                request.args.get("p", 0, type=int)
+                request.args.get("p", 1, type=int)
             ):
                 results.append(series)
     else:

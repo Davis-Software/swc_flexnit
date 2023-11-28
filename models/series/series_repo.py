@@ -213,7 +213,7 @@ def base_query(order: bool = True):
     return query
 
 
-def get_all_series(limit: int = 25, page: int = 0):
+def get_all_series(limit: int = 25, page: int = 1):
     if limit == -1:
         return base_query().all()
     return base_query().paginate(page, limit, False).items
@@ -239,7 +239,7 @@ def latest_series(both: bool = True, limit: int = 25, grouping_time: int = 30):
         .all()
 
     if both:
-        episodes = EpisodeModel.query.order_by(EpisodeModel.added_on.desc()).limit(limit**2).all()
+        episodes = EpisodeModel.query.order_by(EpisodeModel.added_on.desc()).all()
         episode_groups = []
 
         for episode in episodes:

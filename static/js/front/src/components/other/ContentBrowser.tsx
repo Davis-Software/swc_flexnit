@@ -42,7 +42,7 @@ interface TitleBrowserProps{
     setSelectedTitle?: (title: TitleEntryType) => void
 }
 function TitleBrowser(props: TitleBrowserProps){
-    const [page, setPage] = useState<number>(0)
+    const [page, setPage] = useState<number>(1)
     const [pauseDetection, setPauseDetection] = useState<boolean>(false)
     const [titles, setTitles] = useState<TitleEntryType[]>([])
     const scrollRef = React.useRef<HTMLDivElement>(null);
