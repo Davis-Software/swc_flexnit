@@ -1,11 +1,11 @@
-import React, {Suspense, useEffect, useMemo} from "react";
+import React, {lazy, Suspense, useEffect, useMemo} from "react";
 import PageBase from "./PageBase";
 import Sidebar from "../components/navigation/Sidebar";
 import PageLoader from "../components/PageLoader";
 import TitleEntryType from "../types/titleEntryType";
 import {navigateTo} from "../utils/navigation";
-import News from "../components/other/News";
-import {Paper} from "@mui/material";
+
+const ContentBrowser = lazy(() => import("../components/other/ContentBrowser"))
 
 const MovieInfo = React.lazy(() => import("../components/movie/MovieInfo"));
 const SeriesInfo = React.lazy(() => import("../components/series/SeriesInfo"));
@@ -41,15 +41,7 @@ function Home(){
                     return <span>Something went wrong</span>
             }
         }else{
-            return <>
-                <Paper elevation={3} className="rounded-3 p-3 m-4">
-                    <h3 className="text-center text-info">No Title selected</h3>
-                    <hr/>
-                    <span>You can select a title through the sidebar on the left!</span>
-                </Paper>
-
-                <News setSelectedTitle={setSelectedTitle} />
-            </>
+            return <ContentBrowser />
         }
     }, [selectedTitle])
 
