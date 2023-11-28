@@ -56,7 +56,7 @@ const nameMapping = {
 }
 
 interface NewsProps {
-    setSelectedTitle: (title: TitleEntryType | null) => void
+    setSelectedTitle?: (title: TitleEntryType | null) => void
     count?: number
 }
 function News(props: NewsProps){
@@ -82,6 +82,7 @@ function News(props: NewsProps){
         if(window.innerWidth < 840) {
             navigateTo(`/info?mode=${title.type}&uuid=${title.uuid}`)
         }else{
+            if(!props.setSelectedTitle) return
             props.setSelectedTitle(title)
         }
     }
