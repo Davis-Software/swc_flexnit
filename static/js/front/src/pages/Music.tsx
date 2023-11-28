@@ -102,11 +102,25 @@ function Music(){
         }
     }, [tab, songs, queue])
     function songEnded(){
-        if(queue.length < 1) return
-        setQueue(prev => {
-            setPlayingSong(prev[0])
-            return prev.slice(1)
-        })
+        if(queue.length > 0) {
+            setQueue(prev => {
+                setPlayingSong(prev[0])
+                return prev.slice(1)
+            })
+        }else if(liked.length > 0 && liked.includes(playingSong!.id)){
+            setPlayingSong(() => {
+                let likedSongs = songs.filter(song => liked.includes(song.id))
+                if(likedSongs.includes(playingSong!)){
+                    return likedSongs[(likedSongs.indexOf(playingSong!) + 1) % likedSongs.length]
+                }else{
+                    return likedSongs[0]
+                }
+            })
+        }else{
+            setPlayingSong(songs[(songs.indexOf(playingSong!) + 1) % songs.length])
+        }
+
+
     }
 
     return (
