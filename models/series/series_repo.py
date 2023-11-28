@@ -214,6 +214,8 @@ def base_query(order: bool = True):
 
 
 def get_all_series(limit: int = 25, page: int = 0):
+    if limit == -1:
+        return base_query().all()
     return base_query().paginate(page, limit, False).items
 
 

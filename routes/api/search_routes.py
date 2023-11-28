@@ -62,7 +62,7 @@ def search_title(mode):
         latest = []
         for movie in latest_movies(limit=count):
             latest.append(movie)
-        for series in latest_series(limit=count):
+        for series in latest_series(limit=count, grouping_time=240):
             latest.append(series)
 
         results = list(sorted(latest, key=lambda x: x.added_on, reverse=True))[:count]
