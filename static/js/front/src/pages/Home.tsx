@@ -11,6 +11,7 @@ const MovieInfo = React.lazy(() => import("../components/movie/MovieInfo"));
 const SeriesInfo = React.lazy(() => import("../components/series/SeriesInfo"));
 
 function Home(){
+    const [showWideContent, setShowWideContent] = React.useState<boolean>(window.innerWidth >= 840)
     const [selectedUUID, setSelectedUUID] = React.useState<string | null>((new URLSearchParams(window.location.search)).get("selected"));
     const [selectedType, setSelectedType] = React.useState<string | null>((new URLSearchParams(window.location.search)).get("type"));
     const [searchResults, setSearchResults] = React.useState<TitleEntryType[]>([])
@@ -22,6 +23,13 @@ function Home(){
             history.replaceState(window.location.href, "", `?type=${selectedType}&selected=${selectedUUID}`)
         }
     }, [selectedUUID, selectedType])
+    useEffect(() => {
+        function handleResize(){
+            setShowWideContent(window.innerWidth >= 840)
+        }
+        window.addEventListener("resize", handleResize)
+        return () => window.removeEventListener("resize", handleResize)
+    }, [])
 
     function navigateToTitle(title: TitleEntryType | null){
         if(window.innerWidth < 840 && title !== null) {
@@ -55,11 +63,13 @@ function Home(){
                 searchResults={searchResults}
                 setSearchResults={setSearchResults}
             />
-            <div className="content d-none d-md-block">
-                <Suspense fallback={<PageLoader />}>
-                    {RenderContent}
-                </Suspense>
-            </div>
+            {showWideContent && (
+                <div className="content d-none d-md-block">
+                    <Suspense fallback={<PageLoader />}>
+                        {RenderContent}
+                    </Suspense>
+                </div>
+            )}
         </PageBase>
     )
 }

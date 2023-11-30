@@ -12,6 +12,9 @@ function navigateTo(url: string, noSetPrevState?: boolean){
 }
 
 function navigateToTitle(title: TitleEntryType){
+    if(!["movie", "series"].includes(title.type)){
+        throw new Error("Invalid title type")
+    }
     if(window.innerWidth < 840) {
         navigateTo(`/info?mode=${title.type}&uuid=${title.uuid}`)
     }else{

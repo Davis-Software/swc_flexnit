@@ -6,7 +6,13 @@ import {navigateToTitle} from "../utils/navigation";
 function NewsPage(){
     return (
         <PageBase>
-            <News setSelectedTitle={navigateToTitle} count={15} />
+            <News setSelectedTitle={(title) => {
+                if(title.series){
+                    navigateToTitle(title.series)
+                }else{
+                    navigateToTitle(title)
+                }
+            }} count={15} />
         </PageBase>
     )
 }
