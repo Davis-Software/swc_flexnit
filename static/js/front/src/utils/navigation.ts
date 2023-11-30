@@ -15,7 +15,7 @@ function navigateToTitle(title: TitleEntryType){
     if(window.innerWidth < 840) {
         navigateTo(`/info?mode=${title.type}&uuid=${title.uuid}`)
     }else{
-        navigateTo(`/?selected=${title.uuid}`)
+        navigateTo(`/?type=${title.type}&selected=${title.uuid}`)
     }
 }
 

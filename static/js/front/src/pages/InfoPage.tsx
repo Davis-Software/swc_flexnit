@@ -1,7 +1,6 @@
 import React, {Suspense} from "react";
 import PageBase from "./PageBase";
 import PageLoader from "../components/PageLoader";
-import TitleEntryType from "../types/titleEntryType";
 
 const MovieInfo = React.lazy(() => import("../components/movie/MovieInfo"));
 const SeriesInfo = React.lazy(() => import("../components/series/SeriesInfo"));
@@ -11,19 +10,14 @@ function InfoPage(){
     const type = searchParams.get("mode");
     const uuid = searchParams.get("uuid");
 
-    const [title, setTitle] = React.useState<TitleEntryType | null>({
-        uuid: uuid as string,
-        type: type as "movie" | "series",
-        title: "",
-        description: ""
-    })
+    function setTitle(){}
 
     return (
         <PageBase>
             <div className="content">
                 <Suspense fallback={<PageLoader />}>
-                    {title && type === "movie" && <MovieInfo title={title} setTitle={setTitle} setSearchResults={() => {}} />}
-                    {title && type === "series" && <SeriesInfo title={title} setTitle={setTitle} setSearchResults={() => {}} />}
+                    {uuid && type === "movie" && <MovieInfo titleUUID={uuid} setTitle={setTitle} setSearchResults={() => {}} />}
+                    {uuid && type === "series" && <SeriesInfo titleUUID={uuid} setTitle={setTitle} setSearchResults={() => {}} />}
                 </Suspense>
             </div>
         </PageBase>

@@ -243,7 +243,7 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
 }
 
 interface SeriesInfoProps{
-    title: TitleEntryType;
+    titleUUID: string;
     setTitle: (title: TitleEntryType | null) => void;
     setSearchResults: (results: (prevState: TitleEntryType[]) => TitleEntryType[]) => void;
 }
@@ -254,17 +254,17 @@ function SeriesInfo(props: SeriesInfoProps){
 
     useEffect(() => {
         setLoading(true)
-        fetch(`/series/${props.title.uuid}`)
+        fetch(`/series/${props.titleUUID}`)
             .then(res => res.json())
             .then(data => {
                 setSeries(data)
                 setLoading(false)
             })
-    }, [props.title.uuid])
+    }, [props.titleUUID])
 
     function handleDeleted(){
         props.setTitle(null)
-        props.setSearchResults(prevState => prevState.filter(t => t.uuid !== props.title.uuid))
+        props.setSearchResults(prevState => prevState.filter(t => t.uuid !== props.titleUUID))
     }
 
     return !loading && series !== null ? (

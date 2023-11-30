@@ -146,7 +146,7 @@ function MovieInfoDisplay(props: MovieInfoDisplayProps){
 }
 
 interface MovieInfoProps{
-    title: TitleEntryType;
+    titleUUID: string;
     setTitle: (title: TitleEntryType | null) => void;
     setSearchResults: (results: (prevState: TitleEntryType[]) => TitleEntryType[]) => void;
 }
@@ -157,17 +157,17 @@ function MovieInfo(props: MovieInfoProps){
 
     useEffect(() => {
         setLoading(true)
-        fetch(`/movies/${props.title.uuid}`)
+        fetch(`/movies/${props.titleUUID}`)
             .then(res => res.json())
             .then(data => {
                 setMovie(data)
                 setLoading(false)
             })
-    }, [props.title.uuid])
+    }, [props.titleUUID])
 
     function handleDeleted(){
         props.setTitle(null)
-        props.setSearchResults(prevState => prevState.filter(title => title.uuid !== props.title.uuid))
+        props.setSearchResults(prevState => prevState.filter(title => title.uuid !== props.titleUUID))
     }
 
     return !loading && movie !== null ? (

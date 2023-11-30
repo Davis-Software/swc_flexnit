@@ -105,7 +105,7 @@ function TitleEntry({searchResult}: TitleEntryProps){
 
 interface SidebarProps {
     setSelectedTitle: (title: TitleEntryType) => void;
-    selectedTitle: TitleEntryType | null;
+    selectedTitleUUID: string | null;
     searchResults: TitleEntryType[];
     setSearchResults: (results: (prevState: TitleEntryType[]) => TitleEntryType[]) => void;
 }
@@ -170,7 +170,7 @@ function Sidebar(props: SidebarProps){
                             rippleEffect
                             candleEffect
                             candleSize={2}
-                            selected={props.selectedTitle?.uuid === searchResult.uuid}
+                            selected={props.selectedTitleUUID === searchResult.uuid}
                         >
                             <TitleEntry searchResult={searchResult} />
                         </EffectGenerator>
