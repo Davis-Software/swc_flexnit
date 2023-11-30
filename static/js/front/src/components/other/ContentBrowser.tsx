@@ -1,5 +1,5 @@
 import TitleEntryType from "../../types/titleEntryType";
-import React, {lazy, useEffect, useState} from "react";
+import React, {lazy, useEffect, useMemo, useState} from "react";
 import {Box, Skeleton, Tab, Tabs} from "@mui/material";
 
 const News = lazy(() => import("./News"))
@@ -37,31 +37,62 @@ function TitlePreview(props: TitlePreviewProps){
     )
 }
 
+const stableStorage: {[key: string] : any} = {}
+function setStableProp(preKey: string, key: string, value: string | number | boolean){
+    if(!stableStorage.hasOwnProperty(preKey)){
+        stableStorage[preKey] = {}
+    }
+    stableStorage[preKey][key] = value
+}
+function getStableProp(preKey: string, key: string) : string | number | boolean{
+    if(!stableStorage.hasOwnProperty(preKey)){
+        stableStorage[preKey] = {}
+    }
+    return stableStorage[preKey][key]
+}
+
 interface TitleBrowserProps{
+    id: string
     titleFilter: "movie" | "series"
     setSelectedTitle?: (title: TitleEntryType) => void
 }
 function TitleBrowser(props: TitleBrowserProps){
-    const [page, setPage] = useState<number>(1)
-    const [pauseDetection, setPauseDetection] = useState<boolean>(false)
     const [titles, setTitles] = useState<TitleEntryType[]>([])
     const scrollRef = React.useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        fetch(`/search/${props.titleFilter}?c=8&p=${page}`)
+    function loadData(reset: boolean = false){
+        let currPage = reset ? 1 : (getStableProp(props.id, "page") as number + 1)
+        setStableProp(props.id, "pause", true)
+        fetch(`/search/${props.titleFilter}?c=8&p=${currPage}`)
             .then(r => r.json())
             .then((data) => {
-                setTitles([...titles, ...data])
-                setPauseDetection(false)
+                if(data.length === 0) {
+                    setStableProp(props.id, "end", true)
+                }else{
+                    setTitles(prevTitles => [...prevTitles, ...data])
+                    setStableProp(props.id, "page", currPage)
+                }
+                setStableProp(props.id, "pause", false)
             })
-    }, [props.titleFilter, page]);
+    }
+
+    useEffect(() => {
+        loadData(true)
+
+        return () => {
+            setTitles([])
+            setStableProp(props.id, "page", 0)
+            setStableProp(props.id, "pause", false)
+            setStableProp(props.id, "end", false)
+        }
+    }, [props.titleFilter]);
 
     function updatePage(){
-        if(pauseDetection) return
+        if(getStableProp(props.id, "pause") || getStableProp(props.id, "end")) return
         if(!scrollRef.current) return
+        if(scrollRef.current.clientWidth > scrollRef.current.scrollWidth) return
         if(Math.abs(scrollRef.current.scrollWidth - scrollRef.current.scrollLeft - scrollRef.current.clientWidth) > 10) return
-        setPauseDetection(true)
-        setPage(p => p + 1)
+        loadData()
     }
     useEffect(() => {
         if(!scrollRef.current) return
@@ -89,6 +120,7 @@ interface ContentBrowserProps{
     setSelectedTitle?: (title: TitleEntryType) => void
 }
 function ContentBrowser(props: ContentBrowserProps){
+    const uuid = useMemo(() => Math.random().toString(), [])
     const [tab, setTab] = useState<"browse" | "news">(
         props.forceTab ||
         sessionStorage.getItem("home-tab") as "browse" | "news" ||
@@ -119,11 +151,11 @@ function ContentBrowser(props: ContentBrowserProps){
                     >
                         <div className="h-50 d-flex flex-column">
                             <h2>Movies</h2>
-                            <TitleBrowser titleFilter="movie" setSelectedTitle={props.setSelectedTitle} />
+                            <TitleBrowser titleFilter="movie" setSelectedTitle={props.setSelectedTitle} id={uuid} />
                         </div>
                         <div className="h-50 d-flex flex-column">
                             <h2>Series</h2>
-                            <TitleBrowser titleFilter="series" setSelectedTitle={props.setSelectedTitle} />
+                            <TitleBrowser titleFilter="series" setSelectedTitle={props.setSelectedTitle} id={uuid} />
                         </div>
                     </div>
                 </div>
