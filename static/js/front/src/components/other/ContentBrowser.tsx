@@ -97,10 +97,23 @@ function TitleBrowser(props: TitleBrowserProps){
         if(Math.abs(scrollRef.current.scrollWidth - scrollRef.current.scrollLeft - scrollRef.current.clientWidth) > 10) return
         loadData()
     }
+    function scroll(e: any){
+        if(!scrollRef.current) return
+        scrollRef.current.scrollLeft -= (e.wheelDelta || -e.detail) * 30
+        e.preventDefault()
+        e.stopPropagation()
+
+    }
     useEffect(() => {
         if(!scrollRef.current) return
         scrollRef.current.addEventListener("scroll", updatePage)
-        return () => scrollRef.current?.removeEventListener("scroll", updatePage)
+        scrollRef.current.addEventListener("mousewheel", scroll)
+        scrollRef.current.addEventListener("DOMMouseScroll", scroll)
+        return () => {
+            scrollRef.current?.removeEventListener("scroll", updatePage)
+            scrollRef.current?.removeEventListener("mousewheel", scroll)
+            scrollRef.current?.removeEventListener("DOMMouseScroll", scroll)
+        }
     }, [scrollRef.current])
 
     return (
