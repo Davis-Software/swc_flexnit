@@ -32,6 +32,7 @@ function Home(){
     }, [])
 
     function navigateToTitle(title: TitleEntryType | null){
+        if(title?.series !== undefined) title = title.series
         if(window.innerWidth < 840 && title !== null) {
             navigateTo(`/info?mode=${title.type}&uuid=${title.uuid}`)
         }else{
