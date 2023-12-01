@@ -99,7 +99,7 @@ function TitleBrowser(props: TitleBrowserProps){
     }
     function scroll(e: any){
         if(!scrollRef.current) return
-        scrollRef.current.scrollLeft -= (e.wheelDelta || -e.detail) * 30
+        scrollRef.current.scrollLeft -= (e.wheelDelta || -e.detail * 30)
         e.preventDefault()
         e.stopPropagation()
 
