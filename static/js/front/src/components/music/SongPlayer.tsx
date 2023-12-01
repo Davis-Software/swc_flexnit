@@ -112,8 +112,8 @@ function SongPlayer(props: SongPlayerProps){
                 >
                     <i className="material-icons">{!playing ? "play_arrow" : "pause"}</i>
                 </IconButton>
-                <IconButton onClick={() => setLoop(l => !l)} color={loop ? "primary" : "default"}>
-                    <i className="material-icons">repeat</i>
+                <IconButton onClick={props.songEnded} color={loop ? "primary" : "default"}>
+                    <i className="material-icons">skip_next</i>
                 </IconButton>
                 <div className="me-3 flex-grow-1 d-flex flex-column ps-3">
                     {!!props.playingSong && (
@@ -154,6 +154,9 @@ function SongPlayer(props: SongPlayerProps){
                         value={position}
                     />
                 </div>
+                <IconButton onClick={() => setLoop(l => !l)} color={loop ? "primary" : "default"}>
+                    <i className="material-icons">repeat</i>
+                </IconButton>
                 <div className="mx-3" style={{width: "8%"}}>
                     <Slider
                         value={volume}
