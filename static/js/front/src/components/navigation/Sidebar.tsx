@@ -12,8 +12,6 @@ interface CreateNewModalProps {
     show: boolean;
     onHide: () => void;
     setSelectedResult: (title: TitleEntryType) => void;
-    setSearchMode: (mode: "all" | "movie" | "series") => void;
-    setSearch: (search: string) => void;
 }
 function CreateNewModal(props: CreateNewModalProps){
     const [createMode, setCreateMode] = React.useState<"movie" | "series">("movie")
@@ -47,8 +45,6 @@ function CreateNewModal(props: CreateNewModalProps){
                         method: "POST",
                         body: formData
                     }).then(res => res.json()).then(res => {
-                        props.setSearchMode(createMode);
-                        props.setSearch(title);
                         props.setSelectedResult({
                             uuid: res.uuid,
                             title: title,
@@ -189,8 +185,6 @@ function Sidebar(props: SidebarProps){
                 show={createNewModal}
                 onHide={() => setCreateNewModal(false)}
                 setSelectedResult={props.setSelectedTitle}
-                setSearchMode={setSearchMode}
-                setSearch={setSearch}
             />
         </>
     )
