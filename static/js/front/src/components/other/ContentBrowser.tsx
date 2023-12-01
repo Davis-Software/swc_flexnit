@@ -31,6 +31,9 @@ function TitlePreview(props: TitlePreviewProps){
                     hidden={!loaded}
                     onLoad={() => setLoaded(true)}
                     src={`/${props.title.type === "movie" ? "movies" : "series"}/${props.title.uuid}?thumbnail&q=h`}
+                    // make sure the image is loaded after the page is loaded
+                    // @ts-ignore
+                    fetchpriority="low"
                 />
             </div>
         </Box>
