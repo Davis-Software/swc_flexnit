@@ -52,7 +52,7 @@ function Home(){
                     return <PageLoader />
             }
         }else{
-            return <ContentBrowser setSelectedTitle={navigateToTitle} />
+            return <ContentBrowser setSelectedTitle={navigateToTitle} id={Math.random().toString()} />
         }
     }, [selectedUUID, selectedType])
 

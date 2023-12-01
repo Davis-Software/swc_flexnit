@@ -84,7 +84,7 @@ function TitleBrowser(props: TitleBrowserProps){
 
         return () => {
             setTitles([])
-            setStableProp(props.id, "page", 0)
+            setStableProp(props.id, "page", 1)
             setStableProp(props.id, "pause", false)
             setStableProp(props.id, "end", false)
         }
@@ -119,11 +119,11 @@ function TitleBrowser(props: TitleBrowserProps){
 }
 
 interface ContentBrowserProps{
+    id: string
     forceTab?: "browse" | "news"
     setSelectedTitle?: (title: TitleEntryType) => void
 }
 function ContentBrowser(props: ContentBrowserProps){
-    const uuid = useMemo(() => Math.random().toString(), [])
     const [tab, setTab] = useState<"browse" | "news">(
         props.forceTab ||
         sessionStorage.getItem("home-tab") as "browse" | "news" ||
@@ -154,11 +154,11 @@ function ContentBrowser(props: ContentBrowserProps){
                     >
                         <div className="h-50 d-flex flex-column">
                             <h2>Movies</h2>
-                            <TitleBrowser titleFilter="movie" setSelectedTitle={props.setSelectedTitle} id={uuid} />
+                            <TitleBrowser titleFilter="movie" setSelectedTitle={props.setSelectedTitle} id={"m-" + props.id} />
                         </div>
                         <div className="h-50 d-flex flex-column">
                             <h2>Series</h2>
-                            <TitleBrowser titleFilter="series" setSelectedTitle={props.setSelectedTitle} id={uuid} />
+                            <TitleBrowser titleFilter="series" setSelectedTitle={props.setSelectedTitle} id={"s-" + props.id} />
                         </div>
                     </div>
                 </div>
