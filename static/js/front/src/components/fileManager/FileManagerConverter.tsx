@@ -1,31 +1,30 @@
 import React from "react";
 import {useEffect, useState} from "react";
-import {Button} from "@mui/material";
+import {Button, TextField} from "@mui/material";
 
+interface Info{
+    host: string
+    port: number
+    uri: string
+    enabled: boolean
+    connected: boolean
+    files: any[]
+    output: any
+}
 interface FileManagerConverterProps {
     path: string
     mode: string
 }
 function FileManagerConverter(props: FileManagerConverterProps){
     const [loading, setLoading] = useState(false)
-    const [enabled, setEnabled] = useState(false)
-    const [uri, setUri] = useState<string>("")
-    const [connected, setConnected] = useState(false)
-    const [files, setFiles] = useState([])
-    const [outputFile, setOutputFile] = useState<any>({})
-
-    function setData(data: any){
-        setEnabled(data.enabled)
-        setUri(data.uri)
-        setConnected(data.connected)
-        setFiles(data.files)
-        setOutputFile(data.output)
-    }
+    const [hostInfo, setHostInfo] = useState<Info | null>(null)
+    const [selectedHost, setSelectedHost] = useState<string>("")
+    const [selectedPort, setSelectedPort] = useState<number>(0)
 
     function connect_toggle(){
-        fetch(`/files/converter/${connected ? "disconnect" : "connect"}`)
+        fetch(`/files/converter/${hostInfo?.connected ? "disconnect" : "connect"}?host=${selectedHost}&port=${selectedPort}`)
             .then(res => res.json())
-            .then(setData)
+            .then(setHostInfo)
     }
 
     function updateInfo(){
@@ -33,15 +32,20 @@ function FileManagerConverter(props: FileManagerConverterProps){
         fetch("/files/converter")
             .then(res => res.json())
             .then(data => {
-                setData(data)
+                if(selectedHost === "" && selectedPort === 0){
+                    setSelectedHost(data.host)
+                    setSelectedPort(data.port)
+                }
+
+                setHostInfo(data)
                 setLoading(false)
             })
     }
     function deleteFile(uuid: string){
         fetch(`/files/converter/delete/${uuid}`)
             .then(res => res.json())
-            .then(data => {
-                setFiles(data)
+            .then(() => {
+                updateInfo()
             })
     }
 
@@ -63,29 +67,31 @@ function FileManagerConverter(props: FileManagerConverterProps){
     }, []);
 
     return loading ? "Loading..." : (
-        enabled ? (
+        hostInfo?.enabled ? (
             <>
                 <h4>Converter</h4>
                 <Button
                     variant="contained"
                     onClick={connect_toggle}
-                    color={connected ? "error" : "success"}
+                    color={hostInfo.connected ? "error" : "success"}
                 >
-                    {connected ? "Disconnect" : "Connect"}
+                    {hostInfo.connected ? "Disconnect" : "Connect"}
                 </Button>
-                {!connected ? <>
+                {!hostInfo.connected ? <>
+                    <TextField value={selectedHost} onChange={e => setSelectedHost(e.target.value)} label="Host" variant="standard" className="mt-3"/>
+                    <TextField value={selectedPort} onChange={e => setSelectedPort(parseInt(e.target.value))} label="Port" variant="standard" className="mt-3"/>
                     <p>Not connected to the converter server</p>
                 </> : <>
                     <Button variant="contained" onClick={updateInfo}>Update</Button>
-                    <a className="float-end" href={uri} target="_blank" rel="noreferrer">Open converter</a>
+                    <a className="float-end" href={hostInfo.uri} target="_blank" rel="noreferrer">Open converter</a>
                 </>}
 
-                <div className="row m-0" hidden={!connected}>
+                <div className="row m-0" hidden={!hostInfo.connected}>
                     <div className="col-lg-6 col-12">
                         <h5 className="mt-5">Files on server</h5>
-                        {files.length === 0 && "None" }
+                        {hostInfo.files.length === 0 && "None" }
                         <ul>
-                            {files.map((file: any) => (
+                            {hostInfo.files.map((file: any) => (
                                 <li key={file.uuid}>
                                     {file.name}
                                     <Button size="small" variant="text" color="error" onClick={() => deleteFile(file.uuid)}>
@@ -95,18 +101,18 @@ function FileManagerConverter(props: FileManagerConverterProps){
                             ))}
                         </ul>
                         <Button variant="contained" color="error" onClick={() => deleteFile("all")}
-                            hidden={files.length === 0}
+                            hidden={hostInfo.files.length === 0}
                         >
                             Delete All
                         </Button>
                     </div>
                     <div className="col-lg-6 col-12">
                         <h5 className="mt-5">Output file</h5>
-                        <span>{outputFile?.name !== undefined ? outputFile.name : "None"}</span><br/>
-                        <a href="#" hidden={outputFile?.name === undefined} onClick={e => {
+                        <span>{hostInfo.output?.name !== undefined ? hostInfo.output.name : "None"}</span><br/>
+                        <a href="#" hidden={hostInfo.output?.name === undefined} onClick={e => {
                             e.preventDefault()
                             deleteFile("output")
-                            setOutputFile({})
+                            updateInfo()
                         }}>Delete</a>
                     </div>
                 </div>
@@ -119,7 +125,7 @@ function FileManagerConverter(props: FileManagerConverterProps){
                     variant="contained"
                     color="warning"
                     onClick={handleDownload}
-                    disabled={outputFile?.name === undefined}
+                    disabled={!hostInfo.output}
                     className="float-end me-3"
                 >
                     Download to this folder

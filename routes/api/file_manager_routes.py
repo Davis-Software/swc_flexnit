@@ -5,7 +5,7 @@ from utils.password_manager import admin_required
 from storage.storage_manager import get_storage_info, get_movie_files, get_series_files, get_movie_path, get_series_path, \
     delete_file, recover_file
 from storage.remote_tools import info, connect, disconnect, upload_file_to_remote, delete_file_from_remote, \
-    download_file_from_remote
+    download_file_from_remote, REMOTE_HOST, REMOTE_PORT
 from utils.request_codes import RequestCode
 
 
@@ -60,7 +60,9 @@ def file_manager_converter(mode=None, uuid=None):
         return info()
 
     if mode == "connect":
-        connect()
+        host = request.args.get("host", REMOTE_HOST)
+        port = request.args.get("port", REMOTE_PORT, type=int)
+        connect(host, port)
         return info()
 
     elif mode == "disconnect":

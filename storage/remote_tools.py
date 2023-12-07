@@ -9,7 +9,9 @@ from __init__ import config
 AUTO_CONNECT_IN_DEBUG = config.get_bool("REMOTE_CONVERSION") and \
                         config.get_bool("DEBUG") and \
                         config.get_bool("DEBUG_AUTO_CONNECT")
-REMOTE_URI = f"http://{config.get('REMOTE_CONVERSION_HOST')}:{config.get('REMOTE_CONVERSION_PORT')}"
+REMOTE_HOST = config.get("REMOTE_CONVERSION_HOST")
+REMOTE_PORT = config.get("REMOTE_CONVERSION_PORT")
+REMOTE_URI = f"http://{REMOTE_HOST}:{REMOTE_PORT}"
 
 
 socket = socketio.Client(
@@ -19,8 +21,7 @@ socket = socketio.Client(
     reconnection_attempts=5
 )
 state = {
-    "enabled": config.get_bool("REMOTE_CONVERSION"),
-    "uri": REMOTE_URI
+    "enabled": config.get_bool("REMOTE_CONVERSION")
 }
 
 
@@ -34,11 +35,21 @@ def info():
 
     return {
         "connected": socket.connected,
+        "host": REMOTE_HOST,
+        "port": REMOTE_PORT,
+        "uri": REMOTE_URI,
         **state
     }
 
 
-def connect():
+def connect(host=None, port=None):
+    global REMOTE_URI
+    if host is not None and port is not None:
+        global REMOTE_HOST, REMOTE_PORT
+        REMOTE_HOST = host
+        REMOTE_PORT = port
+        REMOTE_URI = f"http://{host}:{port}"
+
     socket.connect(REMOTE_URI)
 
 
