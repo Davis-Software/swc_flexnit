@@ -162,7 +162,7 @@ function ContentBrowser(props: ContentBrowserProps){
             {(props.forceTab === undefined || props.forceTab === "browse") && (
                 <div hidden={tab !== "browse"}>
                     <div
-                        className="container d-flex flex-column justify-content-evenly"
+                        className="mx-3 d-flex flex-column justify-content-evenly"
                         style={{height: `calc(100vh - 64px * ${props.forceTab === undefined ? "2" : "1"})`}}
                     >
                         <div className="h-50 d-flex flex-column">
