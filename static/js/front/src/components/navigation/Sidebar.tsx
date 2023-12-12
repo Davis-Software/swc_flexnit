@@ -7,6 +7,7 @@ import {SwcFab, SwcFabContainer} from "../SwcFab";
 import {isAdmin} from "../../utils/constants";
 import {getTimeString} from "../../utils/FormatDate";
 import useIsInView from "../../hooks/useIsInView";
+import {navigateTo} from "../../utils/navigation";
 
 interface CreateNewModalProps {
     show: boolean;
@@ -109,6 +110,7 @@ function Sidebar(props: SidebarProps){
     const [search, setSearch] = React.useState(sessionStorage.getItem("search") || "")
     const [searchMode, setSearchMode] =
         React.useState<"all" | "movie" | "series">(sessionStorage.getItem("search-mode") as "all" | "movie" | "series" || "all")
+    const searchBarRef = useRef<HTMLInputElement>(null)
 
     const [createNewModal, setCreateNewModal] = React.useState(false)
 
@@ -134,6 +136,7 @@ function Sidebar(props: SidebarProps){
                 <div className="sidebar-form">
                     <FormControl fullWidth>
                         <TextField
+                            inputRef={searchBarRef}
                             variant="standard"
                             placeholder="Search"
                             value={search}
@@ -171,6 +174,26 @@ function Sidebar(props: SidebarProps){
                             <TitleEntry searchResult={searchResult} />
                         </EffectGenerator>
                     ))}
+
+                    {props.searchResults.length > 0 && search === "" && (
+                        <div className="text-center mt-3 mb-5 pb-5">
+                            <Typography variant="caption">Search for something... ?</Typography><br/>
+                            <Typography variant="caption">
+                                This list only contains some title entries. <br/>
+                                Use the
+                                <a href="#" onClick={(e) => {
+                                    e.preventDefault()
+                                    searchBarRef.current?.focus()
+                                }}> search </a>
+                                or go to
+                                <a href="#" onClick={(e) => {
+                                    e.preventDefault()
+                                    navigateTo("/browse")
+                                }}> Browse</a>
+                                .
+                            </Typography>
+                        </div>
+                    )}
                 </div>
 
                 <SwcFabContainer hide={!isAdmin} position="absolute">
