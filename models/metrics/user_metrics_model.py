@@ -59,3 +59,35 @@ class UserMetrics(BaseModel):
             metrics = UserMetrics(username)
             metrics.add()
         return metrics
+
+
+class UserMetricStruct:
+    def __init__(self, username):
+        self.__model = UserMetrics.get_or_create(username)
+
+        self.id = self.__model.id
+        self.username = self.__model.username
+        self.delivered_media = self.__model.delivered_media
+        self.delivered_bytes = self.__model.delivered_bytes
+        self.delivered_requests_2xx = self.__model.delivered_requests_2xx
+        self.delivered_requests_3xx = self.__model.delivered_requests_3xx
+        self.delivered_requests_4xx = self.__model.delivered_requests_4xx
+        self.delivered_requests_5xx = self.__model.delivered_requests_5xx
+        self.last_ip = self.__model.last_ip
+        self.last_user_agent = self.__model.last_user_agent
+        self.previous_ips = self.__model.previous_ips
+        self.previous_user_agents = self.__model.previous_user_agents
+
+    def push_to_db(self):
+        model = UserMetrics.get_or_create(self.username)
+        model.delivered_media = self.delivered_media
+        model.delivered_bytes = self.delivered_bytes
+        model.delivered_requests_2xx = self.delivered_requests_2xx
+        model.delivered_requests_3xx = self.delivered_requests_3xx
+        model.delivered_requests_4xx = self.delivered_requests_4xx
+        model.delivered_requests_5xx = self.delivered_requests_5xx
+        model.last_ip = self.last_ip
+        model.last_user_agent = self.last_user_agent
+        model.previous_ips = self.previous_ips
+        model.previous_user_agents = self.previous_user_agents
+        model.update()

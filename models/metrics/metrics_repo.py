@@ -1,12 +1,13 @@
 from flask import Request, Response
-from models.metrics import UserMetrics
+from models.metrics import UserMetricStruct
+from .metrics_queue import get_from_metrics_queue, push_to_queue
 
 
 def set_user_request_metrics(user: str, request: Request, response: Response):
     if user is None:
         return
 
-    metrics = UserMetrics.get_or_create(user)
+    metrics = get_from_metrics_queue(user) or UserMetricStruct(user)
 
     if response.content_type in ["image/png", "image/jpeg", "image/jpg", "audio/x-mpegurl", "audio/mpegurl", "text/plain", "video/mp4", "video/webm"]:
         metrics.delivered_media += 1
@@ -33,4 +34,4 @@ def set_user_request_metrics(user: str, request: Request, response: Response):
             metrics.previous_user_agents.append(request.user_agent.string)
         metrics.last_user_agent = request.user_agent.string
 
-    metrics.update()
+    push_to_queue(metrics)
