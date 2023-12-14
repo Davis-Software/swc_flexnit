@@ -1,8 +1,13 @@
 from datetime import datetime
 
+from __init__ import config
+
 from sqlalchemy import Column, Integer, String, DateTime, PickleType
 from sqlalchemy.ext.mutable import MutableList
 from models.base_model import BaseModel
+
+
+METRIC_RETAIN = config.get_int("METRIC_RETAIN", 10)
 
 
 class UserMetrics(BaseModel):
@@ -44,10 +49,10 @@ class UserMetrics(BaseModel):
 
     def update(self):
         if len(self.previous_ips) > 10:
-            self.previous_ips = self.previous_ips[-10:]
+            self.previous_ips = self.previous_ips[-METRIC_RETAIN:]
 
         if len(self.previous_user_agents) > 10:
-            self.previous_user_agents = self.previous_user_agents[-10:]
+            self.previous_user_agents = self.previous_user_agents[-METRIC_RETAIN:]
 
         self.updated_at = datetime.utcnow()
         self.commit()

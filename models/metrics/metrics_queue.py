@@ -1,18 +1,22 @@
 import time
 import threading
 
+from __init__ import config
+
 from models.metrics import UserMetricStruct
 
 
 metrics_queue = {}
 updater_thread = None
 
+METRIC_INTERVAL = config.get_int("METRIC_SYNC_INTERVAL", 10)
+
 
 def updater():
     global metrics_queue
 
     while True:
-        time.sleep(10)
+        time.sleep(METRIC_INTERVAL)
         for username, metrics in metrics_queue.items():
             metrics.push_to_db()
         metrics_queue = {}
