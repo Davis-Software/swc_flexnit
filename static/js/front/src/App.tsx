@@ -1,4 +1,4 @@
-import React, {Suspense, lazy, useEffect, useState, useMemo} from "react"
+import React, {Suspense, lazy, useEffect, useState, useMemo, useContext, useCallback} from "react"
 
 import lightTheme from "./themes/lightTheme";
 import darkTheme from "./themes/darkTheme";
@@ -10,6 +10,7 @@ import {CssBaseline, ThemeProvider} from "@mui/material";
 import {setWindowTitle} from "./utils/navigation";
 import {handleSyncDownload} from "./components/SyncPlaybackProgress";
 import {isAdmin, systemThemeIsDark} from "./utils/constants";
+import {ThemeContext} from "./contexts/themeContext";
 
 const Home = lazy(() => import("./pages/Home"));
 const Info = lazy(() => import("./pages/InfoPage"));
@@ -24,22 +25,6 @@ const Settings = lazy(() => import("./pages/Settings"));
 const FileManager = lazy(() => import("./pages/FileManager"));
 
 const NotFound = lazy(() => import("./pages/other/NotFound"));
-
-function getTheme(){
-    const theme = localStorage.getItem("theme") || "system"
-    switch (theme) {
-        case "light":
-            return lightTheme
-        case "amoled":
-            return amoledTheme
-        case "system":
-            return systemThemeIsDark ? darkTheme : lightTheme
-        case "dark":
-        default:
-            return darkTheme
-
-    }
-}
 
 const pageNames: {[key: string]: string} = {
     "/": "Home",
@@ -109,14 +94,31 @@ function App(){
         }
     }, [page])
 
-    return (
-        <ThemeProvider theme={getTheme()}>
-            <CssBaseline />
+    const [theme, setTheme] = useState(localStorage.getItem("theme") || "system")
+    const computedTheme = useMemo(() => {
+        switch (theme) {
+            case "light":
+                return lightTheme
+            case "amoled":
+                return amoledTheme
+            case "system":
+                return systemThemeIsDark ? darkTheme : lightTheme
+            case "dark":
+            default:
+                return darkTheme
+        }
+    }, [theme])
 
-            {page !== "/watch" && <NavBar navItems={navItems} />}
-            <Suspense fallback={<PageLoader />}>
-                {RenderPage}
-            </Suspense>
+    return (
+        <ThemeProvider theme={computedTheme}>
+            <ThemeContext.Provider value={{theme, setTheme}}>
+                <CssBaseline />
+
+                {page !== "/watch" && <NavBar navItems={navItems} />}
+                <Suspense fallback={<PageLoader />}>
+                    {RenderPage}
+                </Suspense>
+            </ThemeContext.Provider>
         </ThemeProvider>
     )
 }

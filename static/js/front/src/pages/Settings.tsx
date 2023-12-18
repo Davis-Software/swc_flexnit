@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import PageBase from "./PageBase";
 import {
     Checkbox,
@@ -13,11 +13,12 @@ import {
 } from "@mui/material";
 import SyncPlaybackProgress, {ResetPlaybackProgress} from "../components/SyncPlaybackProgress";
 import {isAdminSet} from "../utils/constants";
+import {ThemeContext} from "../contexts/themeContext";
 
 function Settings(){
     const [syncPlayback, setSyncPlayback] = useState(localStorage.getItem("syncPlayback") !== null ? localStorage.getItem("syncPlayback") === "true" : true)
     const [showAdminMode, setShowAdminMode] = useState(localStorage.getItem("showAdminOptions") !== null ? localStorage.getItem("showAdminOptions") === "true" : false)
-    const [theme, setTheme] = useState(localStorage.getItem("theme") || "system")
+    const {theme, setTheme} = useContext(ThemeContext)
 
     useEffect(() => {
         localStorage.setItem("syncPlayback", syncPlayback.toString());
@@ -73,7 +74,6 @@ function Settings(){
                             value={theme}
                             onChange={(e) => {
                                 setTheme(e.target.value)
-                                window.location.reload();
                             }}
                             variant="standard"
                         >
