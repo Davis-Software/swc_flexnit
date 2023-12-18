@@ -1,5 +1,5 @@
 from flask import Request, Response
-from models.metrics import UserMetricStruct
+from models.metrics import UserMetricStruct, UserMetrics
 from .metrics_queue import get_from_metrics_queue, push_to_queue
 
 
@@ -35,3 +35,7 @@ def set_user_request_metrics(user: str, request: Request, response: Response):
         metrics.last_user_agent = request.user_agent.string
 
     push_to_queue(metrics)
+
+
+def get_all_metrics():
+    return [metric.to_json() for metric in UserMetrics.query.all()]

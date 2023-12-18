@@ -1,7 +1,9 @@
-from flask import request, session
+from flask import request, session, make_response
 
 from __init__ import app, config
-from models.metrics import set_user_request_metrics
+from models.metrics import set_user_request_metrics, get_all_metrics
+
+from utils.password_manager import admin_required
 
 
 USE_METRICS = config.get_bool("METRIC", False)
@@ -16,3 +18,12 @@ def after_request_metrics(response):
         set_user_request_metrics(session['username'], request, response)
 
     return response
+
+
+@app.route("/metrics", methods=["GET"])
+@admin_required
+def get_metrics():
+    if not USE_METRICS:
+        return make_response("Metrics are disabled", 404)
+
+    return get_all_metrics()
