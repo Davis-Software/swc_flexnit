@@ -9,7 +9,7 @@ import PageLoader from "./components/PageLoader";
 import {CssBaseline, ThemeProvider} from "@mui/material";
 import {setWindowTitle} from "./utils/navigation";
 import {handleSyncDownload} from "./components/SyncPlaybackProgress";
-import {systemThemeIsDark} from "./utils/constants";
+import {isAdminSet, systemThemeIsDark} from "./utils/constants";
 import {ThemeContext} from "./contexts/themeContext";
 import {ShowAdminContext, useIsAdmin} from "./contexts/showAdminContext";
 
@@ -48,7 +48,6 @@ const navItems: [string, string, boolean][] = [
 ]
 
 function App(){
-    const isAdmin = useIsAdmin()
     const [page, setPage] = useState(window.location.pathname || "/")
 
     useEffect(() => {
@@ -90,7 +89,7 @@ function App(){
             case "/settings":
                 return <Settings />
             case "/file-manager":
-                return isAdmin ? <FileManager /> : <NotFound />
+                return isAdminSet ? <FileManager /> : <NotFound />
             default:
                 return <NotFound />
         }

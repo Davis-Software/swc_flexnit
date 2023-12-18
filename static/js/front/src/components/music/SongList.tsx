@@ -27,9 +27,9 @@ interface RowContentProps {
     queue: SongType[]
     likeUnLikeSong: (song: SongType) => void
     isLiked: boolean
+    isAdmin: boolean
 }
 function rowContent(_index: number, props: RowContentProps){
-    const isAdmin = useIsAdmin()
     const isInQueue = props.queue.includes(props.song)
 
     return (
@@ -69,7 +69,7 @@ function rowContent(_index: number, props: RowContentProps){
                 </Tooltip>
             </TableCell>
             <TableCell align="right">{getTimeString(props.song.audio_info.duration, true)}</TableCell>
-            {isAdmin && (
+            {props.isAdmin && (
                 <TableCell align="right">
                     <Button variant="outlined" size="small" color="warning" onClick={() => props.setSelectedSong(props.song)}>Edit</Button>
                     <Button variant="outlined" size="small" color="error" onClick={() => props.deleteSong(props.song)}>Delete</Button>
@@ -133,6 +133,7 @@ interface SongListProps {
     likedSongs: SongType[]
 }
 function SongList(props: SongListProps){
+    const isAdmin = useIsAdmin()
     const [search, setSearch] = React.useState("")
 
     function filterFunc(song: SongType){
@@ -192,7 +193,8 @@ function SongList(props: SongListProps){
                         queuePage: props.queuePage,
                         queue: props.queue,
                         likeUnLikeSong: props.likeUnLikeSong,
-                        isLiked: props.likedSongs.includes(song)
+                        isLiked: props.likedSongs.includes(song),
+                        isAdmin
                     })
                 )}
                 style={{
