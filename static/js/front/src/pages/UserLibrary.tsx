@@ -6,7 +6,7 @@ import SeriesType, {EpisodeType} from "../types/seriesType";
 import {Button, Card, CardContent, CardMedia, LinearProgress, Paper, Skeleton, Tooltip, Zoom} from "@mui/material";
 import {TransitionGroup} from "react-transition-group";
 import {navigateTo} from "../utils/navigation";
-import {handleSyncUpload} from "../components/SyncPlaybackProgress";
+import {handleSyncUpload} from "../utils/syncControls";
 
 interface TitleDisplayProps {
     titles: TitleEntryType[]

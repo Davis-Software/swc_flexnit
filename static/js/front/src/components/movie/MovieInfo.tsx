@@ -8,7 +8,7 @@ import SwcModal from "../SwcModal";
 import {SwcFab, SwcFabContainer} from "../SwcFab";
 import {navigateTo} from "../../utils/navigation";
 import TitleProgress, {InfoCallbackType} from "../other/TitleProgress";
-import {handleSyncUpload} from "../SyncPlaybackProgress";
+import {handleSyncUpload} from "../../utils/syncControls";
 import {useIsAdmin} from "../../contexts/showAdminContext";
 
 const EditMovie = React.lazy(() => import("./EditMovie"));

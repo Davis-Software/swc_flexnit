@@ -1,6 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from "react";
 import PageBase from "./PageBase";
-import Hls from "hls.js";
 import {Button, CircularProgress, Fade, Menu, Slider} from "@mui/material";
 import MovieType from "../types/movieType";
 import SeriesType from "../types/seriesType";
@@ -8,10 +7,10 @@ import SwcLoader from "../components/SwcLoader";
 import {navigateTo} from "../utils/navigation";
 import {EpisodeList} from "../components/series/SeriesInfo";
 import {closeFullscreen, openFullscreen} from "../utils/documentFunctions";
-import {checkSyncEnabled, handleSyncUpload} from "../components/SyncPlaybackProgress";
 import {hasNSFWPermission} from "../utils/permissionChecks";
 import SwcModal from "../components/SwcModal";
 import {user} from "../utils/constants";
+import {checkSyncEnabled, handleSyncUpload} from "../utils/syncControls";
 
 function getTimeString(seconds: number){
     const hours = Math.floor(seconds / 3600);
@@ -104,7 +103,8 @@ function Watch(){
                 .catch(() => setDisplayError(true))
         }
 
-        let path
+        let path: string
+        let hls: any
         if(mode == "movie"){
             path = `/movies/${uuid}/deliver/main`
         }else{
@@ -121,25 +121,38 @@ function Watch(){
             }
         }
 
-        if(searchParams.has("hls") && Hls.isSupported()){
-            const hls = new Hls()
-            hls.loadSource(path + "?hls")
-            hls.attachMedia(videoRef.current)
-            hls.on(Hls.Events.MEDIA_ATTACHED, waitForVideo)
-            hls.on(Hls.Events.ERROR, (_, data) => {
-                if(data.response?.code === 403){
-                    setShowNSFWModal(true)
-                }else{
-                    setDisplayError(true)
-                }
-            })
-
-            return () => {
-                hls.destroy()
-            }
-        }else{
+        function loadVideo(){
+            if(!videoRef.current) return
             videoRef.current.src = path
             videoRef.current.addEventListener("loadeddata", waitForVideo)
+        }
+        function loadVideoWithHls(){
+            import("hls.js").then(({default: Hls}) => {
+                if(!videoRef.current || !Hls.isSupported()) return
+                const new_hls = new Hls()
+                new_hls.loadSource(path + "?hls")
+                new_hls.attachMedia(videoRef.current)
+                new_hls.on(Hls.Events.MEDIA_ATTACHED, waitForVideo)
+                new_hls.on(Hls.Events.ERROR, (_, data) => {
+                    if(data.response?.code === 403){
+                        setShowNSFWModal(true)
+                    }else{
+                        setDisplayError(true)
+                    }
+                })
+                hls = new_hls
+            })
+        }
+
+        if(searchParams.has("hls")){
+            loadVideoWithHls()
+        }else{
+            loadVideo()
+        }
+
+        return () => {
+            if(!hls) return
+            hls.destroy()
         }
     }, [window.location.search]);
 

@@ -4,14 +4,16 @@ import lightTheme from "./themes/lightTheme";
 import darkTheme from "./themes/darkTheme";
 import amoledTheme from "./themes/amoledTheme";
 
-import NavBar from "./components/navigation/NavBar";
-import PageLoader from "./components/PageLoader";
-import {CssBaseline, ThemeProvider} from "@mui/material";
+const NavBar = lazy(() => import("./components/navigation/NavBar"));
+const PageLoader = lazy(() => import("./components/PageLoader"));
+const CssBaseline = lazy(() => import("@mui/material/CssBaseline"));
+const ThemeProvider = lazy(() => import("@mui/material/styles/ThemeProvider"));
+
 import {setWindowTitle} from "./utils/navigation";
-import {handleSyncDownload} from "./components/SyncPlaybackProgress";
 import {isAdminSet, systemThemeIsDark} from "./utils/constants";
 import {ThemeContext} from "./contexts/themeContext";
-import {ShowAdminContext, useIsAdmin} from "./contexts/showAdminContext";
+import {ShowAdminContext} from "./contexts/showAdminContext";
+import {handleSyncDownload} from "./utils/syncControls";
 
 const Home = lazy(() => import("./pages/Home"));
 const Info = lazy(() => import("./pages/InfoPage"));
