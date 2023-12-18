@@ -6,10 +6,10 @@ import {TransitionGroup} from "react-transition-group";
 import {Button, Chip, Fade, Skeleton, Typography, useTheme} from "@mui/material";
 import SwcModal from "../SwcModal";
 import {SwcFab, SwcFabContainer} from "../SwcFab";
-import {isAdmin} from "../../utils/constants";
 import {navigateTo} from "../../utils/navigation";
 import TitleProgress, {InfoCallbackType} from "../other/TitleProgress";
 import {handleSyncUpload} from "../SyncPlaybackProgress";
+import {useIsAdmin} from "../../contexts/showAdminContext";
 
 const EditMovie = React.lazy(() => import("./EditMovie"));
 
@@ -19,6 +19,7 @@ interface MovieInfoDisplayProps{
     setShowEdit: React.Dispatch<React.SetStateAction<boolean>>;
 }
 function MovieInfoDisplay(props: MovieInfoDisplayProps){
+    const isAdmin = useIsAdmin()
     const [progressInfo, setProgressInfo] = useState<InfoCallbackType | null>(null)
     const [library, setLibrary] = useState<{[key: string]: any}>(JSON.parse(localStorage.getItem("library") || "{}"))
     const [loading, setLoading] = useState<boolean>(true)

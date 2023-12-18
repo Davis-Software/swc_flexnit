@@ -3,14 +3,15 @@ import PageBase from "./PageBase";
 import SongType from "../types/songType";
 import SongList from "../components/music/SongList";
 import {SwcFab, SwcFabContainer} from "../components/SwcFab";
-import {isAdmin} from "../utils/constants";
 import PageLoader from "../components/PageLoader";
 import SwcModal from "../components/SwcModal";
 import EditSong from "../components/music/EditSong";
 import {Button, ButtonGroup, List, ListItem, Tab, Tabs, TextField} from "@mui/material";
 import SongPlayer from "../components/music/SongPlayer";
+import {useIsAdmin} from "../contexts/showAdminContext";
 
 function Music(){
+    const isAdmin = useIsAdmin()
     const [tab, setTab] = React.useState(0)
     const [requestUpdate, setRequestUpdate] = React.useState<boolean>(false)
     const [songs, setSongs] = React.useState<SongType[]>([])

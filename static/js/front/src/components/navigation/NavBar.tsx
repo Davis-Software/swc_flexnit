@@ -1,5 +1,5 @@
 import React from "react";
-import {isAdmin, isAdminSet, user} from "../../utils/constants";
+import {isAdminSet, user} from "../../utils/constants";
 import {
     Typography,
     SxProps,
@@ -17,6 +17,7 @@ import {hasNSFWPermission} from "../../utils/permissionChecks";
 import HideOnScroll from "../../utils/HideOnScroll";
 import NavButton from "./NavButton";
 import {navigateTo} from "../../utils/navigation";
+import {useIsAdmin} from "../../contexts/showAdminContext";
 
 const largeStyling: SxProps = { display: { xs: 'none', md: 'flex' } }
 const smallStyling: SxProps = { display: { xs: 'flex', md: 'none' } }
@@ -86,6 +87,8 @@ interface ToolbarProps{
     navItems: [string, string, boolean][]
 }
 function ToolbarLarge(props: ToolbarProps){
+    const isAdmin = useIsAdmin()
+
     return (
         <Toolbar sx={largeStyling}>
             <Brand />
@@ -107,6 +110,7 @@ function ToolbarLarge(props: ToolbarProps){
     )
 }
 function ToolbarSmall(props: ToolbarProps){
+    const isAdmin = useIsAdmin()
     const [open, setOpen] = React.useState<null | HTMLElement>(null);
 
     function handleOpenNavMenu(event: React.MouseEvent<HTMLElement>){

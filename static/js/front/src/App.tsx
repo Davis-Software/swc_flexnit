@@ -1,4 +1,4 @@
-import React, {Suspense, lazy, useEffect, useState, useMemo, useContext, useCallback} from "react"
+import React, {Suspense, lazy, useEffect, useState, useMemo} from "react"
 
 import lightTheme from "./themes/lightTheme";
 import darkTheme from "./themes/darkTheme";
@@ -9,8 +9,9 @@ import PageLoader from "./components/PageLoader";
 import {CssBaseline, ThemeProvider} from "@mui/material";
 import {setWindowTitle} from "./utils/navigation";
 import {handleSyncDownload} from "./components/SyncPlaybackProgress";
-import {isAdmin, systemThemeIsDark} from "./utils/constants";
+import {systemThemeIsDark} from "./utils/constants";
 import {ThemeContext} from "./contexts/themeContext";
+import {ShowAdminContext, useIsAdmin} from "./contexts/showAdminContext";
 
 const Home = lazy(() => import("./pages/Home"));
 const Info = lazy(() => import("./pages/InfoPage"));
@@ -47,6 +48,7 @@ const navItems: [string, string, boolean][] = [
 ]
 
 function App(){
+    const isAdmin = useIsAdmin()
     const [page, setPage] = useState(window.location.pathname || "/")
 
     useEffect(() => {
@@ -109,15 +111,19 @@ function App(){
         }
     }, [theme])
 
+    const [showAdmin, setShowAdmin] = useState(localStorage.getItem("showAdminOptions") === "true")
+
     return (
         <ThemeProvider theme={computedTheme}>
             <ThemeContext.Provider value={{theme, setTheme}}>
-                <CssBaseline />
+                <ShowAdminContext.Provider value={{showAdmin, setShowAdmin}}>
+                    <CssBaseline />
 
-                {page !== "/watch" && <NavBar navItems={navItems} />}
-                <Suspense fallback={<PageLoader />}>
-                    {RenderPage}
-                </Suspense>
+                    {page !== "/watch" && <NavBar navItems={navItems} />}
+                    <Suspense fallback={<PageLoader />}>
+                        {RenderPage}
+                    </Suspense>
+                </ShowAdminContext.Provider>
             </ThemeContext.Provider>
         </ThemeProvider>
     )

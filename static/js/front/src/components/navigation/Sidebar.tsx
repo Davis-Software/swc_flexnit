@@ -4,10 +4,10 @@ import SwcModal from "../SwcModal";
 import TitleEntryType from "../../types/titleEntryType";
 import EffectGenerator from "../EffectGenerator";
 import {SwcFab, SwcFabContainer} from "../SwcFab";
-import {isAdmin} from "../../utils/constants";
 import {getTimeString} from "../../utils/FormatDate";
 import useIsInView from "../../hooks/useIsInView";
 import {navigateTo} from "../../utils/navigation";
+import {useIsAdmin} from "../../contexts/showAdminContext";
 
 interface CreateNewModalProps {
     show: boolean;
@@ -107,6 +107,7 @@ interface SidebarProps {
     setSearchResults: (results: (prevState: TitleEntryType[]) => TitleEntryType[]) => void;
 }
 function Sidebar(props: SidebarProps){
+    const isAdmin = useIsAdmin()
     const [search, setSearch] = React.useState(sessionStorage.getItem("search") || "")
     const [searchMode, setSearchMode] =
         React.useState<"all" | "movie" | "series">(sessionStorage.getItem("search-mode") as "all" | "movie" | "series" || "all")

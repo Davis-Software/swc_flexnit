@@ -12,8 +12,8 @@ import {
 } from "@mui/material";
 import React from "react";
 import SongType from "../../types/songType";
-import {isAdmin} from "../../utils/constants";
 import {getTimeString} from "../../utils/FormatDate";
+import {useIsAdmin} from "../../contexts/showAdminContext";
 
 interface RowContentProps {
     song: SongType,
@@ -29,6 +29,7 @@ interface RowContentProps {
     isLiked: boolean
 }
 function rowContent(_index: number, props: RowContentProps){
+    const isAdmin = useIsAdmin()
     const isInQueue = props.queue.includes(props.song)
 
     return (
@@ -88,6 +89,8 @@ function rowContent(_index: number, props: RowContentProps){
 }
 
 function fixedHeaderContent(){
+    const isAdmin = useIsAdmin()
+
     return (
         <TableRow sx={{backgroundColor: "background.paper"}}>
             <TableCell padding="checkbox"></TableCell>

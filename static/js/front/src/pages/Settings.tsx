@@ -14,18 +14,19 @@ import {
 import SyncPlaybackProgress, {ResetPlaybackProgress} from "../components/SyncPlaybackProgress";
 import {isAdminSet} from "../utils/constants";
 import {ThemeContext} from "../contexts/themeContext";
+import {ShowAdminContext} from "../contexts/showAdminContext";
 
 function Settings(){
     const [syncPlayback, setSyncPlayback] = useState(localStorage.getItem("syncPlayback") !== null ? localStorage.getItem("syncPlayback") === "true" : true)
-    const [showAdminMode, setShowAdminMode] = useState(localStorage.getItem("showAdminOptions") !== null ? localStorage.getItem("showAdminOptions") === "true" : false)
+    const {showAdmin, setShowAdmin} = useContext(ShowAdminContext)
     const {theme, setTheme} = useContext(ThemeContext)
 
     useEffect(() => {
         localStorage.setItem("syncPlayback", syncPlayback.toString());
     }, [syncPlayback]);
     useEffect(() => {
-        localStorage.setItem("showAdminOptions", showAdminMode.toString());
-    }, [showAdminMode]);
+        localStorage.setItem("showAdminOptions", showAdmin.toString());
+    }, [showAdmin]);
     useEffect(() => {
         localStorage.setItem("theme", theme);
     }, [theme]);
@@ -43,7 +44,7 @@ function Settings(){
                         <FormControlLabel
                             control={<Checkbox
                                     checked={syncPlayback}
-                                    onChange={(e) => setSyncPlayback(e.target.checked)}
+                                    onChange={e => setSyncPlayback(e.target.checked)}
                                 />}
                             label="Enable"
                         />
@@ -58,11 +59,8 @@ function Settings(){
                     <div>
                         <FormControlLabel
                             control={<Checkbox
-                                checked={showAdminMode}
-                                onChange={(e) => {
-                                    setShowAdminMode(e.target.checked)
-                                    window.location.reload();
-                                }}
+                                checked={showAdmin}
+                                onChange={e => setShowAdmin(e.target.checked)}
                             />}
                             label="Activate Admin Mode"
                             disabled={!isAdminSet}
