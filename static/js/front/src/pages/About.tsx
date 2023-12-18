@@ -3,6 +3,7 @@ import PageBase from "./PageBase";
 import {Button, ButtonGroup, Container} from "@mui/material";
 import PageLoader from "../components/PageLoader";
 import SwcModal from "../components/SwcModal";
+import {useIsAdmin} from "../contexts/showAdminContext";
 
 function CommitHistory(){
     const [commits, setCommits] = React.useState<any[]>([]);
@@ -43,6 +44,7 @@ function CommitHistory(){
 
 function About(){
     const [show, setShow] = useState(false);
+    const isAdmin = useIsAdmin()
 
     return (
         <PageBase>
@@ -57,6 +59,14 @@ function About(){
                 <h3 className="text-center mt-5">Updates</h3>
                 <hr/>
                 <Button variant="contained" onClick={() => setShow(true)} fullWidth>Show commit history</Button>
+
+                {isAdmin && (
+                    <>
+                        <h3 className="text-center mt-5">Bundle Info</h3>
+                        <hr/>
+                        <Button variant="contained" href="/static/js/bundle/report.html" target="_blank" fullWidth>Show Bundle Info</Button>
+                    </>
+                )}
             </Container>
 
             <SwcModal show={show} onHide={() => setShow(false)}>
