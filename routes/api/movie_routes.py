@@ -5,6 +5,8 @@ from models.movie import get_movie, add_movie, edit_movie
 from storage.movie_storage import upload_movie, convert_movie_to_hls, revert_movie_to_mp4, get_movie_files, \
     get_movie_file, delete_movie, get_movie_part, delete_movie_file, set_main_file, delete_movie_hls_files, \
     get_movie_frame
+from storage.storage_tools import get_sized_thumbnail
+from scraper.imdb_scraper import IMDBScraper
 from utils.adv_responses import send_binary_image
 from utils.password_manager import auth_required, admin_required, check_permission
 from utils.request_codes import RequestCode
@@ -34,7 +36,10 @@ def movie_info(uuid):
         return send_binary_image(movie.poster)
 
     if "thumbnail" in request.args:
-        return send_binary_image(movie.thumbnail)
+        return send_binary_image(get_sized_thumbnail(
+            movie,
+            request.args.get("q", "h")
+        ))
 
     return make_response(movie.to_json(), RequestCode.Success.OK)
 
@@ -52,6 +57,12 @@ def movie_actions(uuid, action):
 
     if action == "files":
         return get_movie_files(movie.uuid)
+
+    if action == "scrape_imdb":
+        if "imdb_id" not in request.form:
+            return make_response("Invalid request", RequestCode.ClientError.BadRequest)
+        scraper = IMDBScraper(request.form.get("imdb_id"))
+        return scraper.link_to_movie(movie).to_json()
 
     if action == "upload":
         movie_file = request.files.get("movie")
@@ -105,6 +116,7 @@ def deliver_movie(uuid, file_name=None, frame=None):
     if frame is not None and frame.isdigit():
         response = make_response(get_movie_frame(movie.uuid, int(frame)))
         response.cache_control.max_age = 60 * 60 * 24 * 365
+        response.content_type = "image/jpeg"
         return response
 
     if file_name is None:

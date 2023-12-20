@@ -7,6 +7,7 @@ const style = {
     left: '50%',
     transform: 'translate(-50%, -50%)',
     maxWidth: "95%",
+    minWidth: "60%",
     bgcolor: 'background.paper',
     border: '2px solid #000',
     boxShadow: 24,
@@ -19,6 +20,8 @@ interface SwcModalProps {
     show: boolean
     onHide: () => void
     children: React.ReactNode
+    width?: string
+    keepMounted?: boolean
 }
 function SwcModal(props: SwcModalProps) {
     return (
@@ -30,9 +33,13 @@ function SwcModal(props: SwcModalProps) {
             componentsProps={{
                 backdrop: {timeout: 500}
             }}
+            keepMounted={props.keepMounted}
         >
             <Fade in={props.show}>
-                <Box sx={style}>
+                <Box sx={{
+                    ...style,
+                    width: props.width ? props.width : "auto"
+                }}>
                     {props.children}
                 </Box>
             </Fade>

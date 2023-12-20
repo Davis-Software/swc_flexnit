@@ -2,10 +2,14 @@ import os
 import psutil
 
 from __init__ import config
-from models.movie import get_movie
-from models.series import get_series
+from models.movie import get_movie, MovieModel
+from models.series import get_series, SeriesModel, EpisodeModel
+
 from storage.movie_storage import MOVIE_STORAGE_PATH
 from storage.series_storage import SERIES_STORAGE_PATH
+from storage.music_storage import MUSIC_STORAGE_PATH
+
+from storage.storage_tools import get_video_file_info, thumbnail_cache
 
 STATIC_PATH = config.get("VIDEO_DIR")
 
@@ -50,12 +54,22 @@ def get_storage_info(force=False):
     return {
         "movie_size": calculate_size(MOVIE_STORAGE_PATH, force_level=force),
         "series_size": calculate_size(SERIES_STORAGE_PATH, force_level=force),
+        "music_size": calculate_size(MUSIC_STORAGE_PATH, force_level=force),
+        "thumbnail_cache_size": calculate_size(thumbnail_cache, force_level=force),
         "process_info": process_info(),
     }
 
 
+def get_movie_path(path_var):
+    return os.path.join(MOVIE_STORAGE_PATH, path_var)
+
+
+def get_series_path(path_var):
+    return os.path.join(SERIES_STORAGE_PATH, path_var)
+
+
 def get_movie_files(path_var):
-    path = os.path.join(MOVIE_STORAGE_PATH, path_var)
+    path = get_movie_path(path_var)
 
     if not os.path.exists(path):
         return []
@@ -102,7 +116,7 @@ def get_movie_files(path_var):
 
 
 def get_series_files(path_var):
-    path = os.path.join(SERIES_STORAGE_PATH, path_var)
+    path = get_series_path(path_var)
 
     if not os.path.exists(path):
         return []
@@ -154,3 +168,68 @@ def get_series_files(path_var):
             })
 
     return ret_files
+
+
+def delete_file(path, file, mode):
+    path = get_movie_path(path) if mode == "movie" else get_series_path(path)
+    file = os.path.join(path, file)
+
+    if not os.path.exists(file):
+        return False
+
+    if os.path.isdir(file):
+        os.rmdir(file)
+    else:
+        os.remove(file)
+
+    return True
+
+
+def recover_file(folder_name, mode):
+    path = get_movie_path(folder_name) if mode == "movie" else get_series_path(folder_name)
+
+    if not os.path.exists(path) or not os.path.isdir(path):
+        return False
+
+    def find_video_file(v_path):
+        for file in os.listdir(v_path):
+            if file.endswith(".mp4"):
+                return file
+        return None
+
+    if mode == "movie":
+        movie = MovieModel(folder_name)
+
+        movie.uuid = folder_name
+        movie.video_file = find_video_file(path)
+        movie.video_info = get_video_file_info(os.path.join(path, movie.video_file)) if movie.video_file else {}
+        movie.video_hls = "index.m3u8" in os.listdir(path)
+
+        movie.add()
+
+    else:
+        series = SeriesModel(folder_name)
+        series.uuid = folder_name
+        series.add()
+
+        for season in os.listdir(path):
+            season_path = os.path.join(path, season)
+
+            if not season.startswith("season_") or not os.path.isdir(season_path):
+                continue
+            season_number = int(season.split("_").pop())
+
+            for episode in os.listdir(season_path):
+                episode_path = os.path.join(season_path, episode)
+
+                if not episode.startswith("episode_") or not os.path.isdir(episode_path):
+                    continue
+                episode_number = int(episode.split("_").pop())
+
+                episode_obj = EpisodeModel(f"Episode {episode_number}", season_number, episode_number, series.id)
+                episode_obj.video_file = find_video_file(episode_path)
+                episode_obj.video_info = get_video_file_info(os.path.join(episode_path, episode_obj.video_file)) if episode_obj.video_file else {}
+                episode_obj.video_hls = "index.m3u8" in os.listdir(episode_path)
+                episode_obj.add()
+
+    return True

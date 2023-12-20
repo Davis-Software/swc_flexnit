@@ -1,8 +1,9 @@
 import React, {useEffect} from "react";
 import MovieType from "../../types/movieType";
-import {Button, Checkbox, FormControlLabel, TextField} from "@mui/material";
+import {Button, Checkbox, Collapse, FormControlLabel, TextField} from "@mui/material";
 import FileTable from "../FileTable";
 import FileType from "../../types/fileType";
+import {hasNSFWPermission} from "../../utils/permissionChecks";
 
 interface EditMovieProps{
     movie: MovieType;
@@ -11,10 +12,11 @@ interface EditMovieProps{
 }
 function EditMovie(props: EditMovieProps){
     const [title, setTitle] = React.useState<string>(props.movie.title)
-    const [year, setYear] = React.useState<string>((props.movie.year || 0).toString())
+    const [year, setYear] = React.useState<string>(props.movie.year || "")
     const [description, setDescription] = React.useState<string>(props.movie.description || "")
     const [language, setLanguage] = React.useState<string>(props.movie.language || "")
     const [subtitles, setSubtitles] = React.useState<boolean>(props.movie.subtitles || false)
+    const [subtitleLanguage, setSubtitleLanguage] = React.useState<string>(props.movie.subtitle_language || "")
     const [isVisible, setIsVisible] = React.useState<boolean>(props.movie.is_visible || false)
     const [isNsfw, setIsNsfw] = React.useState<boolean>(props.movie.is_nsfw || false)
     const [newThumbnail, setNewThumbnail] = React.useState<File | null | undefined>(null)
@@ -118,6 +120,24 @@ function EditMovie(props: EditMovieProps){
         }
     }
 
+    function handleScrapeIMDB(){
+        let id = prompt("Enter IMDB ID")
+        if(!id || id === "") return
+
+        const formData = new FormData()
+        formData.append("imdb_id", id)
+
+        fetch(`/movies/${props.movie.uuid}/scrape_imdb`, {
+            method: "POST",
+            body: formData
+        })
+            .then(res => res.json())
+            .then((data: MovieType) => {
+                props.setMovie(data)
+                props.setShowEdit(false)
+            })
+    }
+
     function handleSave(){
         const formData = new FormData()
         formData.append("title", title)
@@ -125,6 +145,7 @@ function EditMovie(props: EditMovieProps){
         formData.append("description", description)
         formData.append("language", language)
         formData.append("subtitles", subtitles.toString())
+        formData.append("subtitle_language", subtitleLanguage)
         formData.append("is_visible", isVisible.toString())
         formData.append("is_nsfw", isNsfw.toString())
         if(newThumbnail) formData.append("thumbnail", newThumbnail)
@@ -174,13 +195,26 @@ function EditMovie(props: EditMovieProps){
                 onChange={e => setLanguage(e.target.value)}
                 fullWidth
             />
-            <FormControlLabel
-                control={<Checkbox
-                        checked={subtitles}
-                        onChange={e => setSubtitles(e.target.checked)}
-                    />}
-                label="Has subtitles"
-            />
+            <div className="row m-0">
+                <FormControlLabel
+                    className="col-3"
+                    control={<Checkbox
+                            checked={subtitles}
+                            onChange={e => setSubtitles(e.target.checked)}
+                        />}
+                    label="Has subtitles"
+                />
+                <Collapse in={subtitles} className="col-5">
+                    <TextField
+                        variant="standard"
+                        label="Subtitle Language Code"
+                        value={subtitleLanguage}
+                        onChange={e => setSubtitleLanguage(e.target.value)}
+                        error={subtitles && subtitleLanguage.length === 0}
+                        fullWidth
+                    />
+                </Collapse>
+            </div>
             <FormControlLabel
                 control={<Checkbox
                         checked={isVisible}
@@ -191,12 +225,13 @@ function EditMovie(props: EditMovieProps){
             <FormControlLabel
                 control={<Checkbox
                         checked={isNsfw}
+                        disabled={!hasNSFWPermission()}
                         onChange={e => setIsNsfw(e.target.checked)}
                     />}
                 label="Is NSFW"
             />
             <div className="d-flex">
-                <img style={{width: "40px", height: "40px"}} src={`/movies/${props.movie.uuid}?thumbnail`} alt="thumbnail" />
+                <img style={{width: "40px", height: "40px"}} src={`/movies/${props.movie.uuid}?thumbnail&q=s`} alt="thumbnail" />
                 <Button className="flex-grow-1" variant="contained" component="label" fullWidth>
                     {newThumbnail ? "Change Selected Thumbnail" : "Upload Thumbnail"}
                     <input hidden accept="image/png" type="file" onChange={e => setNewThumbnail(e.target.files?.item(0))} />
@@ -225,6 +260,9 @@ function EditMovie(props: EditMovieProps){
                 <Button variant="contained" color="warning" disabled={mainFile === file.name || file.name.endsWith(".m3u8")} onClick={() => handleSetMainFile(file)}>Set as Main</Button>
             )} sx={{maxHeight: "350px", overflow: "auto"}} />
 
+            <div className="d-flex flex-row float-start mt-5">
+                <Button variant="contained" onClick={handleScrapeIMDB}>Scrape IMDB</Button>
+            </div>
             <div className="d-flex flex-row float-end mt-5">
                 <Button variant="contained" onClick={() => props.setShowEdit(false)}>Close</Button>
                 <Button variant="contained" color="warning" onClick={handleSave}>Save</Button>

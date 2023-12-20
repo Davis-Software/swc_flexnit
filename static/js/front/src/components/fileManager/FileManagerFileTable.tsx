@@ -2,6 +2,7 @@ import {AdvancedFileType} from "../../types/fileType";
 import React, {useEffect, useState} from "react";
 import hrFileSize from "../../utils/hrFileSize";
 import {
+    Button,
     Checkbox, Fade,
     IconButton,
     InputAdornment,
@@ -10,11 +11,13 @@ import {
     TableCell,
     TableHead,
     TableRow,
-    TextField
+    TextField, Tooltip, Typography
 } from "@mui/material";
 import SwcLoader from "../SwcLoader";
 import {SwcFab, SwcFabContainer} from "../SwcFab";
 import {TransitionGroup} from "react-transition-group";
+import SwcModal from "../SwcModal";
+import FileManagerConverter from "./FileManagerConverter";
 
 function hrPath(path: string, files: AdvancedFileType[]){
     return path.split("/").map(p => {
@@ -35,24 +38,34 @@ interface FileTableEntryProps{
     selected: string[]
     setSelected: (selected: (prevState: string[]) => string[]) => void
     setPath: (path: (prevState: string) => string) => void
+    onRecover?: (file: AdvancedFileType) => void
 }
-function FileTableEntry({file, selected, setSelected, setPath}: FileTableEntryProps){
+function FileTableEntry({file, selected, setSelected, setPath, onRecover}: FileTableEntryProps){
     return (
         <TableRow
             hover
             selected={selected.includes(file.filename)}
         >
             <TableCell padding="checkbox">
-                <Checkbox
-                    checked={selected.includes(file.filename)}
-                    onChange={e => {
-                        if(e.target.checked){
-                            setSelected(prevState => [...prevState, file.filename])
-                        }else{
-                            setSelected(prevState => prevState.filter(f => f !== file.filename))
-                        }
-                    }}
-                />
+                <div className="d-flex flex-row">
+                    <Checkbox
+                        checked={selected.includes(file.filename)}
+                        onChange={e => {
+                            if(e.target.checked){
+                                setSelected(prevState => [...prevState, file.filename])
+                            }else{
+                                setSelected(prevState => prevState.filter(f => f !== file.filename))
+                            }
+                        }}
+                    />
+                    {onRecover && file.not_found && (
+                        <Tooltip title="Recover from Files">
+                            <Button onClick={() => onRecover(file)}>
+                                <i className="material-icons">unarchive</i>
+                            </Button>
+                        </Tooltip>
+                    )}
+                </div>
             </TableCell>
             <TableCell
                 onClick={() => {
@@ -64,10 +77,14 @@ function FileTableEntry({file, selected, setSelected, setPath}: FileTableEntryPr
                         ))
                     }
                 }}
+                sx={{cursor: file.is_dir ? "pointer" : "default"}}
             >
                 {file.not_found ? (
                     <span style={{color: "red"}}>{file.display_name}</span>
                 ) : file.display_name}
+            </TableCell>
+            <TableCell>
+                {file.display_name !== file.filename ? file.filename : "-"}
             </TableCell>
             <TableCell>
                 {hrFileSize(file.size)}
@@ -120,7 +137,10 @@ function FileManagerTableHead(props: FileManagerTableHeadProps){
                     }}
                 >
                     <i className={`material-icons ${props.sort !== "display_name" ? "text-muted" : ""}`}>{(props.sort === "display_name" && props.order === "asc") ? "arrow_upward" : "arrow_downward"}</i>Name
-                    <span className="text-muted ms-3">{hrPath(props.path, fileCache)}</span>
+                    <Typography variant="caption" className="ms-3">{hrPath(props.path, fileCache)}</Typography>
+                </TableCell>
+                <TableCell>
+                    UUID / Actual Name
                 </TableCell>
                 <TableCell
                     onClick={() => {
@@ -141,6 +161,8 @@ interface FileManagerFileTableProps{
     path: string
     setPath: (path: (prevState: string) => string) => void
     loading: boolean
+    passedValue: string
+    onRecover?: (file: AdvancedFileType) => void
 }
 function FileManagerFileTable(props: FileManagerFileTableProps){
     const [files, setFiles] = useState<AdvancedFileType[]>(props.files)
@@ -148,6 +170,7 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
     const [sortBy, setSortBy] = useState<string>("display_name")
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
     const [search, setSearch] = useState<string>("")
+    const [showConverterModal, setShowConverterModal] = useState<boolean>(false)
 
     useEffect(() => {
         setFiles(() => {
@@ -180,6 +203,40 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
         })
     }, [props.files, sortBy, sortOrder, search])
 
+    function deleteSelected(){
+        let sFiles = files.filter(f => selected.includes(f.filename) && !f.not_found)
+        if(sFiles.length === 0) return;
+
+        const formData = new FormData()
+        formData.append("files", sFiles.map(f => f.filename).join("//"))
+        formData.append("mode", props.passedValue)
+        fetch(`/files/delete/${props.path}`, {
+            method: "POST",
+            body: formData
+        })
+            .then(() => {
+                window.location.reload()
+            })
+
+    }
+
+    function remoteUploadSelected(){
+        let file = files.find(f => f.filename === selected[0])
+        if(!file || file.is_dir) return;
+
+        const formData = new FormData()
+        formData.append("mode", props.passedValue)
+        formData.append("path", props.path + (props.path.endsWith("/") ? "" : "/") + file.filename)
+        fetch("/files/converter/upload", {
+            method: "POST",
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                alert(`File "${data.name}" has been uploaded to the converter server`)
+            })
+    }
+
     return (
         <>
             <Table>
@@ -203,12 +260,15 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
                                     <TableCell
                                         onClick={() => {
                                             if(props.path !== "/"){
+                                                setSelected(() => [])
                                                 props.setPath(prevState => prevState.substring(0, prevState.lastIndexOf("/")))
                                             }
                                         }}
+                                        sx={{cursor: "pointer"}}
                                     >
                                         ..
                                     </TableCell>
+                                    <TableCell />
                                     <TableCell />
                                 </TableRow>
                             )}
@@ -218,7 +278,11 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
                                     file={file}
                                     selected={selected}
                                     setSelected={setSelected}
-                                    setPath={props.setPath}
+                                    setPath={(path: (prevState: string) => string) => {
+                                        setSelected(() => [])
+                                        props.setPath(path)
+                                    }}
+                                    onRecover={props.onRecover}
                                 />
                             ))}
                         </>
@@ -252,9 +316,20 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
                     />
                 </Fade>
             </TransitionGroup>
-            <SwcFabContainer hide={selected.length === 0}>
-                <SwcFab icon={<i className="material-icons">delete</i>} onClick={() => {}} color="error" />
+            <SwcFabContainer>
+                <SwcFab icon={<i className="material-icons">cloud_upload</i>} onClick={remoteUploadSelected} color="primary"
+                    show={selected.length > 0 && files.filter(f => selected.includes(f.filename)).filter(f => f.is_dir || f.not_found).length === 0}
+                    tooltip="Remote upload" tooltipPlacement="top"
+                />
+                <SwcFab icon={<i className="material-icons">mediation</i>} onClick={() => {
+                    setShowConverterModal(true)
+                }} color="primary" tooltip="Converter" tooltipPlacement="top" />
+                <SwcFab icon={<i className="material-icons">delete</i>} onClick={deleteSelected} color="error" hide={selected.length === 0} />
             </SwcFabContainer>
+
+            <SwcModal show={showConverterModal} onHide={() => setShowConverterModal(false)} width="90%">
+                <FileManagerConverter path={props.path} mode={props.passedValue} />
+            </SwcModal>
         </>
     )
 }

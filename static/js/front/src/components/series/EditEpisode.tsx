@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from "react";
 import SeriesType, {EpisodeType} from "../../types/seriesType";
 import FileType from "../../types/fileType";
-import {Button, TextField} from "@mui/material";
+import {Button, Checkbox, Collapse, FormControlLabel, TextField} from "@mui/material";
 import FileTable from "../FileTable";
+import {hasNSFWPermission} from "../../utils/permissionChecks";
 
 interface AddEpisodeProps{
     series: SeriesType;
@@ -86,6 +87,10 @@ function EditEpisode(props: EditEpisodeProps){
     const [description, setDescription] = useState<string>(props.episode.description || "")
     const [season, setSeason] = useState<string>(props.episode.season.toString() || "1")
     const [episode, setEpisode] = useState<string>(props.episode.episode.toString() || "1")
+
+    const [isNsfw, setIsNsfw] = React.useState<boolean>(props.episode.is_nsfw || false)
+    const [hasIntro, setHasIntro] = useState<boolean>(props.episode.has_intro)
+    const [introStart, setIntroStart] = useState<number | null>(props.episode.intro_start)
 
     const [files, setFiles] = useState<FileType[]>([])
     const [mainFile, setMainFile] = useState<string | null>(null)
@@ -191,6 +196,9 @@ function EditEpisode(props: EditEpisodeProps){
         formData.append("description", description)
         formData.append("season", season)
         formData.append("episode", episode)
+        formData.append("is_nsfw", isNsfw.toString())
+        formData.append("has_intro", hasIntro.toString())
+        formData.append("intro_start", introStart !== null ? introStart.toString() : "0")
 
         fetch(`/series/${props.series.uuid}/episode/${props.episode.uuid}/edit`, {
             method: "POST",
@@ -237,6 +245,32 @@ function EditEpisode(props: EditEpisodeProps){
                 error={Number.isNaN(episode)}
                 fullWidth
             />
+            <FormControlLabel
+                control={<Checkbox
+                        checked={isNsfw}
+                        disabled={!hasNSFWPermission()}
+                        onChange={e => setIsNsfw(e.target.checked)}
+                    />}
+                label="Is NSFW"
+            />
+            <div>
+                <FormControlLabel
+                    control={<Checkbox
+                            checked={hasIntro}
+                            onChange={e => setHasIntro(e.target.checked)}
+                        />}
+                    label="Has Intro"
+                />
+                <Collapse in={hasIntro} className="mb-3">
+                    <TextField
+                        variant="standard"
+                        label="Intro Start"
+                        value={introStart !== null ? introStart.toString() : ""}
+                        onChange={e => setIntroStart(parseInt(e.target.value))}
+                        error={Number.isNaN(introStart!)}
+                    />
+                </Collapse>
+            </div>
 
             <h4>Files</h4>
             {uploading && <progress value={uploadProgress} max="100" />}

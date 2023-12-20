@@ -18,6 +18,7 @@ def edit_movie(
         description: str = None,
         language: str = None,
         subtitles: str = None,
+        subtitle_language: str = None,
         is_visible: str = None,
         is_nsfw: str = None,
         thumbnail: FileStorage = None,
@@ -48,6 +49,8 @@ def edit_movie(
         movie.language = language
     if check_for_change("subtitles", subtitles):
         movie.subtitles = subtitles
+    if check_for_change("subtitle_language", subtitle_language):
+        movie.subtitle_language = subtitle_language
     if check_for_change("is_visible", is_visible):
         movie.is_visible = is_visible
     if check_for_change("is_nsfw", is_nsfw):
@@ -74,21 +77,29 @@ def delete_movie(uuid: str):
     return True
 
 
-def base_query():
-    query = MovieModel.query.order_by(MovieModel.title)
+def base_query(order: bool = True):
+    query = MovieModel.query
 
+    if order:
+        query = query.order_by(MovieModel.title.asc())
     if not check_admin():
         query = query.filter_by(is_visible=True)
 
     return query
 
 
-def get_movies(limit: int = 25):
-    return base_query().limit(limit).all()
+def get_movies(limit: int = 25, page: int = 1):
+    if limit == -1:
+        return base_query().all()
+    return base_query().paginate(page, limit, False).items
+
+
+def latest_movies(limit: int = 25):
+    return base_query(False).order_by(MovieModel.added_on.desc()).limit(limit).all()
 
 
 def search_movies(search_term: str, limit: int = 25):
     return base_query().filter(or_(
-        MovieModel.title.like(f"%{search_term}%"),
-        MovieModel.description.like(f"%{search_term}%")
+        MovieModel.title.ilike(f"%{search_term}%"),
+        MovieModel.description.ilike(f"%{search_term}%")
     )).limit(limit).all()

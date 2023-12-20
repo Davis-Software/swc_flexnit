@@ -1,6 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from "react";
 import PageBase from "./PageBase";
-import Hls from "hls.js";
 import {Button, CircularProgress, Fade, Menu, Slider} from "@mui/material";
 import MovieType from "../types/movieType";
 import SeriesType from "../types/seriesType";
@@ -8,9 +7,10 @@ import SwcLoader from "../components/SwcLoader";
 import {navigateTo} from "../utils/navigation";
 import {EpisodeList} from "../components/series/SeriesInfo";
 import {closeFullscreen, openFullscreen} from "../utils/documentFunctions";
-import {handleSyncUpload} from "../components/SyncPlaybackProgress";
 import {hasNSFWPermission} from "../utils/permissionChecks";
 import SwcModal from "../components/SwcModal";
+import {user} from "../utils/constants";
+import {checkSyncEnabled, handleSyncUpload} from "../utils/syncControls";
 
 function getTimeString(seconds: number){
     const hours = Math.floor(seconds / 3600);
@@ -21,7 +21,7 @@ function getTimeString(seconds: number){
 
 let extVideoInfo: MovieType | SeriesType | null = null
 
-function Home(){
+function Watch(){
     const mode: "movie" | "series" = window.location.href.includes("?movie=") ? "movie" : "series"
     const videoRef = useRef<HTMLVideoElement>(null);
     const showEpisodeSelectorButtonRef = useRef<HTMLButtonElement>(null);
@@ -103,7 +103,8 @@ function Home(){
                 .catch(() => setDisplayError(true))
         }
 
-        let path
+        let path: string
+        let hls: any
         if(mode == "movie"){
             path = `/movies/${uuid}/deliver/main`
         }else{
@@ -120,19 +121,38 @@ function Home(){
             }
         }
 
-        if(searchParams.has("hls") && Hls.isSupported()){
-            const hls = new Hls()
-            hls.loadSource(path + "?hls")
-            hls.attachMedia(videoRef.current)
-            hls.on(Hls.Events.MEDIA_ATTACHED, waitForVideo)
-            console.log(hls.audioTracks)
-
-            return () => {
-                hls.destroy()
-            }
-        }else{
+        function loadVideo(){
+            if(!videoRef.current) return
             videoRef.current.src = path
-            videoRef.current.addEventListener("loadeddata", startPlayback)
+            videoRef.current.addEventListener("loadeddata", waitForVideo)
+        }
+        function loadVideoWithHls(){
+            import("hls.js").then(({default: Hls}) => {
+                if(!videoRef.current || !Hls.isSupported()) return
+                const new_hls = new Hls()
+                new_hls.loadSource(path + "?hls")
+                new_hls.attachMedia(videoRef.current)
+                new_hls.on(Hls.Events.MEDIA_ATTACHED, waitForVideo)
+                new_hls.on(Hls.Events.ERROR, (_, data) => {
+                    if(data.response?.code === 403){
+                        setShowNSFWModal(true)
+                    }else{
+                        setDisplayError(true)
+                    }
+                })
+                hls = new_hls
+            })
+        }
+
+        if(searchParams.has("hls")){
+            loadVideoWithHls()
+        }else{
+            loadVideo()
+        }
+
+        return () => {
+            if(!hls) return
+            hls.destroy()
         }
     }, [window.location.search]);
 
@@ -209,19 +229,25 @@ function Home(){
         if(!videoRef.current) return;
         setTimePlayed(videoRef.current.currentTime)
 
+        const searchParams = new URLSearchParams(window.location.search)
+
         if(mode === "series" && extVideoInfo){
             let info = extVideoInfo as SeriesType
+            let episode = info.episodes.find(e => e.uuid === searchParams.get("episode"))
             setShowSkipIntro(
-                info.intro_skip &&
-                videoRef.current.currentTime >= info.intro_start &&
-                videoRef.current.currentTime < info.intro_start + info.intro_length
+                info.intro_skip && info.intro_global ?
+                (videoRef.current.currentTime >= info.intro_start &&
+                videoRef.current.currentTime < info.intro_start + info.intro_length) : (
+                    (episode?.has_intro || false) &&
+                    videoRef.current.currentTime >= episode?.intro_start &&
+                    videoRef.current.currentTime < episode?.intro_start + info.intro_length
+                )
             )
             setShowPlayNextEpisode(videoRef.current.currentTime >= videoRef.current.duration - (
                 info.endcard ? info.endcard_length : 60
             ))
         }
 
-        const searchParams = new URLSearchParams(window.location.search)
         const uuid = searchParams.get("movie") || searchParams.get("series")
 
         if(videoRef.current?.paused) return
@@ -237,14 +263,21 @@ function Home(){
         }
         localStorage.setItem("playbackProgress", JSON.stringify(newPlaybackProgress))
         localStorage.setItem("playbackProgressLastUpdated", Date.now().toString())
+        localStorage.setItem("playbackProgressUser", user)
     }
 
     function handleSkipIntro(){
         if(!videoRef.current) return;
+        const searchParams = new URLSearchParams(window.location.search)
+
         let info = extVideoInfo as SeriesType
-        videoRef.current.currentTime = info.intro_start + info.intro_length
+        let episode = info.episodes.find(e => e.uuid === searchParams.get("episode"))
+
+        videoRef.current.currentTime = info.intro_skip && info.intro_global ?
+            info.intro_start + info.intro_length :
+            (episode?.intro_start || 0) + info.intro_length
     }
-    function handlePlayNextEpisode(){
+    function handlePlayNextEpisode(force?: boolean){
         if(mode !== "series" || !videoInfo) return;
         videoRef.current?.pause()
         setEpisodeEnded(false)
@@ -272,6 +305,36 @@ function Home(){
                 navigateTo(`/watch?series=${uuid}&episode=${nextEpisode?.uuid}${nextEpisode?.video_hls ? "&hls" : ""}`, true)
             }
         })
+
+        if(force){
+            setTimeout(() => {
+                window.location.reload()
+            }, 150)
+        }
+    }
+
+    function handleTimelineFramePreview(e: React.TouchEvent<HTMLSpanElement> | React.MouseEvent<HTMLSpanElement> | any){
+        const rect = e.currentTarget.getBoundingClientRect()
+        const x = e.clientX - rect.left
+        setTimelineFramePreviewLocation(x)
+        setShowControls(true)
+    }
+
+    function TimelineFramePreview(){
+        if(!videoRef.current || !timelineFramePreviewLocation) return null;
+        const frameNumber = Math.floor((timelineFramePreviewLocation / window.innerWidth) * videoRef.current!.duration)
+        let splittingAmount = Math.floor(videoRef.current!.duration / 10)
+        splittingAmount = splittingAmount > 25 ? 25 : splittingAmount
+        const nearestFrameInStorage = Math.floor(frameNumber / splittingAmount) * splittingAmount
+
+        return (
+            <img
+                alt=""
+                className="position-absolute top-0 start-0"
+                src={videoLink + `/${nearestFrameInStorage}`}
+                style={{width: "100%", height: "100%", objectFit: "contain"}}
+            />
+        )
     }
 
     useEffect(() => {
@@ -373,9 +436,19 @@ function Home(){
 
     return (
         <PageBase className="d-flex flex-md-row flex-column" style={{backgroundColor: "black"}}>
-            <div className="overflow-hidden position-relative" style={{height: "100vh", width: "100vw"}}>
+            <div
+                className="overflow-hidden position-relative"
+                style={{height: "100vh", width: "100vw"}}
+                onMouseMove={handleMouseMove}
+                onTouchStart={handleMouseMove}
+                onClick={handleMouseMove}
+            >
                 {!showNSFWModal && (
-                    <video ref={videoRef} style={{width: "100%", height: "100%", objectFit: "contain", zIndex: 0}} />
+                    <video
+                        className="position-absolute top-0 start-0"
+                        ref={videoRef}
+                        style={{width: "100%", height: "100%", objectFit: "contain", zIndex: 0}}
+                    />
                 )}
                 <Fade in={!loading && showSkipIntro}>
                     <div
@@ -401,17 +474,14 @@ function Home(){
                             variant="contained"
                             color="secondary"
                             size="large"
-                            onClick={handlePlayNextEpisode}
+                            onClick={() => handlePlayNextEpisode()}
                         >
                             Play next episode
                         </Button>
                     </div>
                 </Fade>
                 <div
-                    className="position-absolute start-0 top-0 w-100 h-100"
-                    onMouseMove={handleMouseMove}
-                    onTouchStart={handleMouseMove}
-                    onClick={handleMouseMove}
+                    className="w-100 h-100"
                     style={{zIndex: 1000}}
                 >
                     <Fade in={(showControls || !playing || loading) && !showNSFWModal}>
@@ -421,6 +491,9 @@ function Home(){
                         >
                             <div className="position-relative d-flex justify-content-between" style={{left: "40px", top: "40px", width: "calc(100% - 80px)"}}>
                                 <Button variant="text" size="large" onClick={() => {
+                                    if(!checkSyncEnabled()) {
+                                        navigateTo(history.state || "/")
+                                    }
                                     handleSyncUpload((state) => {
                                         !state && alert("Failed to sync playback progress")
                                         navigateTo(history.state || "/")
@@ -469,15 +542,13 @@ function Home(){
                                         }}
                                         onMouseEnter={() => setShowTimelineFramePreview(true)}
                                         onMouseLeave={() => setShowTimelineFramePreview(false)}
+                                        onMouseMove={handleTimelineFramePreview}
                                         onTouchStart={() => setShowTimelineFramePreview(true)}
                                         onTouchEnd={() => setShowTimelineFramePreview(false)}
-                                        onMouseMove={(e) => {
-                                            const rect = e.currentTarget.getBoundingClientRect()
-                                            const x = e.clientX - rect.left
-                                            setTimelineFramePreviewLocation(x)
-                                        }}
+                                        onTouchMove={handleTimelineFramePreview}
                                         sx={{width: "100%"}}
                                         max={videoRef.current?.duration || 0}
+                                        step={.01}
                                     />
                                     <Fade in={showTimelineFramePreview}>
                                         <div
@@ -490,20 +561,7 @@ function Home(){
                                             }}
                                         >
                                             <CircularProgress />
-                                            {(() => {
-                                                if(!videoRef.current || !timelineFramePreviewLocation) return null;
-                                                const frameNumber = Math.floor((timelineFramePreviewLocation / window.innerWidth) * videoRef.current!.duration)
-                                                const nearestFrameInStorage = Math.floor(frameNumber / 25) * 25
-
-                                                return (
-                                                    <img
-                                                        alt={`Frame ${nearestFrameInStorage}`}
-                                                        className="position-absolute top-0 start-0"
-                                                        src={videoLink + `/${nearestFrameInStorage}`}
-                                                        style={{width: "100%", height: "100%", objectFit: "contain"}}
-                                                    />
-                                                )
-                                            })()}
+                                            <TimelineFramePreview />
                                         </div>
                                     </Fade>
                                 </div>
@@ -670,11 +728,14 @@ function Home(){
                 </div>
                 <div className="d-flex justify-content-between">
                     <Button variant="text" onClick={() => navigateTo(history.state || "/")} color="secondary">Go back</Button>
-                    <Button variant="contained" color="primary" onClick={() => navigateTo("/logout")}>Switch account</Button>
+                    {mode === "series" && (
+                        <Button variant="text" onClick={() => handlePlayNextEpisode(true)} color="primary">Next Episode</Button>
+                    )}
+                    <Button variant="contained" color="primary" onClick={() => window.location.href = "/logout"}>Switch account</Button>
                 </div>
             </SwcModal>
         </PageBase>
     )
 }
 
-export default Home;
+export default Watch;

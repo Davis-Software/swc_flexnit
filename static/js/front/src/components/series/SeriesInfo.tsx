@@ -1,14 +1,26 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import SeriesType, {EpisodeType} from "../../types/seriesType";
 import TitleEntryType from "../../types/titleEntryType";
 import PageLoader from "../PageLoader";
 import {TransitionGroup} from "react-transition-group";
-import {Button, Chip, Collapse, Fade} from "@mui/material";
+import {
+    Button,
+    Chip,
+    Collapse,
+    Fade,
+    List,
+    ListItemButton,
+    Skeleton,
+    Typography,
+    useTheme
+} from "@mui/material";
 import SwcModal from "../SwcModal";
 import {SwcFab, SwcFabContainer} from "../SwcFab";
-import {isAdmin} from "../../utils/constants";
 import {navigateTo} from "../../utils/navigation";
 import TitleProgress, {InfoCallbackType} from "../other/TitleProgress";
+import {handleSyncUpload} from "../../utils/syncControls";
+import {hasNSFWPermission} from "../../utils/permissionChecks";
+import {useIsAdmin} from "../../contexts/showAdminContext";
 
 const EditSeries = React.lazy(() => import("./EditSeries"));
 
@@ -38,20 +50,31 @@ function EpisodeList(props: EpisodeListProps){
 
     return (
         <>
-            <li className="list-group-item pointer-event" onClick={() => setOpen(v => !v)}>
+            <ListItemButton onClick={() => setOpen(v => !v)}>
                 <h4>Season {props.season + 1}</h4>
-            </li>
+            </ListItemButton>
             <Collapse in={open}>
-                <ul className="list-group ms-4" ref={listRef}>
+                <List className="ms-4" ref={listRef}>
                     {props.series.episodes.sort((a, b) => a.episode - b.episode)
                         .filter(episode => episode.season === props.season + 1).map((episode, i) => (
-                        <li key={i} className={`list-group-item ${props.selectedEpisode?.uuid === episode.uuid ? "active" : ""}`} onClick={() => props.handlePlayEpisode(episode)}>
-                            <h5>{episode.episode} - {episode.title}</h5>
-                            <TitleProgress title={props.series} episode={episode} />
-                            <p>{episode.description}</p>
-                        </li>
+                        <ListItemButton
+                            key={i}
+                            selected={props.selectedEpisode?.uuid === episode.uuid}
+                            onClick={() => props.handlePlayEpisode(episode)}
+                            className="d-flex flex-column align-items-start"
+                            disabled={episode.is_nsfw && !hasNSFWPermission()}
+                        >
+                            <div className="d-flex justify-content-between w-100">
+                                <Typography variant="h5">{episode.episode} - {episode.title}</Typography>
+                                <Chip size="small" label={episode.is_nsfw ? "NSFW" : "SFW"} color={episode.is_nsfw ? "warning" : "secondary"} className="ms-3" />
+                            </div>
+                            <div className="w-100">
+                                <TitleProgress title={props.series} episode={episode} />
+                                <p>{episode.description}</p>
+                            </div>
+                        </ListItemButton>
                     ))}
-                </ul>
+                </List>
             </Collapse>
         </>
     )
@@ -63,9 +86,17 @@ interface SeriesInfoDisplayProps{
     setShowEdit: React.Dispatch<React.SetStateAction<boolean>>;
 }
 function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
+    const isAdmin = useIsAdmin()
     const [showEpisodes, setShowEpisodes] = React.useState<boolean>(false);
     const [progressInfo, setProgressInfo] = useState<InfoCallbackType | null>(null)
     const [library, setLibrary] = useState<{[key: string]: any}>(JSON.parse(localStorage.getItem("library") || "{}"))
+    const [loading, setLoading] = useState<boolean>(true)
+    const theme = useTheme()
+
+    const nsfwEpisodes = useMemo(
+        () => props.series.episodes.filter(episode => episode.is_nsfw),
+        [props.series.episodes]
+    )
 
     function toggleLibrary(){
         setLibrary(prevState => {
@@ -82,6 +113,9 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
                 newLibrary.series[props.series.uuid].showInLibrary = !newLibrary.series[props.series.uuid].showInLibrary
             }
             localStorage.setItem("library", JSON.stringify(newLibrary))
+            handleSyncUpload(state => {
+                if(!state)alert("Failed to sync library")
+            }, false, true)
             return newLibrary
         })
     }
@@ -120,16 +154,26 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
                 }}
             >
                 <div className="content-info rounded-top rounded-3 d-lg-flex d-block">
-                    <div className="d-flex flex-column">
+                    <div className={`d-flex flex-column theme-${theme.palette.mode}`}>
                         <div className="info-inner d-flex flex-column flex-lg-row">
-                            <img className="m-5" src={`/series/${props.series.uuid}?thumbnail`} alt={props.series.title} />
+                            {loading && <Skeleton variant="rectangular" sx={{minWidth: "300px", minHeight: "450px"}} className="m-5" animation="wave" />}
+                            <img
+                                className="m-5" src={`/series/${props.series.uuid}?thumbnail&q=h`}
+                                alt={props.series.title}
+                                onLoad={() => setLoading(false)}
+                                hidden={loading}
+                            />
                             <div className="m-5 pt-5 w-100 pe-5">
                                 <h1>{props.series.title}</h1>
-                                <p className="text-muted">{props.series.year > 0 && props.series.year}</p>
+                                <Typography variant="caption">{props.series.year > "0" && props.series.year}</Typography>
                                 <hr />
                                 {props.series.language && <Chip label={props.series.language} className="me-2" />}
                                 <Chip label={`${props.series.season_count} Season${props.series.season_count > 1 ? "s" : ""}`} className="me-2" />
-                                <Chip label={props.series.is_nsfw ? "NSFW" : "SFW"} color={props.series.is_nsfw ? "warning" : "secondary"} className="me-2" />
+                                <Chip label={props.series.is_nsfw ? "NSFW" : (
+                                    nsfwEpisodes.length > 0 ? `${nsfwEpisodes.length} NSFW Episode${nsfwEpisodes.length > 1 ? "s" : ""}` : "SFW"
+                                )} color={props.series.is_nsfw ? "error" : (
+                                    nsfwEpisodes.length > 0 ? "warning" : "secondary"
+                                )} className="me-2" />
 
                                 <br /><br />
                                 <TitleProgress title={props.series} infoCallback={setProgressInfo} />
@@ -156,7 +200,7 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
                 </div>
             </div>
 
-            <SwcFabContainer hide={!isAdmin}>
+            <SwcFabContainer>
                 <SwcFab
                     color="primary"
                     icon={<i className="material-icons">play_arrow</i>}
@@ -183,7 +227,7 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
             </SwcFabContainer>
 
             <SwcModal show={showEpisodes} onHide={() => {setShowEpisodes(false)}}>
-                <ul className="list-group">
+                <List>
                     {[...Array(props.series.season_count)].map((_, season) => (
                         <EpisodeList
                             key={season}
@@ -193,14 +237,14 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
                             selectedEpisode={progressInfo?.lastEpisode}
                         />
                     ))}
-                </ul>
+                </List>
             </SwcModal>
         </>
     )
 }
 
 interface SeriesInfoProps{
-    title: TitleEntryType;
+    titleUUID: string;
     setTitle: (title: TitleEntryType | null) => void;
     setSearchResults: (results: (prevState: TitleEntryType[]) => TitleEntryType[]) => void;
 }
@@ -211,17 +255,17 @@ function SeriesInfo(props: SeriesInfoProps){
 
     useEffect(() => {
         setLoading(true)
-        fetch(`/series/${props.title.uuid}`)
+        fetch(`/series/${props.titleUUID}`)
             .then(res => res.json())
             .then(data => {
                 setSeries(data)
                 setLoading(false)
             })
-    }, [props.title.uuid])
+    }, [props.titleUUID])
 
     function handleDeleted(){
         props.setTitle(null)
-        props.setSearchResults(prevState => prevState.filter(t => t.uuid !== props.title.uuid))
+        props.setSearchResults(prevState => prevState.filter(t => t.uuid !== props.titleUUID))
     }
 
     return !loading && series !== null ? (
@@ -233,7 +277,7 @@ function SeriesInfo(props: SeriesInfoProps){
                     </div>
                 </Fade>
             </TransitionGroup>
-            <SwcModal show={showEdit} onHide={() => {}}>
+            <SwcModal show={showEdit} onHide={() => {}} width="95%">
                 <React.Suspense fallback={<PageLoader />}>
                     <EditSeries series={series} setSeries={setSeries} setShowEdit={setShowEdit} />
                 </React.Suspense>

@@ -8,10 +8,10 @@ class PlaybackProgressModel(BaseModel):
     __tablename__ = 'playback_progress'
 
     id = Column(Integer, primary_key=True)
-    username = Column(String(255), nullable=False)
-    progress = Column(NestedMutableJson, nullable=False)
+    username = Column(String(255), nullable=False, unique=True)
+    progress = Column(NestedMutableJson, nullable=False, default={})
+    library = Column(NestedMutableJson, nullable=False, default={})
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
-    def __init__(self, username, progress):
+    def __init__(self, username):
         self.username = username
-        self.progress = progress

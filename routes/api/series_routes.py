@@ -5,7 +5,9 @@ from models.series import get_series, add_series, edit_series, add_episode, get_
 from storage.series_storage import upload_episode_file, convert_episode_to_hls, revert_episode_to_mp4, \
     get_episode_files, \
     get_episode_file, delete_episode, get_episode_part, delete_episode_file, set_main_file, create_and_upload_episode, \
-    convert_season_to_hls, delete_episode_hls_files, get_episode_frame
+    convert_season_to_hls, delete_episode_hls_files, get_episode_frame, detect_season_intros
+from storage.storage_tools import get_sized_thumbnail
+from scraper.imdb_scraper import IMDBScraper
 from utils.adv_responses import send_binary_image
 from utils.password_manager import auth_required, admin_required, check_permission
 from utils.request_codes import RequestCode
@@ -35,7 +37,18 @@ def series_info(uuid):
         return send_binary_image(series.poster)
 
     if "thumbnail" in request.args:
-        return send_binary_image(series.thumbnail)
+        return send_binary_image(get_sized_thumbnail(
+            series,
+            request.args.get("q", "h")
+        ))
+
+    if "intro_audio" in request.args:
+        if series.intro_audio is None:
+            return make_response("No intro audio", RequestCode.ClientError.NotFound)
+
+        resp = make_response(series.intro_audio, RequestCode.Success.OK)
+        resp.headers.set("Content-Type", "audio/wav")
+        return resp
 
     return make_response(series.to_json(), RequestCode.Success.OK)
 
@@ -50,6 +63,22 @@ def series_actions(uuid, action):
 
     if action == "edit":
         return edit_series(series.uuid, **request.form, **request.files).to_json()
+
+    if action == "scrape_imdb":
+        if "imdb_id" not in request.form:
+            return make_response("Invalid request", RequestCode.ClientError.BadRequest)
+        scraper = IMDBScraper(request.form.get("imdb_id"))
+        return scraper.link_to_series(series).to_json()
+
+    if action == "detect":
+        season = request.form.get("season")
+        if season is None or not season.isdigit():
+            return make_response("Invalid request", RequestCode.ClientError.BadRequest)
+
+        if detect_season_intros(series.uuid, int(season)):
+            return make_response("Detected", RequestCode.Success.OK)
+
+        return make_response("Unknown error", RequestCode.ServerError.InternalServerError)
 
     if action == "convert":
         season = request.form.get("season")
@@ -175,9 +204,13 @@ def deliver_episode_file(uuid, episode_uuid, file_name=None, frame=None):
     if episode is None:
         return make_response("Episode not found", RequestCode.ClientError.NotFound)
 
+    if episode.is_nsfw and not check_permission("nsfw"):
+        return make_response("Age-Restricted Content", RequestCode.ClientError.Forbidden)
+
     if frame is not None and frame.isdigit():
         response = make_response(get_episode_frame(series.uuid, episode_uuid, int(frame)))
         response.cache_control.max_age = 60 * 60 * 24 * 365
+        response.content_type = "image/jpeg"
         return response
 
     if file_name is None:

@@ -6,8 +6,10 @@ from os import path
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
-from models.series import get_series, add_episode, delete_episode as delete_episode_model, get_episode, get_episodes
-from .storage_tools import get_video_file_info, convert_file_to_hls, remove_hls_files, get_video_frame, get_dir_files
+from models.series import get_series, add_episode, delete_episode as delete_episode_model, get_episode, get_episodes, \
+    get_episode_by_season_and_episode
+from .storage_tools import get_video_file_info, convert_file_to_hls, remove_hls_files, get_video_frame, get_dir_files, \
+    detect_audio_offsets
 
 SERIES_STORAGE_PATH = path.join(config.get("VIDEO_DIR"), "series")
 
@@ -57,6 +59,29 @@ def upload_episode_file(series_uuid: str, episode_uuid, file: FileStorage):
     episode_model.add()
 
     return episode_model
+
+
+def detect_season_intros(series_uuid: str, season: int):
+    series_model = get_series(series_uuid)
+    if series_model is None:
+        return False
+
+    series_path = get_series_storage_path(series_uuid)
+    season_path = path.join(series_path, f"season_{season}")
+
+    offsets = detect_audio_offsets(series_model.intro_audio, season_path)
+    for file in offsets:
+        season = int(file.split("/season_")[1].split("/")[0])
+        episode = int(file.split("/episode_")[1].split("/")[0])
+        episode_model = get_episode_by_season_and_episode(series_uuid, season, episode)
+        if episode_model is None:
+            return False
+
+        episode_model.has_intro = True
+        episode_model.intro_start = int(offsets[file])
+        episode_model.commit()
+
+    return True
 
 
 def convert_episode_to_hls(series_uuid: str, episode_uuid: str, re_encode: bool = False):

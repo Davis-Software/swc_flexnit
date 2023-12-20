@@ -1,16 +1,20 @@
-import React, {MouseEventHandler, useEffect, useRef} from "react";
+import React, {useEffect, useRef} from "react";
+import {useTheme} from "@mui/material";
 
 interface EffectGeneratorProps{
     children: React.ReactNode | React.ReactNode[];
+    style?: React.CSSProperties;
     rippleEffect?: boolean;
     candleEffect?: boolean;
     candleSize?: number;
     className?: string;
     onClick?: () => void;
     onMouseDown?: (e: any) => void;
+    selected?: boolean;
 }
 function EffectGenerator(props: EffectGeneratorProps){
     const divRef = useRef() as React.MutableRefObject<HTMLDivElement>;
+    const theme = useTheme()
 
     function getElementOffset(element: HTMLDivElement){
         let de = document.documentElement
@@ -21,6 +25,8 @@ function EffectGenerator(props: EffectGeneratorProps){
     }
 
     function handleRipple(e: React.MouseEvent<HTMLDivElement, MouseEvent>){
+        if(!divRef.current) return
+
         if(!props.rippleEffect || !divRef.current) return
         if(divRef.current.className.includes("disabled")) return
 
@@ -54,13 +60,7 @@ function EffectGenerator(props: EffectGeneratorProps){
         canvas.classList.add("candle-canvas")
         candle.classList.add("candle")
 
-        let elemColors = window.getComputedStyle(divRef.current).backgroundColor
-            .replace("rgba(", "")
-            .replace("rgb(", "")
-            .replace(")", "")
-            .replaceAll(" ", "")
-            .split(",")
-            .map(x => parseInt(x))
+        let elemColors = theme.palette.mode === "dark" ? [0, 0, 0, 0] : [255, 255, 255, 0]
         let candleColor = `rgba(${255-elemColors[0]+50}, ${255-elemColors[1]+50}, ${255-elemColors[2]+50}, ${elemColors[3]+0.15 || .3})`
         candle.style.background = `radial-gradient(circle closest-side, ${candleColor}, transparent)`
 
@@ -77,6 +77,8 @@ function EffectGenerator(props: EffectGeneratorProps){
         props.onClick?.()
     }
     function handleMouseEnter(){
+        if(!divRef.current) return
+
         if(divRef.current.className.includes("disabled")) return
         if(!props.candleEffect || !divRef.current) return
 
@@ -87,6 +89,8 @@ function EffectGenerator(props: EffectGeneratorProps){
         candle.classList.add("candle-anim")
     }
     function handleMouseLeave(){
+        if(!divRef.current) return
+
         if(divRef.current.className.includes("disabled")) return
         if(!props.candleEffect || !divRef.current) return
 
@@ -97,6 +101,8 @@ function EffectGenerator(props: EffectGeneratorProps){
         candle.classList.add("candle-anim-back")
     }
     function handleMouseMove(e: React.MouseEvent<HTMLDivElement, MouseEvent>){
+        if(!divRef.current) return
+
         if(divRef.current.className.includes("disabled")) return
         if(!props.candleEffect || !divRef.current) return
 
@@ -123,6 +129,10 @@ function EffectGenerator(props: EffectGeneratorProps){
             onMouseMove={handleMouseMove}
             onMouseDown={props.onMouseDown}
             ref={divRef}
+            style={{
+                backgroundColor: props.selected ? (theme.palette.mode === "dark" ? "var(--bs-gray-700)" : "var(--bs-gray-300)") : "",
+                ...props.style
+            }}
         >
             {props.children}
         </div>

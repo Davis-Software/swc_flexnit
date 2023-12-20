@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Software City">
 
-    <meta name="theme-color" content="#375a7f">
+    <meta name="theme-color" content="#272727">
+    <link rel="manifest" href="/static/pwa/manifest.json">
+    <script src="/static/pwa/sw-register.js"></script>
 
     <link rel="shortcut icon" type="image/x-icon" href="/favicon">
     <link rel="stylesheet" href="/static/bootstrap/bootstrap.min.css">
@@ -17,10 +19,7 @@
     <link rel="stylesheet" href="/static/font/material_icons/material_icons.css">
 
     <script src="/static/bootstrap/bootstrap.bundle.min.js" defer></script>
-    <script src="/static/js/modules/modal-generator.js" defer></script>
-
     <script src="/static/js/bases/base_script.js" defer></script>
-    <script src="/static/js/utils/effects.js" defer></script>
 
     {% if session.get("logged_in") == True %}
     <script>

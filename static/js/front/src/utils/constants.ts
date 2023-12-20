@@ -1,15 +1,17 @@
 // @ts-ignore
 const user = global.hasOwnProperty("user") && global.user
 // @ts-ignore
-const isAdmin = global.hasOwnProperty("admin") && global.admin
+const isAdminSet = global.hasOwnProperty("admin") && global.admin
 // @ts-ignore
 const isCloud = global.hasOwnProperty("cloud") && global.cloud
 // @ts-ignore
 const permissions = global.hasOwnProperty("permissions") && global.permissions
 
+const systemThemeIsDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+
 function hasPermission(permission: string) {
     return permissions && permissions.includes(permission)
 }
 
-export { user, isAdmin, isCloud, permissions }
+export { user, isAdminSet, isCloud, permissions, systemThemeIsDark }
 export { hasPermission }

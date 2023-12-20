@@ -15,6 +15,12 @@ def sync():
 
     elif request.method == "POST":
         username = session.get("username")
+        playback_user = request.form.get("playback_user")
+
+        if playback_user is None or playback_user != username:
+            return make_response("Unauthorized", 401)
+
         playback_progress = request.form.get("playback_progress")
-        set_playback_progress(username, playback_progress)
+        playback_library = request.form.get("playback_library")
+        set_playback_progress(username, playback_progress, playback_library)
         return make_response("OK", 200)

@@ -1,18 +1,18 @@
-import React, {useEffect} from "react";
-import {Button, FormControl, MenuItem, Select, TextField} from "@mui/material";
+import React, {useEffect, useRef, useState} from "react";
+import {Button, FormControl, MenuItem, Select, Skeleton, TextField, Typography} from "@mui/material";
 import SwcModal from "../SwcModal";
 import TitleEntryType from "../../types/titleEntryType";
 import EffectGenerator from "../EffectGenerator";
 import {SwcFab, SwcFabContainer} from "../SwcFab";
-import {isAdmin} from "../../utils/constants";
 import {getTimeString} from "../../utils/FormatDate";
+import useIsInView from "../../hooks/useIsInView";
+import {navigateTo} from "../../utils/navigation";
+import {useIsAdmin} from "../../contexts/showAdminContext";
 
 interface CreateNewModalProps {
     show: boolean;
     onHide: () => void;
     setSelectedResult: (title: TitleEntryType) => void;
-    setSearchMode: (mode: "all" | "movie" | "series") => void;
-    setSearch: (search: string) => void;
 }
 function CreateNewModal(props: CreateNewModalProps){
     const [createMode, setCreateMode] = React.useState<"movie" | "series">("movie")
@@ -46,12 +46,11 @@ function CreateNewModal(props: CreateNewModalProps){
                         method: "POST",
                         body: formData
                     }).then(res => res.json()).then(res => {
-                        props.setSearchMode(createMode);
-                        props.setSearch(title);
                         props.setSelectedResult({
                             uuid: res.uuid,
                             title: title,
-                            type: createMode
+                            type: createMode,
+                            description: ""
                         });
                         props.onHide();
                     })
@@ -64,16 +63,55 @@ function CreateNewModal(props: CreateNewModalProps){
     )
 }
 
+interface TitleEntryProps {
+    searchResult: TitleEntryType;
+}
+function TitleEntry({searchResult}: TitleEntryProps){
+    const entryTextRef = useRef<HTMLDivElement>(null)
+    const inView = useIsInView(entryTextRef)
+    const [show, setShow] = useState(false)
+    const [loading, setLoading] = React.useState(true)
+
+    useEffect(() => {
+        inView && setShow(true)
+    }, [inView]);
+
+    return (
+        <>
+            {(loading || !inView) && <Skeleton variant="rectangular" sx={{minWidth: "70px"}} height="100%" animation="wave" />}
+            <img
+                src={show ? `/${searchResult.type === "movie" ? "movies" : "series"}/${searchResult.uuid}?thumbnail&q=l` : ""}
+                alt="title"
+                onLoad={() => setLoading(false)}
+                hidden={loading || !inView}
+            />
+            <div className="ms-3" ref={entryTextRef}>
+                <div className="fw-bold">{searchResult.title}</div>
+                {searchResult.type === "movie" ? (
+                    <>
+                        <Typography variant="overline">Runtime: </Typography>
+                        <Typography variant="caption">{getTimeString(searchResult.runtime!)}</Typography>
+                    </>
+                ) : (
+                    <Typography variant="overline">Seasons: {searchResult.season_count}</Typography>
+                )}
+            </div>
+        </>
+    )
+}
+
 interface SidebarProps {
     setSelectedTitle: (title: TitleEntryType) => void;
-    selectedTitle: TitleEntryType | null;
+    selectedTitleUUID: string | null;
     searchResults: TitleEntryType[];
     setSearchResults: (results: (prevState: TitleEntryType[]) => TitleEntryType[]) => void;
 }
 function Sidebar(props: SidebarProps){
+    const isAdmin = useIsAdmin()
     const [search, setSearch] = React.useState(sessionStorage.getItem("search") || "")
     const [searchMode, setSearchMode] =
         React.useState<"all" | "movie" | "series">(sessionStorage.getItem("search-mode") as "all" | "movie" | "series" || "all")
+    const searchBarRef = useRef<HTMLInputElement>(null)
 
     const [createNewModal, setCreateNewModal] = React.useState(false)
 
@@ -96,13 +134,15 @@ function Sidebar(props: SidebarProps){
     return (
         <>
             <div className="sidebar d-flex flex-column border-end border-secondary">
-                <div>
+                <div className="sidebar-form">
                     <FormControl fullWidth>
                         <TextField
+                            inputRef={searchBarRef}
                             variant="standard"
                             placeholder="Search"
                             value={search}
                             onChange={e => setSearch(e.target.value)}
+                            sx={{"& input": {paddingLeft: ".5rem"}}}
                         />
                     </FormControl>
                     <FormControl fullWidth>
@@ -110,6 +150,7 @@ function Sidebar(props: SidebarProps){
                             variant="standard"
                             value={searchMode}
                             onChange={e => setSearchMode(e.target.value as "all" | "movie" | "series")}
+                            sx={{paddingLeft: ".5rem"}}
                         >
                             <MenuItem value="all">All</MenuItem>
                             <MenuItem value="movie">Movie</MenuItem>
@@ -125,25 +166,38 @@ function Sidebar(props: SidebarProps){
                             key={i}
                             onClick={() => handleClick(searchResult)}
                             onMouseDown={(e) => handleMiddleClick(e, searchResult)}
-                            className={`result p-2 ps-3 border-bottom border-secondary ${props.selectedTitle?.uuid === searchResult.uuid ? "selected" : ""}`}
+                            className={"result p-2 ps-3 border-bottom border-secondary"}
                             rippleEffect
                             candleEffect
                             candleSize={2}
+                            selected={props.selectedTitleUUID === searchResult.uuid}
                         >
-                            <img src={`/${searchResult.type === "movie" ? "movies" : "series"}/${searchResult.uuid}?thumbnail`} alt="title" />
-                            <div className="ms-3">
-                                <div className="fw-bold">{searchResult.title}</div>
-                                {searchResult.type === "movie" ? (
-                                    <div className="text-muted">Runtime: {getTimeString(searchResult.runtime!)}</div>
-                                ) : (
-                                    <div className="text-muted">Seasons: {searchResult.season_count}</div>
-                                )}
-                            </div>
+                            <TitleEntry searchResult={searchResult} />
                         </EffectGenerator>
                     ))}
+
+                    {props.searchResults.length > 0 && search === "" && (
+                        <div className="text-center mt-3 mb-5 pb-5">
+                            <Typography variant="caption">Search for something... ?</Typography><br/>
+                            <Typography variant="caption">
+                                This list only contains some title entries. <br/>
+                                Use the
+                                <a href="#" onClick={(e) => {
+                                    e.preventDefault()
+                                    searchBarRef.current?.focus()
+                                }}> search </a>
+                                or go to
+                                <a href="#" onClick={(e) => {
+                                    e.preventDefault()
+                                    navigateTo("/browse")
+                                }}> Browse</a>
+                                .
+                            </Typography>
+                        </div>
+                    )}
                 </div>
 
-                <SwcFabContainer hide={!isAdmin}>
+                <SwcFabContainer hide={!isAdmin} position="absolute">
                     <SwcFab
                         icon={<i className="material-icons">add</i>}
                         onClick={() => setCreateNewModal(true)}
@@ -155,8 +209,6 @@ function Sidebar(props: SidebarProps){
                 show={createNewModal}
                 onHide={() => setCreateNewModal(false)}
                 setSelectedResult={props.setSelectedTitle}
-                setSearchMode={setSearchMode}
-                setSearch={setSearch}
             />
         </>
     )
