@@ -11,6 +11,7 @@ const MovieInfo = React.lazy(() => import("../components/movie/MovieInfo"));
 const SeriesInfo = React.lazy(() => import("../components/series/SeriesInfo"));
 
 function Home(){
+    const [loadedOnce, setLoadedOnce] = React.useState<boolean>(false)
     const [showWideContent, setShowWideContent] = React.useState<boolean>(window.innerWidth >= 840)
     const [selectedUUID, setSelectedUUID] = React.useState<string | null>((new URLSearchParams(window.location.search)).get("selected"));
     const [selectedType, setSelectedType] = React.useState<string | null>((new URLSearchParams(window.location.search)).get("type"));
@@ -42,6 +43,7 @@ function Home(){
     }
 
     const RenderContent = useMemo(() => {
+        if(!loadedOnce) return <PageLoader />
         if(selectedUUID !== null && selectedType !== null){
             switch (selectedType) {
                 case "movie":
@@ -54,7 +56,7 @@ function Home(){
         }else{
             return <ContentBrowser setSelectedTitle={navigateToTitle} id={Math.random().toString()} />
         }
-    }, [selectedUUID, selectedType])
+    }, [selectedUUID, selectedType, loadedOnce])
 
     return (
         <PageBase className="page-home flex-column flex-md-row">
@@ -63,6 +65,7 @@ function Home(){
                 setSelectedTitle={navigateToTitle}
                 searchResults={searchResults}
                 setSearchResults={setSearchResults}
+                setLoadedOnce={setLoadedOnce}
             />
             {showWideContent && (
                 <div className="content d-none d-md-block">

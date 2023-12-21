@@ -105,6 +105,7 @@ interface SidebarProps {
     selectedTitleUUID: string | null;
     searchResults: TitleEntryType[];
     setSearchResults: (results: (prevState: TitleEntryType[]) => TitleEntryType[]) => void;
+    setLoadedOnce: (loadedOnce: boolean) => void;
 }
 function Sidebar(props: SidebarProps){
     const isAdmin = useIsAdmin()
@@ -120,7 +121,10 @@ function Sidebar(props: SidebarProps){
         sessionStorage.setItem("search-mode", searchMode)
         fetch(`/search/${searchMode}${search !== "" ? "?q=" + search : ""}`)
             .then(res => res.json())
-            .then(props.setSearchResults)
+            .then(res => {
+                props.setLoadedOnce(true)
+                props.setSearchResults(res)
+            })
     }, [search, searchMode])
 
     function handleClick(searchResult: TitleEntryType){
