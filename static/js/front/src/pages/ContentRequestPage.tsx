@@ -80,8 +80,6 @@ interface ContentRequestTableProps {
     displayFilter?: (cr: ContentRequestType) => boolean;
 }
 function ContentRequestTable(props: ContentRequestTableProps){
-    const isAdmin = useIsAdmin()
-
     function handleStatusCHanged(contentRequest: ContentRequestType){
         props.setContentRequests(prev => {
             const index = prev.findIndex(cr => cr.id === contentRequest.id)
@@ -118,6 +116,8 @@ function ContentRequestTable(props: ContentRequestTableProps){
     )
 }
 
+let firstLoad = true
+let reachedEnd = false
 function ContentRequestPage(){
     const [showEdit, setShowEdit] = useState(false)
     const [editContentRequestId, setEditContentRequestId] = useState<number | null>(null)
@@ -125,7 +125,6 @@ function ContentRequestPage(){
     const [userRequests, setUserRequests] = useState<ContentRequestType[]>([])
 
     const [page, setPage] = useState(1)
-    const [reachedEnd, setReachedEnd] = useState(false)
     const [allRequests, setAllRequests] = useState<ContentRequestType[]>([])
 
     function handleAddRequest(){
@@ -156,8 +155,9 @@ function ContentRequestPage(){
         fetch(`/content_requests?page=${page}`)
             .then(res => res.json())
             .then(data => {
-                if(data.length === 0) setReachedEnd(true)
+                if(data.length === 0) reachedEnd = true
                 setAllRequests([...allRequests, ...data])
+                if(firstLoad) firstLoad = false
             })
     }, [page]);
     useEffect(() => {
@@ -165,6 +165,19 @@ function ContentRequestPage(){
             .then(res => res.json())
             .then(setUserRequests)
     }, []);
+
+    function updatePage(){
+        if(firstLoad || reachedEnd) return
+        // @ts-ignore
+        if((window.scrollY + 5) < window.scrollMaxY) return
+        setPage(page + 1)
+    }
+    useEffect(() => {
+        window.addEventListener("scroll", updatePage)
+        return () => {
+            window.removeEventListener("scroll", updatePage)
+        }
+    }, [])
 
     return (
         <PageBase className="container-fluid">
