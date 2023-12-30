@@ -54,7 +54,7 @@ function Home(){
                     return <PageLoader />
             }
         }else{
-            return <ContentBrowser setSelectedTitle={navigateToTitle} id={Math.random().toString()} />
+            return <ContentBrowser startTab="news" setSelectedTitle={navigateToTitle} id={Math.random().toString()} />
         }
     }, [selectedUUID, selectedType, loadedOnce])
 
