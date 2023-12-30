@@ -46,7 +46,7 @@ function ContentRequestTableRow(props: ContentRequestTableRowProps){
             <TableCell>{props.cr.content_type}</TableCell>
             <TableCell>{props.cr.content_title}</TableCell>
             <TableCell>{isAdmin ? (
-                <FormControl fullWidth>
+                <FormControl size="small" fullWidth>
                     <InputLabel>Content Type</InputLabel>
                     <Select
                         value={props.cr.status}
@@ -88,6 +88,31 @@ function ContentRequestTable(props: ContentRequestTableProps){
         })
     }
 
+    function sortRequests(a: ContentRequestType, b: ContentRequestType){
+        if(a.status === b.status) return 0
+        if(a.status === "pending"){
+            if(b.status === "approved") return -1
+            if(b.status === "added") return -1
+            if(b.status === "denied") return -1
+        }
+        if(a.status === "approved"){
+            if(b.status === "pending") return 1
+            if(b.status === "added") return -1
+            if(b.status === "denied") return -1
+        }
+        if(a.status === "added"){
+            if(b.status === "pending") return 1
+            if(b.status === "approved") return 1
+            if(b.status === "denied") return -1
+        }
+        if(a.status === "denied"){
+            if(b.status === "pending") return 1
+            if(b.status === "approved") return 1
+            if(b.status === "added") return 1
+        }
+        return 0
+    }
+
     return props.contentRequests.filter(props.displayFilter || (() => true)).length > 0 ? (
         <Table>
             <TableHead>
@@ -99,7 +124,7 @@ function ContentRequestTable(props: ContentRequestTableProps){
                 </TableRow>
             </TableHead>
             <TableBody>
-                {props.contentRequests.filter(props.displayFilter || (() => true)).map(cr => (
+                {props.contentRequests.filter(props.displayFilter || (() => true)).sort(sortRequests).map(cr => (
                     <ContentRequestTableRow
                         key={cr.id}
                         cr={cr}
