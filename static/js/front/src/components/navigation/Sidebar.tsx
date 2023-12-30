@@ -182,7 +182,7 @@ function Sidebar(props: SidebarProps){
 
                     {props.searchResults.length > 0 && search === "" && (
                         <div className="text-center mt-3 mb-5 pb-5">
-                            <Typography variant="caption">Search for something... ?</Typography><br/>
+                            <Typography variant="caption">Searching for something... ?</Typography><br/>
                             <Typography variant="caption">
                                 This list only contains some title entries. <br/>
                                 Use the
