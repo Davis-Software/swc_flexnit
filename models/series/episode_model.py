@@ -21,8 +21,18 @@ class EpisodeModel(TitleModel):
     has_intro = Column(Boolean, nullable=False, default=False)
     intro_start = Column(Integer, nullable=True)
 
+    @property
+    def is_nsfw_inherited(self):
+        return self.is_nsfw or self.series.is_nsfw
+
     def __init__(self, title, season, episode, series_id):
         super().__init__(title)
         self.season = season
         self.episode = episode
         self.series_id = series_id
+
+    def to_dict(self, show: list = None, to_json=True, parent_type = None):
+        episode = super().to_dict(show, to_json, parent_type)
+        episode["is_nsfw"] = self.is_nsfw_inherited
+
+        return episode
