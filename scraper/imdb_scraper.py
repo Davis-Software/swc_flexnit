@@ -6,10 +6,14 @@ from models.series import SeriesModel, get_episode_by_season_and_episode
 
 
 class IMDBScraper:
-    def __init__(self, title_id):
+    def __init__(self, title_id, set_metadata=True, set_media=False, set_sub_info=True):
         self.title_id = title_id
         self.url = f"https://www.imdb.com/title/{self.title_id}/"
         self.soup = None
+
+        self.__set_metadata = set_metadata
+        self.__set_media = set_media
+        self.__set_sub_info = set_sub_info
 
     def _fetch(self, route):
         response = requests.get(self.url + route, headers={
@@ -44,6 +48,14 @@ class IMDBScraper:
         if tag:
             return tag.attrs.get(attr)
         return None
+
+    @staticmethod
+    def __set_attr(obj, attr, val):
+        if None in [obj, attr, val]:
+            return
+        # if getattr(obj, attr) is None or getattr(obj, attr) == "":
+        #     setattr(obj, attr, val)
+        setattr(obj, attr, val)
 
     @staticmethod
     def get_file(url):
@@ -89,10 +101,12 @@ class IMDBScraper:
         if data.get("type") != "movie":
             return None
 
-        movie.title = data.get("title")
-        movie.year = data.get("year")
-        movie.description = data.get("description")
-        movie.thumbnail = self.get_file(data.get("thumbnail"))
+        if self.__set_metadata:
+            self.__set_attr(movie, "title", data.get("title"))
+            self.__set_attr(movie, "year", data.get("year"))
+            self.__set_attr(movie, "description", data.get("description"))
+        if self.__set_media:
+            self.__set_attr(movie, "thumbnail", self.get_file(data.get("thumbnail")))
 
         movie.commit()
         return movie
@@ -102,23 +116,26 @@ class IMDBScraper:
         if data.get("type") != "series":
             return None
 
-        series.title = data.get("title")
-        series.year = data.get("year")
-        series.description = data.get("description")
-        series.thumbnail = self.get_file(data.get("thumbnail"))
+        if self.__set_metadata:
+            self.__set_attr(series, "title", data.get("title"))
+            self.__set_attr(series, "year", data.get("year"))
+            self.__set_attr(series, "description", data.get("description"))
+        if self.__set_media:
+            self.__set_attr(series, "thumbnail", self.get_file(data.get("thumbnail")))
 
-        for season in range(series.season_count):
-            season_data = self.get_episodes(season + 1, skip_check=True)
+        if self.__set_sub_info:
+            for season in range(series.season_count):
+                season_data = self.get_episodes(season + 1, skip_check=True)
 
-            for i, episode in enumerate(season_data):
-                episode_model = get_episode_by_season_and_episode(series.uuid, season + 1, i + 1)
+                for i, episode in enumerate(season_data):
+                    episode_model = get_episode_by_season_and_episode(series.uuid, season + 1, i + 1)
 
-                if episode_model is None:
-                    continue
+                    if episode_model is None:
+                        continue
 
-                episode_model.title = episode.get("title")
-                episode_model.description = episode.get("description")
-                episode_model.commit()
+                    self.__set_attr(episode_model, "title", episode.get("title"))
+                    self.__set_attr(episode_model, "description", episode.get("description"))
+                    episode_model.commit()
 
         series.commit()
         return series

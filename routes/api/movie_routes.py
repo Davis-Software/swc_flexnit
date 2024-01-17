@@ -61,7 +61,12 @@ def movie_actions(uuid, action):
     if action == "scrape_imdb":
         if "imdb_id" not in request.form:
             return make_response("Invalid request", RequestCode.ClientError.BadRequest)
-        scraper = IMDBScraper(request.form.get("imdb_id"))
+        scraper = IMDBScraper(
+            request.form.get("imdb_id"),
+            set_metadata=request.form.get("metadata") == "1",
+            set_media=request.form.get("media") == "1",
+            set_sub_info=False
+        )
         return scraper.link_to_movie(movie).to_json()
 
     if action == "upload":
