@@ -184,14 +184,14 @@ function SongPlayer(props: SongPlayerProps){
                         onChange={handleSpeedChange}
                         disabled={lockSpeedSelect}
                     >
-                        <MenuItem value=".5">Slowdrive (x0.5)</MenuItem>
-                        <MenuItem value=".8">Daycore (x0.8)</MenuItem>
-                        <MenuItem value=".85">Daycore N# (x0.85)</MenuItem>
-                        <MenuItem value="1">Off (x1)</MenuItem>
-                        <MenuItem value="1.2">Nightcore (x1.2)</MenuItem>
-                        <MenuItem value="1.25">Nightcore N# (x1.25)</MenuItem>
-                        <MenuItem value="1.3">Hypercore (x1.3)</MenuItem>
-                        <MenuItem value="1.5">Beatpump (x1.5)</MenuItem>
+                        <MenuItem value=".5">Slowdrive</MenuItem>
+                        <MenuItem value=".8">Daycore</MenuItem>
+                        <MenuItem value=".85">Daycore N#</MenuItem>
+                        <MenuItem value="1">Off</MenuItem>
+                        <MenuItem value="1.2">Nightcore</MenuItem>
+                        <MenuItem value="1.25">Nightcore N#</MenuItem>
+                        <MenuItem value="1.3">Hypercore</MenuItem>
+                        <MenuItem value="1.5">Beatpump</MenuItem>
                     </Select>
 
                 </FormControl>

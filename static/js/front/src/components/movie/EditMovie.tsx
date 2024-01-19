@@ -122,10 +122,14 @@ function EditMovie(props: EditMovieProps){
 
     function handleScrapeIMDB(){
         let id = prompt("Enter IMDB ID")
+        let metadata = prompt("Set Metadata [y/N]") === "y"
+        let media = prompt("Set Media [y/N]") === "y"
         if(!id || id === "") return
 
         const formData = new FormData()
         formData.append("imdb_id", id)
+        formData.append("metadata", metadata ? "1" : "0")
+        formData.append("media", media ? "1" : "0")
 
         fetch(`/movies/${props.movie.uuid}/scrape_imdb`, {
             method: "POST",

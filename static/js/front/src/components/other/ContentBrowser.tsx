@@ -133,6 +133,7 @@ function TitleBrowser(props: TitleBrowserProps){
 
 interface ContentBrowserProps{
     id: string
+    startTab?: "browse" | "news"
     forceTab?: "browse" | "news"
     setSelectedTitle?: (title: TitleEntryType) => void
 }
@@ -140,6 +141,7 @@ function ContentBrowser(props: ContentBrowserProps){
     const [tab, setTab] = useState<"browse" | "news">(
         props.forceTab ||
         sessionStorage.getItem("home-tab") as "browse" | "news" ||
+        props.startTab ||
         "browse"
     )
 

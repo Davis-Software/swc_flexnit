@@ -1,4 +1,5 @@
 import subprocess
+import multiprocessing
 from __init__ import config
 import os
 import json
@@ -23,10 +24,8 @@ def get_video_file_info(file_path: str):
     ffprobe = subprocess.Popen(
         [
             config.get("FFPROBE_PATH"),
-            "-v",
-            "quiet",
-            "-print_format",
-            "json",
+            "-v", "quiet",
+            "-print_format", "json",
             "-show_format",
             "-show_streams",
             file_path,
@@ -73,20 +72,13 @@ def get_video_frame(file_path: str, time_index: int):
         [
             config.get("FFMPEG_PATH"),
             "-y",
-            "-loglevel",
-            "quiet",
-            "-ss",
-            str(time_index),
-            "-i",
-            file_path,
-            "-vframes",
-            "1",
-            "-vf",
-            f"scale='min(101,-1)':'min(101,100)'",
-            "-f",
-            "image2",
-            "-preset",
-            "ultrafast",
+            "-loglevel", "quiet",
+            "-ss", str(time_index),
+            "-i", file_path,
+            "-vframes", "1",
+            "-vf", f"scale='min(101,-1)':'min(101,100)'",
+            "-f", "image2",
+            "-preset", "ultrafast",
             "-",
         ],
         stdout=subprocess.PIPE,
@@ -108,22 +100,15 @@ def detect_audio_offsets(search_file: bytes, video_folder: str, ignore_files: st
 
     aivd = subprocess.Popen(make_wsl_command([
         config.get("AIVD_PATH"),
-        "--find-offset-of",
+        "-r",
+        "-x", ignore_files,
+        "-w", "900",
+        "-f", "json",
+        "-c", str(multiprocessing.cpu_count()),
+        "--ffmpeg", ffmpeg if not config.get_bool("USE_WSL") else config.get("WSL_FFMPEG"),
+        "--silent",
         f"/tmp/{file}",
-        "--within",
-        get_wsl_path(video_folder),
-        "--extension-skip",
-        ignore_files,
-        "--recursive",
-        "true",
-        "--window",
-        "900",
-        "--log-level",
-        "fatal",
-        "--raw",
-        "true",
-        "--ffmpeg",
-        ffmpeg if not config.get_bool("USE_WSL") else config.get("WSL_FFMPEG")
+        get_wsl_path(video_folder)
     ]),
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT
@@ -132,7 +117,7 @@ def detect_audio_offsets(search_file: bytes, video_folder: str, ignore_files: st
     resp = aivd.stdout.read()
     os.remove(get_local_wsl_temp_dir() + file)
 
-    return json.loads(resp)
+    return json.loads(resp.strip())
 
 
 def convert_file_to_hls(input_file: str, output_file: str, re_encode: bool = False):
@@ -150,57 +135,34 @@ def convert_file_to_hls(input_file: str, output_file: str, re_encode: bool = Fal
     if re_encode and hw_accel:
         opts = [
             ffmpeg,
-            "-hwaccel",
-            accelerator,
-            "-hwaccel_output_format",
-            "cuda",
-            "-i",
-            input_file,
-            "-c:v",
-            "h264_nvenc",
-            "-preset",
-            encoder_preset,
-            "-c:a",
-            "copy"
+            "-hwaccel", accelerator,
+            "-hwaccel_output_format", "cuda",
+            "-i", input_file,
+            "-c:v", "h264_nvenc",
+            "-preset", encoder_preset,
+            "-c:a", "aac",
+            "-ac", "2"
         ]
     else:
         opts = [
             ffmpeg,
-            "-i",
-            input_file,
-            "-c" if not re_encode else "-c:a",
-            "copy",
+            "-i", input_file,
+            "-c:v", "copy" if not re_encode else "h264",
+            "-c:a", "copy" if not re_encode else "aac",
         ]
-
-    video_info = get_video_file_info(input_file)
-    audio_groups = [f"a:{stream['index']-1},language:{stream['tags']['language']},name:{stream['tags']['language']}"
-                    for stream in video_info["streams"] if stream["codec_type"] == "audio"]
+        if re_encode:
+            opts.extend([
+                "-ac", "2"
+            ])
 
     subprocess.run(
         [
             *opts,
-            # "-map",
-            # "0:v",
-            # "-map",
-            # "0:a",
-
-            "-map",  # carry over all streams into hls
-            "0",
-
-            "-start_number",
-            "0",
-            "-hls_time",
-            "20",
-            "-hls_list_size",
-            "0",
-            "-f",
-            "hls",
-            "-master_pl_name",
-            "index.m3u8",
-            "-var_stream_map",
-            f"v:0,name:video {' '.join(audio_groups)}",
-            f"{output_file.replace('.m3u8', '')}_%v.m3u8",
-            # output_file
+            "-start_number", "0",
+            "-hls_time", "20",
+            "-hls_list_size", "0",
+            "-f", "hls",
+            output_file
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -246,18 +208,12 @@ def get_sized_thumbnail(title: MovieModel or SeriesModel, quality: str = "o"):
         [
             config.get("FFMPEG_PATH"),
             "-y",
-            "-loglevel",
-            "quiet",
-            "-i",
-            "-",
-            "-f",
-            "png_pipe",
-            "-vf",
-            f"scale={conversion}",
-            "-f",
-            "image2",
-            "-preset",
-            "ultrafast",
+            "-loglevel", "quiet",
+            "-i", "-",
+            "-f", "png_pipe",
+            "-vf", f"scale={conversion}",
+            "-f", "image2",
+            "-preset", "ultrafast",
             "-",
         ],
         stdin=subprocess.PIPE,

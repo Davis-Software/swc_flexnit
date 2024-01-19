@@ -6,7 +6,7 @@ import {navigateToTitle} from "../utils/navigation";
 function ContentBrowserPage(){
     return (
         <PageBase>
-            <ContentBrowser forceTab="browse" setSelectedTitle={navigateToTitle} />
+            <ContentBrowser id="browser-page" forceTab="browse" setSelectedTitle={navigateToTitle} />
         </PageBase>
     )
 }
