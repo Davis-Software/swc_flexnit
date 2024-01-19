@@ -695,11 +695,7 @@ function Watch(){
                                                     <List>
                                                         <ListItemButton
                                                             selected={selectedSubtitleTrack === -1}
-                                                            onClick={() => {
-                                                                if(!dash) return;
-                                                                dash.setCurrentTrack(-1)
-                                                                setSelectedSubtitleTrack(-1)
-                                                            }}
+                                                            onClick={() => setSelectedSubtitleTrack(-1)}
                                                         >
                                                             Off
                                                         </ListItemButton>
