@@ -42,15 +42,15 @@ function SeasonOverview(props: SeasonOverviewProps){
         })
         alert("Detection started, warning: this will take a while and there is no way to track progress.")
     }
-    function handleConvertSeason(reEncode: boolean = false){
-        if(!confirm("Are you sure you want to convert all episodes in this season to HLS?")) return
+    function handleConvertSeason(mode: "dash" | "hls", reEncode: boolean = false){
+        if(!confirm(`Are you sure you want to convert all episodes in this season to ${mode}?`)) return
         if(reEncode){
             if(!confirm("This will take a while, are you sure?")) return
         }
 
         const formData = new FormData()
         formData.append("season", (props.season + 1).toString())
-        fetch(`/series/${props.seriesProps.series.uuid}/convert${reEncode ? "?encode" : ""}`, {
+        fetch(`/series/${props.seriesProps.series.uuid}/convert?mode=${mode}${reEncode ? "&encode" : ""}`, {
             method: "POST",
             body: formData
         }).then(() => {
@@ -75,7 +75,7 @@ function SeasonOverview(props: SeasonOverviewProps){
             <CardHeader
                 onClick={() => {setOpen(pv => !pv)}}
                 title={`Season ${props.season + 1}`}
-                subheader={`${episodes.length} Episodes [ ${episodes.filter(e => e.video_hls).length} HLS | ${episodes.filter(e => e.has_intro).length} Intros | ${episodes.filter(e => e.is_nsfw).length} NSFW ]`}
+                subheader={`${episodes.length} Episodes [ ${episodes.filter(e => e.video_hls).length} HLS | ${episodes.filter(e => e.video_dash).length} DASH | ${episodes.filter(e => e.has_intro).length} Intros | ${episodes.filter(e => e.is_nsfw).length} NSFW ]`}
             />
             <Collapse in={open}>
                 <CardContent>
@@ -94,11 +94,14 @@ function SeasonOverview(props: SeasonOverviewProps){
                         <Button className="flex-grow-1" variant="contained" color="info" onClick={handleDetectEpisodeIntros}>
                             Detect All Intros
                         </Button>
-                        <Button className="flex-grow-1" variant="contained" color="warning" onClick={() => handleConvertSeason()}>
+                        <Button className="flex-grow-1" variant="contained" color="warning" onClick={() => handleConvertSeason("hls")}>
                             Convert All to HLS
                         </Button>
-                        <Button className="flex-grow-1" variant="contained" color="warning" onClick={() => handleConvertSeason(true)}>
+                        <Button className="flex-grow-1" variant="contained" color="warning" onClick={() => handleConvertSeason("hls", true)}>
                             Re-encode All to HLS
+                        </Button>
+                        <Button className="flex-grow-1" variant="contained" color="warning" onClick={() => handleConvertSeason("dash")}>
+                            Convert All to Dash
                         </Button>
                     </ButtonGroup>
                     {Object.keys(props.episodeUploadProgress).map((filename, i) => (
@@ -112,8 +115,10 @@ function SeasonOverview(props: SeasonOverviewProps){
                         {episodes.map((episode, i) => (
                             <ListItemButton key={i} onClick={() => props.setSelectedEpisode(episode)}>
                                 <div className="pe-3">
-                                    <Chip label={episode.video_hls ? "HLS" : "MP4"} size="small"
+                                    <Chip label="HLS" size="small" className="me-1"
                                           color={episode.video_hls ? "success" : "error"}/>
+                                    <Chip label="DASH" size="small"
+                                          color={episode.video_dash ? "success" : "error"}/>
                                 </div>
                                 <h5>{episode.episode}: {episode.title}</h5>
                                 <div className="d-flex flex-grow-1 px-3 justify-content-end">

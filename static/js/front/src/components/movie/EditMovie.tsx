@@ -1,6 +1,6 @@
 import React, {useEffect} from "react";
 import MovieType from "../../types/movieType";
-import {Button, Checkbox, Collapse, FormControlLabel, TextField} from "@mui/material";
+import {Button, ButtonGroup, Checkbox, Collapse, FormControlLabel, TextField} from "@mui/material";
 import FileTable from "../FileTable";
 import FileType from "../../types/fileType";
 import {hasNSFWPermission} from "../../utils/permissionChecks";
@@ -54,14 +54,25 @@ function EditMovie(props: EditMovieProps){
         req.open("POST", `/movies/${props.movie.uuid}/upload`)
         req.send(formData)
     }
-    function handleFileConvert(reEncode: boolean = false){
-        fetch(`/movies/${props.movie.uuid}/convert${reEncode ? "?encode" : ""}`, {
+    function handleFileConvertHLS(reEncode: boolean = false){
+        fetch(`/movies/${props.movie.uuid}/convert?mode=hls${reEncode ? "&encode" : ""}`, {
             method: "POST"
         })
             .then(res => {
                 if(res.ok){
                     setUpdateFiles(!updateFiles)
                     props.setMovie(pv => (pv ? {...pv, video_hls: true} : pv))
+                }
+            })
+    }
+    function handleFileConvertDash(){
+        fetch(`/movies/${props.movie.uuid}/convert?mode=dash`, {
+            method: "POST"
+        })
+            .then(res => {
+                if(res.ok){
+                    setUpdateFiles(!updateFiles)
+                    props.setMovie(pv => (pv ? {...pv, video_dash: true} : pv))
                 }
             })
     }
@@ -100,6 +111,19 @@ function EditMovie(props: EditMovieProps){
                     if(res.ok){
                         setUpdateFiles(!updateFiles)
                         props.setMovie(pv => (pv ? {...pv, video_hls: false} : pv))
+                    }
+                })
+        }
+    }
+    function handleDeleteDash(){
+        if(confirm("Are you sure you want to delete the DASH files?")){
+            fetch(`/movies/${props.movie.uuid}/delete_dash`, {
+                method: "POST"
+            })
+                .then(res => {
+                    if(res.ok){
+                        setUpdateFiles(!updateFiles)
+                        props.setMovie(pv => (pv ? {...pv, video_dash: false} : pv))
                     }
                 })
         }
@@ -252,14 +276,20 @@ function EditMovie(props: EditMovieProps){
             <h4>Files</h4>
             {uploading && <progress value={uploadProgress} max="100" />}
             <span>Main: {mainFile}</span><br/>
-            <Button variant="contained" component="label">
+            <Button variant="contained" component="label" className="me-1">
                 Add File
                 <input hidden type="file" accept="video/mp4" onChange={e => handleFileAdd(e.target.files?.item(0) as File)} />
             </Button>
-            <Button variant="contained" color="warning" disabled={props.movie.video_hls} onClick={() => handleFileConvert()}>Convert to HLS</Button>
-            <Button variant="contained" color="warning" disabled={props.movie.video_hls} onClick={() => handleFileConvert(true)}>Re-encode to HLS</Button>
+            <ButtonGroup className="me-1">
+                <Button variant="contained" color="warning" disabled={props.movie.video_hls} onClick={() => handleFileConvertHLS()}>Convert to HLS</Button>
+                <Button variant="contained" color="warning" disabled={props.movie.video_hls} onClick={() => handleFileConvertHLS(true)}>Re-encode to HLS</Button>
+                <Button variant="contained" color="error" onClick={handleDeleteHLS}>Delete HLS Files</Button>
+            </ButtonGroup>
+            <ButtonGroup className="me-1">
+                <Button variant="contained" color="warning" disabled={props.movie.video_dash} onClick={handleFileConvertDash}>Convert to DASH</Button>
+                <Button variant="contained" color="error" onClick={handleDeleteDash}>Delete DASH Files</Button>
+            </ButtonGroup>
             <Button variant="contained" color="warning" disabled={!props.movie.video_hls} onClick={handleFileRevert}>Revert to MP4</Button>
-            <Button variant="contained" color="error" onClick={handleDeleteHLS}>Delete HLS Files</Button>
             <FileTable files={files} onDelete={handleFileDelete} customActions={file => (
                 <Button variant="contained" color="warning" disabled={mainFile === file.name || file.name.endsWith(".m3u8")} onClick={() => handleSetMainFile(file)}>Set as Main</Button>
             )} sx={{maxHeight: "350px", overflow: "auto"}} />

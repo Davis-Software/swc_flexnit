@@ -1,11 +1,12 @@
 from __init__ import app
 from flask import request, make_response, send_file
 
-from models.series import get_series, add_series, edit_series, add_episode, get_episode, edit_episode
+from models.series import get_series, add_series, edit_series, add_episode, get_episode, edit_episode, get_all_episodes
 from storage.series_storage import upload_episode_file, convert_episode_to_hls, revert_episode_to_mp4, \
     get_episode_files, \
     get_episode_file, delete_episode, get_episode_part, delete_episode_file, set_main_file, create_and_upload_episode, \
-    convert_season_to_hls, delete_episode_hls_files, get_episode_frame, detect_season_intros, convert_episode_to_dash
+    convert_season_to_hls, delete_episode_hls_files, get_episode_frame, detect_season_intros, convert_episode_to_dash, \
+    reinitialize_legacy_hls, convert_season_to_dash, delete_episode_dash_files
 from storage.storage_tools import get_sized_thumbnail
 from scraper.imdb_scraper import IMDBScraper
 from utils.adv_responses import send_binary_image
@@ -23,6 +24,17 @@ def new_series():
         return make_response(series.to_json(), RequestCode.Success.OK)
 
     return make_response("Invalid request", RequestCode.ClientError.BadRequest)
+
+
+@app.route("/series/util/<action>", methods=["GET"])
+@admin_required
+def series_options(action=None):
+    if action is None:
+        return make_response("Invalid request", RequestCode.ClientError.BadRequest)
+
+    if action == "reload-legacies":
+        reinitialize_legacy_hls(get_all_episodes(-1))
+        return make_response("Reloaded", RequestCode.Success.OK)
 
 
 @app.route("/series/<uuid>", methods=["GET"])
@@ -86,13 +98,20 @@ def series_actions(uuid, action):
         return make_response("Unknown error", RequestCode.ServerError.InternalServerError)
 
     if action == "convert":
+        mode = request.args.get("mode", "dash")
         season = request.form.get("season")
-        if season is None or not season.isdigit():
+
+        if mode not in ["dash", "hls"] or season is None or not season.isdigit():
             return make_response("Invalid request", RequestCode.ClientError.BadRequest)
 
-        print("Converting season", season, "of series", series.uuid, "to HLS")
-        if convert_season_to_hls(series.uuid, int(season), "encode" in request.args):
-            return make_response("Converted", RequestCode.Success.OK)
+        print("Converting season", season, "of series", series.uuid, "to", mode)
+
+        if mode == "hls":
+            if convert_season_to_hls(series.uuid, int(season), "encode" in request.args):
+                return make_response("Converted", RequestCode.Success.OK)
+        else:
+            if convert_season_to_dash(series.uuid, int(season)):
+                return make_response("Converted", RequestCode.Success.OK)
 
         return make_response("Unknown error", RequestCode.ServerError.InternalServerError)
 
@@ -187,6 +206,10 @@ def episode_info(uuid, episode_uuid, action=None):
 
     if action == "delete_hls":
         delete_episode_hls_files(series.uuid, episode_uuid)
+        return make_response("Deleted", RequestCode.Success.OK)
+
+    if action == "delete_dash":
+        delete_episode_dash_files(series.uuid, episode_uuid)
         return make_response("Deleted", RequestCode.Success.OK)
 
     if action == "delete_file":

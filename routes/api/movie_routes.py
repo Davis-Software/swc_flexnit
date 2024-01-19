@@ -1,10 +1,10 @@
 from __init__ import app
 from flask import request, make_response, send_file
 
-from models.movie import get_movie, add_movie, edit_movie
+from models.movie import get_movie, add_movie, edit_movie, get_movies
 from storage.movie_storage import upload_movie, convert_movie_to_hls, revert_movie_to_mp4, get_movie_files, \
     get_movie_file, delete_movie, get_movie_part, delete_movie_file, set_main_file, delete_movie_hls_files, \
-    get_movie_frame, convert_movie_to_dash
+    get_movie_frame, convert_movie_to_dash, delete_movie_dash_files, reinitialize_legacy_hls
 from storage.storage_tools import get_sized_thumbnail
 from scraper.imdb_scraper import IMDBScraper
 from utils.adv_responses import send_binary_image
@@ -22,6 +22,17 @@ def new_movie():
         return make_response(movie.to_json(), RequestCode.Success.OK)
 
     return make_response("Invalid request", RequestCode.ClientError.BadRequest)
+
+
+@app.route("/movies/util/<action>", methods=["GET"])
+@admin_required
+def movie_options(action=None):
+    if action is None:
+        return make_response("Invalid request", RequestCode.ClientError.BadRequest)
+
+    if action == "reload-legacies":
+        reinitialize_legacy_hls(get_movies(-1))
+        return make_response("Reloaded", RequestCode.Success.OK)
 
 
 @app.route("/movies/<uuid>", methods=["GET"])
@@ -101,6 +112,10 @@ def movie_actions(uuid, action):
 
     if action == "delete_hls":
         delete_movie_hls_files(movie.uuid)
+        return make_response("Deleted", RequestCode.Success.OK)
+
+    if action == "delete_dash":
+        delete_movie_dash_files(movie.uuid)
         return make_response("Deleted", RequestCode.Success.OK)
 
     if action == "delete_file":

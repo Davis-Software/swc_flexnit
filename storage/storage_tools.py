@@ -177,21 +177,30 @@ def convert_file_to_hls(input_file: str, output_location: str, re_encode: bool =
 
 
 def convert_file_to_dash(input_file: str, output_location: str):
+    debug = config.get_bool("DEBUG")
     hw_accel = config.get_bool("FFMPEG_NVENC")
-    accelerator = config.get("FFMPEG_NVENC_ACCELERATOR")
-    encoder_preset = config.get("FFMPEG_NVENC_PRESET")
-    accelerator = accelerator if (accelerator in
-                                  ["cuda", "nvdec", "vdpau", "vaapi"]
-                                  ) else "cuda"
-    encoder_preset = encoder_preset if (encoder_preset in
-                                        ["slow", "medium", "fast", "hp", "hq", "bd", "ll", "llhq", "llhp", "lossless",
-                                         "losslesshp"]
-                                        ) else "slow"
+
+    def monitor(_ffmpeg, duration, time_, time_left, _process):
+        import sys
+        import datetime
+        per = round(time_ / duration * 100)
+        sys.stdout.write(
+            "\rTranscoding...(%s%%) %s left [%s%s]" %
+            (per, datetime.timedelta(seconds=int(time_left)), '#' * per, '-' * (100 - per))
+        )
+        sys.stdout.flush()
 
     video = ffmpeg_streaming.input(input_file)
-    dash = video.dash(ffmpeg_streaming.Formats.h264(video="h264_nvenc"))
+    dash = video.dash(ffmpeg_streaming.Formats.h264(video="h264_nvenc" if hw_accel else "h264"), seg_duration=20, frag_duration=10)
     dash.auto_generate_representations([])
-    dash.output(f"{output_location}/dash/index.mpd")
+    dash.output(f"{output_location}/dash/index.mpd", monitor=monitor if debug else None)
+
+
+def reinitialize_hls(file_path: str):
+    os.makedirs(os.path.join(file_path, "hls"), exist_ok=True)
+    for file in os.listdir(file_path):
+        if file.endswith(".ts") or file.endswith(".m3u8"):
+            shutil.move(os.path.join(file_path, file), os.path.join(file_path, "hls", file))
 
 
 def cleanup_legacy_files(file_path: str):

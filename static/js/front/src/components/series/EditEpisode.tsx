@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import SeriesType, {EpisodeType} from "../../types/seriesType";
 import FileType from "../../types/fileType";
-import {Button, Checkbox, Collapse, FormControlLabel, TextField} from "@mui/material";
+import {Button, ButtonGroup, Checkbox, Collapse, FormControlLabel, TextField} from "@mui/material";
 import FileTable from "../FileTable";
 import {hasNSFWPermission} from "../../utils/permissionChecks";
 
@@ -124,14 +124,14 @@ function EditEpisode(props: EditEpisodeProps){
         req.open("POST", `/series/${props.series.uuid}/episode/${props.episode.uuid}/upload`)
         req.send(formData)
     }
-    function handleFileConvert(reEncode: boolean = false){
-        fetch(`/series/${props.series.uuid}/episode/${props.episode.uuid}/convert${reEncode ? "?encode" : ""}`, {
+    function handleFileConvert(mode: "hls" | "dash", reEncode: boolean = false){
+        fetch(`/series/${props.series.uuid}/episode/${props.episode.uuid}/convert?mode=${mode}${reEncode ? "&encode" : ""}`, {
             method: "POST"
         })
             .then(res => {
                 if(res.ok){
                     setUpdateFiles(!updateFiles)
-                    props.setEpisode(pv => ({...pv, video_hls: true}))
+                    props.setEpisode(pv => (mode === "hls" ? {...pv, video_hls: true} : {...pv, video_dash: true}))
                 }
             })
     }
@@ -170,6 +170,19 @@ function EditEpisode(props: EditEpisodeProps){
                     if(res.ok){
                         setUpdateFiles(!updateFiles)
                         props.setEpisode(pv => ({...pv, video_hls: false}))
+                    }
+                })
+        }
+    }
+    function handleDeleteDash(){
+        if(confirm("Are you sure you want to delete the DASH files?")){
+            fetch(`/series/${props.series.uuid}/episode/${props.episode.uuid}/delete_dash`, {
+                method: "POST"
+            })
+                .then(res => {
+                    if(res.ok){
+                        setUpdateFiles(!updateFiles)
+                        props.setEpisode(pv => ({...pv, video_dash: false}))
                     }
                 })
         }
@@ -275,14 +288,20 @@ function EditEpisode(props: EditEpisodeProps){
             <h4>Files</h4>
             {uploading && <progress value={uploadProgress} max="100" />}
             <span>Main: {mainFile}</span><br/>
-            <Button variant="contained" component="label">
+            <Button variant="contained" component="label" className="me-1">
                 Add File
                 <input hidden type="file" accept="video/mp4" onChange={e => handleFileAdd(e.target.files?.item(0) as File)} />
             </Button>
-            <Button variant="contained" color="warning" disabled={props.episode.video_hls} onClick={() => handleFileConvert()}>Convert to HLS</Button>
-            <Button variant="contained" color="warning" disabled={props.episode.video_hls} onClick={() => handleFileConvert(true)}>Re-encode to HLS</Button>
+            <ButtonGroup className="me-1">
+                <Button variant="contained" color="warning" disabled={props.episode.video_hls} onClick={() => handleFileConvert("hls")}>Convert to HLS</Button>
+                <Button variant="contained" color="warning" disabled={props.episode.video_hls} onClick={() => handleFileConvert("hls", true)}>Re-encode to HLS</Button>
+                <Button variant="contained" color="error" onClick={handleDeleteHLS}>Delete HLS Files</Button>
+            </ButtonGroup>
+            <ButtonGroup className="me-1">
+                <Button variant="contained" color="warning" disabled={props.episode.video_dash} onClick={() => handleFileConvert("dash")}>Convert to DASH</Button>
+                <Button variant="contained" color="error" onClick={handleDeleteDash}>Delete DASH Files</Button>
+            </ButtonGroup>
             <Button variant="contained" color="warning" disabled={!props.episode.video_hls} onClick={handleFileRevert}>Revert to MP4</Button>
-            <Button variant="contained" color="error" onClick={handleDeleteHLS}>Delete HLS Files</Button>
             <FileTable files={files} onDelete={handleFileDelete} customActions={file => (
                 <Button variant="contained" color="warning" disabled={mainFile === file.name || file.name.endsWith(".m3u8")} onClick={() => handleSetMainFile(file)}>Set as Main</Button>
             )} sx={{maxHeight: "350px", overflow: "auto"}} />

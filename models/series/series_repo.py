@@ -202,6 +202,12 @@ def get_episodes(series_uuid: str, season: int = None):
     return query.all()
 
 
+def get_all_episodes(limit: int = 25, page: int = 1):
+    if limit == -1:
+        return EpisodeModel.query.all()
+    return EpisodeModel.query.paginate(page, limit, False).items
+
+
 def base_query(order: bool = True):
     query = SeriesModel.query
 

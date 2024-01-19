@@ -8,7 +8,7 @@ from werkzeug.utils import secure_filename
 
 from models.movie import get_movie, delete_movie as delete_movie_model
 from .storage_tools import get_video_file_info, convert_file_to_hls, remove_hls_files, get_video_frame, get_dir_files, \
-    remove_dash_files, convert_file_to_dash
+    remove_dash_files, convert_file_to_dash, reinitialize_hls
 
 MOVIE_STORAGE_PATH = path.join(config.get("VIDEO_DIR"), "movies")
 
@@ -110,6 +110,13 @@ def delete_movie_dash_files(movie_uuid: str):
     movie.video_dash = False
     movie.commit()
     return True
+
+
+def reinitialize_legacy_hls(movies: list):
+    for movie in movies:
+        if movie.video_hls:
+            movie_path = get_movie_storage_path(movie.uuid)
+            reinitialize_hls(movie_path)
 
 
 def get_movie_frame(movie_uuid: str, time_index: int):

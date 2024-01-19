@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 from models.series import get_series, add_episode, delete_episode as delete_episode_model, get_episode, get_episodes, \
     get_episode_by_season_and_episode
 from .storage_tools import get_video_file_info, convert_file_to_hls, remove_hls_files, get_video_frame, get_dir_files, \
-    detect_audio_offsets, remove_dash_files, convert_file_to_dash
+    detect_audio_offsets, remove_dash_files, convert_file_to_dash, reinitialize_hls
 
 SERIES_STORAGE_PATH = path.join(config.get("VIDEO_DIR"), "series")
 
@@ -190,6 +190,20 @@ def delete_episode_dash_files(series_uuid: str, episode_uuid: str):
 
     episode_model.video_dash = False
     episode_model.commit()
+
+    return True
+
+
+def reinitialize_legacy_hls(episodes: list):
+    for episode in episodes:
+        series_path = get_series_storage_path(episode.series.uuid)
+        season_path = path.join(series_path, f"season_{episode.season}")
+        episode_path = path.join(season_path, f"episode_{episode.episode}")
+
+        if not path.exists(episode_path) or not episode.video_hls:
+            continue
+
+        reinitialize_hls(episode_path)
 
     return True
 
