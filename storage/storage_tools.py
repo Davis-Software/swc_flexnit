@@ -24,10 +24,8 @@ def get_video_file_info(file_path: str):
     ffprobe = subprocess.Popen(
         [
             config.get("FFPROBE_PATH"),
-            "-v",
-            "quiet",
-            "-print_format",
-            "json",
+            "-v", "quiet",
+            "-print_format", "json",
             "-show_format",
             "-show_streams",
             file_path,
@@ -74,20 +72,13 @@ def get_video_frame(file_path: str, time_index: int):
         [
             config.get("FFMPEG_PATH"),
             "-y",
-            "-loglevel",
-            "quiet",
-            "-ss",
-            str(time_index),
-            "-i",
-            file_path,
-            "-vframes",
-            "1",
-            "-vf",
-            f"scale='min(101,-1)':'min(101,100)'",
-            "-f",
-            "image2",
-            "-preset",
-            "ultrafast",
+            "-loglevel", "quiet",
+            "-ss", str(time_index),
+            "-i", file_path,
+            "-vframes", "1",
+            "-vf", f"scale='min(101,-1)':'min(101,100)'",
+            "-f", "image2",
+            "-preset", "ultrafast",
             "-",
         ],
         stdout=subprocess.PIPE,
@@ -144,39 +135,33 @@ def convert_file_to_hls(input_file: str, output_file: str, re_encode: bool = Fal
     if re_encode and hw_accel:
         opts = [
             ffmpeg,
-            "-hwaccel",
-            accelerator,
-            "-hwaccel_output_format",
-            "cuda",
-            "-i",
-            input_file,
-            "-c:v",
-            "h264_nvenc",
-            "-preset",
-            encoder_preset,
-            "-c:a",
-            "copy"
+            "-hwaccel", accelerator,
+            "-hwaccel_output_format", "cuda",
+            "-i", input_file,
+            "-c:v", "h264_nvenc",
+            "-preset", encoder_preset,
+            "-c:a", "aac",
+            "-ac", "2"
         ]
     else:
         opts = [
             ffmpeg,
-            "-i",
-            input_file,
-            "-c" if not re_encode else "-c:a",
-            "copy",
+            "-i", input_file,
+            "-c:v", "copy" if not re_encode else "h264",
+            "-c:a", "copy" if not re_encode else "aac",
         ]
+        if re_encode:
+            opts.extend([
+                "-ac", "2"
+            ])
 
     subprocess.run(
         [
             *opts,
-            "-start_number",
-            "0",
-            "-hls_time",
-            "20",
-            "-hls_list_size",
-            "0",
-            "-f",
-            "hls",
+            "-start_number", "0",
+            "-hls_time", "20",
+            "-hls_list_size", "0",
+            "-f", "hls",
             output_file
         ],
         stdout=subprocess.PIPE,
@@ -223,18 +208,12 @@ def get_sized_thumbnail(title: MovieModel or SeriesModel, quality: str = "o"):
         [
             config.get("FFMPEG_PATH"),
             "-y",
-            "-loglevel",
-            "quiet",
-            "-i",
-            "-",
-            "-f",
-            "png_pipe",
-            "-vf",
-            f"scale={conversion}",
-            "-f",
-            "image2",
-            "-preset",
-            "ultrafast",
+            "-loglevel", "quiet",
+            "-i", "-",
+            "-f", "png_pipe",
+            "-vf", f"scale={conversion}",
+            "-f", "image2",
+            "-preset", "ultrafast",
             "-",
         ],
         stdin=subprocess.PIPE,
