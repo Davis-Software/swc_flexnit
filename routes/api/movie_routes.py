@@ -4,7 +4,7 @@ from flask import request, make_response, send_file
 from models.movie import get_movie, add_movie, edit_movie
 from storage.movie_storage import upload_movie, convert_movie_to_hls, revert_movie_to_mp4, get_movie_files, \
     get_movie_file, delete_movie, get_movie_part, delete_movie_file, set_main_file, delete_movie_hls_files, \
-    get_movie_frame
+    get_movie_frame, convert_movie_to_dash
 from storage.storage_tools import get_sized_thumbnail
 from scraper.imdb_scraper import IMDBScraper
 from utils.adv_responses import send_binary_image
@@ -83,7 +83,16 @@ def movie_actions(uuid, action):
         return make_response("Set", RequestCode.Success.OK)
 
     if action == "convert":
-        convert_movie_to_hls(movie.uuid, "encode" in request.args)
+        mode = request.args.get("mode", "dash")
+
+        if mode not in ["dash", "hls"]:
+            return make_response("Invalid request", RequestCode.ClientError.BadRequest)
+
+        if mode == "hls":
+            convert_movie_to_hls(movie.uuid, "encode" in request.args)
+        else:
+            convert_movie_to_dash(movie.uuid)
+
         return make_response("Converted", RequestCode.Success.OK)
 
     if action == "revert":
@@ -105,11 +114,11 @@ def movie_actions(uuid, action):
     return make_response("Invalid request", RequestCode.ClientError.BadRequest)
 
 
-@app.route("/movies/<uuid>/deliver/main", methods=["GET"])
-@app.route("/movies/<uuid>/deliver/main/<frame>", methods=["GET"])
-@app.route("/movies/<uuid>/deliver/<file_name>", methods=["GET"])
+@app.route("/movies/<uuid>/deliver/frame/<frame>", methods=["GET"])
+@app.route("/movies/<uuid>/deliver/<mode>", methods=["GET"])
+@app.route("/movies/<uuid>/deliver/<mode>/<file_name>", methods=["GET"])
 @auth_required
-def deliver_movie(uuid, file_name=None, frame=None):
+def deliver_movie(uuid, mode=None, file_name=None, frame=None):
     movie = get_movie(uuid)
 
     if movie is None:
@@ -124,14 +133,17 @@ def deliver_movie(uuid, file_name=None, frame=None):
         response.content_type = "image/jpeg"
         return response
 
-    if file_name is None:
+    if file_name is None and mode is not None:
         return send_file(
-            get_movie_file(movie.uuid, "hls" in request.args)
+            get_movie_file(movie.uuid, mode)
         )
 
-    movie_file = get_movie_part(movie.uuid, file_name)
+    if file_name is not None and mode is not None:
+        movie_file = get_movie_part(movie.uuid, file_name, mode)
 
-    if movie_file is None:
-        return make_response("File not found", RequestCode.ClientError.NotFound)
+        if movie_file is None:
+            return make_response("File not found", RequestCode.ClientError.NotFound)
 
-    return send_file(movie_file)
+        return send_file(movie_file)
+
+    return make_response("Invalid request", RequestCode.ClientError.BadRequest)

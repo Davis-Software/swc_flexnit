@@ -19,3 +19,4 @@ class MovieModel(TitleModel):
     video_file = Column(String(255), nullable=True)
     video_info = Column(NestedMutableJson, nullable=False, default={})
     video_hls = Column(Boolean, nullable=False, default=False)
+    video_dash = Column(Boolean, nullable=False, default=False)

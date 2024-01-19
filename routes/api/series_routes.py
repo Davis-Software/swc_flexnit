@@ -5,7 +5,7 @@ from models.series import get_series, add_series, edit_series, add_episode, get_
 from storage.series_storage import upload_episode_file, convert_episode_to_hls, revert_episode_to_mp4, \
     get_episode_files, \
     get_episode_file, delete_episode, get_episode_part, delete_episode_file, set_main_file, create_and_upload_episode, \
-    convert_season_to_hls, delete_episode_hls_files, get_episode_frame, detect_season_intros
+    convert_season_to_hls, delete_episode_hls_files, get_episode_frame, detect_season_intros, convert_episode_to_dash
 from storage.storage_tools import get_sized_thumbnail
 from scraper.imdb_scraper import IMDBScraper
 from utils.adv_responses import send_binary_image
@@ -169,7 +169,16 @@ def episode_info(uuid, episode_uuid, action=None):
         return make_response("Set", RequestCode.Success.OK)
 
     if action == "convert":
-        convert_episode_to_hls(series.uuid, episode_uuid, "encode" in request.args)
+        mode = request.args.get("mode", "dash")
+
+        if mode not in ["dash", "hls"]:
+            return make_response("Invalid request", RequestCode.ClientError.BadRequest)
+
+        if mode == "hls":
+            convert_episode_to_hls(series.uuid, episode_uuid, "encode" in request.args)
+        else:
+            convert_episode_to_dash(series.uuid, episode_uuid)
+
         return make_response("Converted", RequestCode.Success.OK)
 
     if action == "revert":
@@ -191,11 +200,11 @@ def episode_info(uuid, episode_uuid, action=None):
     return make_response("Invalid request", RequestCode.ClientError.BadRequest)
 
 
-@app.route("/series/<uuid>/episode/<episode_uuid>/deliver/main", methods=["GET"])
-@app.route("/series/<uuid>/episode/<episode_uuid>/deliver/main/<frame>", methods=["GET"])
-@app.route("/series/<uuid>/episode/<episode_uuid>/deliver/<file_name>", methods=["GET"])
+@app.route("/series/<uuid>/episode/<episode_uuid>/deliver/frame/<frame>", methods=["GET"])
+@app.route("/series/<uuid>/episode/<episode_uuid>/deliver/<mode>", methods=["GET"])
+@app.route("/series/<uuid>/episode/<episode_uuid>/deliver/<mode>/<file_name>", methods=["GET"])
 @auth_required
-def deliver_episode_file(uuid, episode_uuid, file_name=None, frame=None):
+def deliver_episode_file(uuid, episode_uuid, mode=None, file_name=None, frame=None):
     series = get_series(uuid)
 
     if series is None:
@@ -218,12 +227,15 @@ def deliver_episode_file(uuid, episode_uuid, file_name=None, frame=None):
         response.content_type = "image/jpeg"
         return response
 
-    if file_name is None:
-        return send_file(get_episode_file(series.uuid, episode_uuid, "hls" in request.args))
+    if file_name is None and mode is not None:
+        return send_file(get_episode_file(series.uuid, episode_uuid, mode))
 
-    episode_file = get_episode_part(series.uuid, episode_uuid, file_name)
+    if file_name is not None and mode is not None:
+        episode_file = get_episode_part(series.uuid, episode_uuid, file_name, mode)
 
-    if episode_file is None:
-        return make_response("File not found", RequestCode.ClientError.NotFound)
+        if episode_file is None:
+            return make_response("File not found", RequestCode.ClientError.NotFound)
 
-    return send_file(episode_file)
+        return send_file(episode_file)
+
+    return make_response("Invalid request", RequestCode.ClientError.BadRequest)

@@ -1,11 +1,14 @@
-import subprocess
-import multiprocessing
-from __init__ import config
 import os
 import json
+import shutil
+import subprocess
+import multiprocessing
+import ffmpeg_streaming
+
 from uuid import uuid4
 from hashlib import md5
 
+from __init__ import config
 from models.movie import MovieModel
 from models.music import SongModel
 from models.series import SeriesModel
@@ -120,7 +123,7 @@ def detect_audio_offsets(search_file: bytes, video_folder: str, ignore_files: st
     return json.loads(resp.strip())
 
 
-def convert_file_to_hls(input_file: str, output_file: str, re_encode: bool = False):
+def convert_file_to_hls(input_file: str, output_location: str, re_encode: bool = False):
     ffmpeg = config.get("FFMPEG_PATH")
     hw_accel = config.get_bool("FFMPEG_NVENC")
     accelerator = config.get("FFMPEG_NVENC_ACCELERATOR")
@@ -131,6 +134,10 @@ def convert_file_to_hls(input_file: str, output_file: str, re_encode: bool = Fal
     encoder_preset = encoder_preset if (encoder_preset in
                                         ["slow", "medium", "fast", "hp", "hq", "bd", "ll", "llhq", "llhp", "lossless", "losslesshp"]
                                         ) else "slow"
+
+    destination = os.path.join(output_location, "hls")
+    if not os.path.exists(destination):
+        os.makedirs(destination)
 
     if re_encode and hw_accel:
         opts = [
@@ -162,17 +169,43 @@ def convert_file_to_hls(input_file: str, output_file: str, re_encode: bool = Fal
             "-hls_time", "20",
             "-hls_list_size", "0",
             "-f", "hls",
-            output_file
+            f"{destination}/index.m3u8"
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
 
 
-def remove_hls_files(file_path: str):
+def convert_file_to_dash(input_file: str, output_location: str):
+    hw_accel = config.get_bool("FFMPEG_NVENC")
+    accelerator = config.get("FFMPEG_NVENC_ACCELERATOR")
+    encoder_preset = config.get("FFMPEG_NVENC_PRESET")
+    accelerator = accelerator if (accelerator in
+                                  ["cuda", "nvdec", "vdpau", "vaapi"]
+                                  ) else "cuda"
+    encoder_preset = encoder_preset if (encoder_preset in
+                                        ["slow", "medium", "fast", "hp", "hq", "bd", "ll", "llhq", "llhp", "lossless",
+                                         "losslesshp"]
+                                        ) else "slow"
+
+    video = ffmpeg_streaming.input(input_file)
+    dash = video.dash(ffmpeg_streaming.Formats.h264(video="h264_nvenc"))
+    dash.auto_generate_representations([])
+    dash.output(f"{output_location}/dash/index.mpd")
+
+
+def cleanup_legacy_files(file_path: str):
     for file in os.listdir(file_path):
         if file.endswith(".ts") or file.endswith(".m3u8"):
             os.remove(os.path.join(file_path, file))
+
+
+def remove_hls_files(file_path: str):
+    shutil.rmtree(os.path.join(file_path, "hls"), ignore_errors=True)
+
+
+def remove_dash_files(file_path: str):
+    shutil.rmtree(os.path.join(file_path, "dash"), ignore_errors=True)
 
 
 def get_sized_thumbnail(title: MovieModel or SeriesModel, quality: str = "o"):
