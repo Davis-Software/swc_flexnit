@@ -1,11 +1,11 @@
 import React, {useMemo} from "react";
 import SeriesType, {EpisodeType} from "../../types/seriesType";
 import {
-    Button,
+    Button, ButtonGroup,
     Card,
     CardContent,
     CardHeader,
-    Checkbox,
+    Checkbox, Chip,
     Collapse,
     Fade,
     FormControlLabel, List, ListItemButton,
@@ -75,11 +75,11 @@ function SeasonOverview(props: SeasonOverviewProps){
             <CardHeader
                 onClick={() => {setOpen(pv => !pv)}}
                 title={`Season ${props.season + 1}`}
-                subheader={`${episodes.length} Episodes`}
+                subheader={`${episodes.length} Episodes [ ${episodes.filter(e => e.video_hls).length} HLS | ${episodes.filter(e => e.has_intro).length} Intros | ${episodes.filter(e => e.is_nsfw).length} NSFW ]`}
             />
             <Collapse in={open}>
                 <CardContent>
-                    <div className="d-flex">
+                    <ButtonGroup className="d-flex">
                         <Button className="flex-grow-1" variant="contained" component="label" onClick={() => {
                             props.handleAddEpisode(props.season + 1, episodes.length)
                         }}>
@@ -89,8 +89,8 @@ function SeasonOverview(props: SeasonOverviewProps){
                             Add Episodes
                             <input hidden accept="video/mp4" type="file" onChange={e => props.handleAddEpisodes(props.season + 1, episodes.length, e.target.files!)} multiple />
                         </Button>
-                    </div>
-                    <div className="d-flex">
+                    </ButtonGroup>
+                    <ButtonGroup className="d-flex">
                         <Button className="flex-grow-1" variant="contained" color="info" onClick={handleDetectEpisodeIntros}>
                             Detect All Intros
                         </Button>
@@ -100,7 +100,7 @@ function SeasonOverview(props: SeasonOverviewProps){
                         <Button className="flex-grow-1" variant="contained" color="warning" onClick={() => handleConvertSeason(true)}>
                             Re-encode All to HLS
                         </Button>
-                    </div>
+                    </ButtonGroup>
                     {Object.keys(props.episodeUploadProgress).map((filename, i) => (
                         <React.Fragment key={i}>
                             <span>{filename}</span>
@@ -111,11 +111,23 @@ function SeasonOverview(props: SeasonOverviewProps){
                     <List>
                         {episodes.map((episode, i) => (
                             <ListItemButton key={i} onClick={() => props.setSelectedEpisode(episode)}>
-                                <h5 className="flex-grow-1">{episode.episode}: {episode.title}</h5>
-                                <div className="d-flex flex-row">
-                                    <Button variant="contained" color="warning" onClick={() => props.setSelectedEpisode(episode)}>Edit</Button>
-                                    <Button variant="contained" color="error" onClick={() => handleDeleteEpisode(episode)}>Delete</Button>
+                                <div className="pe-3">
+                                    <Chip label={episode.video_hls ? "HLS" : "MP4"} size="small"
+                                          color={episode.video_hls ? "success" : "error"}/>
                                 </div>
+                                <h5>{episode.episode}: {episode.title}</h5>
+                                <div className="d-flex flex-grow-1 px-3 justify-content-end">
+                                    <Chip label={episode.has_intro ? "Intro" : "No Intro"} size="small" className="me-1"
+                                          color={episode.has_intro ? "primary" : "secondary"}/>
+                                    <Chip label={episode.is_nsfw ? "NSFW" : "SFW"} size="small"
+                                            color={episode.is_nsfw ? "error" : "warning"}/>
+                                </div>
+                                <ButtonGroup size="small">
+                                    <Button variant="contained" color="warning"
+                                            onClick={() => props.setSelectedEpisode(episode)}>Edit</Button>
+                                    <Button variant="contained" color="error"
+                                            onClick={() => handleDeleteEpisode(episode)}>Delete</Button>
+                                </ButtonGroup>
                             </ListItemButton>
                         ))}
                     </List>
@@ -125,7 +137,7 @@ function SeasonOverview(props: SeasonOverviewProps){
     )
 }
 
-interface EditSeriesProps{
+interface EditSeriesProps {
     series: SeriesType;
     setSeries: (series: (prevState: SeriesType | null) => SeriesType | null) => void;
     setShowEdit: (show: boolean) => void;
