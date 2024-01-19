@@ -10,6 +10,7 @@ import {navigateTo} from "../../utils/navigation";
 import TitleProgress, {InfoCallbackType} from "../other/TitleProgress";
 import {handleSyncUpload} from "../../utils/syncControls";
 import {useIsAdmin} from "../../contexts/showAdminContext";
+import {selectStreamingMode} from "../../utils/streaming";
 
 const EditMovie = React.lazy(() => import("./EditMovie"));
 
@@ -48,7 +49,7 @@ function MovieInfoDisplay(props: MovieInfoDisplayProps){
     }
 
     function handlePlay(){
-        navigateTo(`/watch?movie=${props.movie.uuid}${props.movie.video_hls ? "&hls" : ""}`)
+        navigateTo(`/watch?movie=${props.movie.uuid}&${selectStreamingMode(props.movie)}`)
     }
     function handleDelete(){
         if(confirm("Are you sure you want to delete this movie?")){

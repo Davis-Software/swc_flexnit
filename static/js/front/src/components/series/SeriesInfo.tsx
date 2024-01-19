@@ -21,6 +21,7 @@ import TitleProgress, {InfoCallbackType} from "../other/TitleProgress";
 import {handleSyncUpload} from "../../utils/syncControls";
 import {hasNSFWPermission} from "../../utils/permissionChecks";
 import {useIsAdmin} from "../../contexts/showAdminContext";
+import {selectStreamingMode} from "../../utils/streaming";
 
 const EditSeries = React.lazy(() => import("./EditSeries"));
 
@@ -128,7 +129,7 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
         }
     }
     function handlePlayEpisode(episode: EpisodeType){
-        navigateTo(`/watch?series=${props.series.uuid}&episode=${episode.uuid}${episode.video_hls ? "&hls" : ""}`)
+        navigateTo(`/watch?series=${props.series.uuid}&episode=${episode.uuid}&${selectStreamingMode(episode)}`)
     }
     function handleDelete(){
         if(confirm("Are you sure you want to delete this series?")){

@@ -115,7 +115,7 @@ def movie_actions(uuid, action):
 
 
 @app.route("/movies/<uuid>/deliver/frame/<frame>", methods=["GET"])
-@app.route("/movies/<uuid>/deliver/<mode>", methods=["GET"])
+@app.route("/movies/<uuid>/deliver/<mode>/index", methods=["GET"])
 @app.route("/movies/<uuid>/deliver/<mode>/<file_name>", methods=["GET"])
 @auth_required
 def deliver_movie(uuid, mode=None, file_name=None, frame=None):

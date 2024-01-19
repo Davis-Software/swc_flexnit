@@ -11,6 +11,7 @@ import {hasNSFWPermission} from "../utils/permissionChecks";
 import SwcModal from "../components/SwcModal";
 import {user} from "../utils/constants";
 import {checkSyncEnabled, handleSyncUpload} from "../utils/syncControls";
+import {streamingModeParameterName} from "../utils/streaming";
 
 function getTimeString(seconds: number){
     const hours = Math.floor(seconds / 3600);
@@ -28,7 +29,7 @@ function Watch(){
     const showVolumeControlsButtonRef = useRef<HTMLButtonElement>(null);
     const showPlaybackSpeedControlsRef = useRef<HTMLButtonElement>(null);
 
-    const [videoLink, setVideoLink] = useState<string>("")
+    const [videoFramePreviewLink, setVideoFramePreviewLink] = useState<string>("")
     const [videoInfo, setVideoInfo] = useState<MovieType | SeriesType | null>(null)
     const [searchParams, setSearchParams] = useState(new URLSearchParams(window.location.search))
 
@@ -83,20 +84,24 @@ function Watch(){
             .then(res => res.json())
             .then(setVideoInfo)
 
-        function startPlayback(){
-            setEpisodeEnded(false)
+        function getStartTime(){
             if(playbackProgress[uuid]){
                 if(mode === "series"){
                     const episode = searchParams.get("episode")
                     if((playbackProgress[uuid] as {[key: string]: number})[episode!]){
                         const targetTime = (playbackProgress[uuid] as {[key: string]: number})[episode!]
-                        videoRef.current!.currentTime = targetTime < 10 || (targetTime >= (videoRef.current!.duration - 60)) ? 0 : targetTime
+                        return targetTime < 10 || (targetTime >= (videoRef.current!.duration - 60)) ? 0 : targetTime
                     }
                 }else{
                     let targetTime = playbackProgress[uuid] as number
-                    videoRef.current!.currentTime = targetTime < 10 || (targetTime >= (videoRef.current!.duration - 180)) ? 0 : targetTime
+                    return targetTime < 10 || (targetTime >= (videoRef.current!.duration - 180)) ? 0 : targetTime
                 }
             }
+            return 0
+        }
+        function startPlayback(){
+            setEpisodeEnded(false)
+            videoRef.current!.currentTime = getStartTime()
 
             videoRef.current?.play()
                 .then(() => setDisplayError(false))
@@ -104,14 +109,17 @@ function Watch(){
         }
 
         let path: string
+        let streamingMode = searchParams.has(streamingModeParameterName) ? searchParams.get(streamingModeParameterName) : "file"
         let hls: any
+        let dash: any
         if(mode == "movie"){
-            path = `/movies/${uuid}/deliver/main`
+            path = `/movies/${uuid}/deliver/${streamingMode}/index`
+            setVideoFramePreviewLink(`/movies/${uuid}/deliver/frame`)
         }else{
             const episode = searchParams.get("episode")
-            path = `/series/${uuid}/episode/${episode}/deliver/main`
+            path = `/series/${uuid}/episode/${episode}/deliver/${streamingMode}/index`
+            setVideoFramePreviewLink(`/series/${uuid}/episode/${episode}/deliver/frame`)
         }
-        setVideoLink(path)
 
         function waitForVideo(){
             if(videoRef.current?.readyState !== undefined && videoRef.current?.readyState >= 3){
@@ -130,7 +138,7 @@ function Watch(){
             import("hls.js").then(({default: Hls}) => {
                 if(!videoRef.current || !Hls.isSupported()) return
                 const new_hls = new Hls()
-                new_hls.loadSource(path + "?hls")
+                new_hls.loadSource(path)
                 new_hls.attachMedia(videoRef.current)
                 new_hls.on(Hls.Events.MEDIA_ATTACHED, waitForVideo)
                 new_hls.on(Hls.Events.ERROR, (_, data) => {
@@ -143,9 +151,22 @@ function Watch(){
                 hls = new_hls
             })
         }
+        function loadVideoWithDash(){
+            import("dashjs").then(({default: dashJs}) => {
+                if(!videoRef.current) return
+                const new_dash = dashJs.MediaPlayer().create()
+                new_dash.initialize(videoRef.current, path, true, getStartTime())
+                new_dash.on("error", () => {
+                    setDisplayError(true)
+                })
+                dash = new_dash
+            })
+        }
 
-        if(searchParams.has("hls")){
+        if(streamingMode === "hls"){
             loadVideoWithHls()
+        }else if(streamingMode === "dash"){
+            loadVideoWithDash()
         }else{
             loadVideo()
         }
@@ -331,7 +352,7 @@ function Watch(){
             <img
                 alt=""
                 className="position-absolute top-0 start-0"
-                src={videoLink + `/${nearestFrameInStorage}`}
+                src={videoFramePreviewLink + `/${nearestFrameInStorage}`}
                 style={{width: "100%", height: "100%", objectFit: "contain"}}
             />
         )

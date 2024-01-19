@@ -201,7 +201,7 @@ def episode_info(uuid, episode_uuid, action=None):
 
 
 @app.route("/series/<uuid>/episode/<episode_uuid>/deliver/frame/<frame>", methods=["GET"])
-@app.route("/series/<uuid>/episode/<episode_uuid>/deliver/<mode>", methods=["GET"])
+@app.route("/series/<uuid>/episode/<episode_uuid>/deliver/<mode>/index", methods=["GET"])
 @app.route("/series/<uuid>/episode/<episode_uuid>/deliver/<mode>/<file_name>", methods=["GET"])
 @auth_required
 def deliver_episode_file(uuid, episode_uuid, mode=None, file_name=None, frame=None):

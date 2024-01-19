@@ -7,6 +7,7 @@ import {Button, Card, CardContent, CardMedia, LinearProgress, Paper, Skeleton, T
 import {TransitionGroup} from "react-transition-group";
 import {navigateTo} from "../utils/navigation";
 import {handleSyncUpload} from "../utils/syncControls";
+import {selectStreamingMode} from "../utils/streaming";
 
 interface TitleDisplayProps {
     titles: TitleEntryType[]
@@ -43,10 +44,10 @@ function TitleDisplay(props: TitleDisplayProps){
             }
         }
         function handlePlayMovie(movie: MovieType){
-            navigateTo(`/watch?movie=${movie.uuid}${movie.video_hls ? "&hls" : ""}`)
+            navigateTo(`/watch?movie=${movie.uuid}&${selectStreamingMode(movie)}`)
         }
         function handlePlayEpisode(series: SeriesType, episode: EpisodeType){
-            navigateTo(`/watch?series=${series.uuid}&episode=${episode.uuid}${episode.video_hls ? "&hls" : ""}`)
+            navigateTo(`/watch?series=${series.uuid}&episode=${episode.uuid}&${selectStreamingMode(episode)}`)
         }
 
         function handleShowInfo(){

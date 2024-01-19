@@ -13,6 +13,7 @@ interface MovieType{
     video_file: string;
     video_info: any;
     video_hls: boolean;
+    video_dash: boolean;
 }
 
 export default MovieType;
