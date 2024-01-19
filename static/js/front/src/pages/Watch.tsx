@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useRef, useState} from "react";
 import PageBase from "./PageBase";
-import {Button, CircularProgress, Fade, Menu, Slider} from "@mui/material";
+import {Button, CircularProgress, Fade, List, ListItem, ListItemButton, Menu, Slider} from "@mui/material";
 import MovieType from "../types/movieType";
 import SeriesType from "../types/seriesType";
 import SwcLoader from "../components/SwcLoader";
@@ -12,6 +12,11 @@ import SwcModal from "../components/SwcModal";
 import {user} from "../utils/constants";
 import {checkSyncEnabled, handleSyncUpload} from "../utils/syncControls";
 import {streamingModeParameterName} from "../utils/streaming";
+import {MediaInfo} from "dashjs";
+
+const languageNames = new Intl.DisplayNames(['en'], {
+    type: 'language'
+})
 
 function getTimeString(seconds: number){
     const hours = Math.floor(seconds / 3600);
@@ -21,10 +26,14 @@ function getTimeString(seconds: number){
 }
 
 let extVideoInfo: MovieType | SeriesType | null = null
+let hls: any
+let dash: any
 
 function Watch(){
     const mode: "movie" | "series" = window.location.href.includes("?movie=") ? "movie" : "series"
     const videoRef = useRef<HTMLVideoElement>(null);
+    const showAudioTrackSelectorButtonRef = useRef<HTMLButtonElement>(null);
+    const showSubtitleTrackSelectorButtonRef = useRef<HTMLButtonElement>(null);
     const showEpisodeSelectorButtonRef = useRef<HTMLButtonElement>(null);
     const showVolumeControlsButtonRef = useRef<HTMLButtonElement>(null);
     const showPlaybackSpeedControlsRef = useRef<HTMLButtonElement>(null);
@@ -37,6 +46,8 @@ function Watch(){
     const [showTimelineFramePreview, setShowTimelineFramePreview] = useState(false)
     const [timelineFramePreviewLocation, setTimelineFramePreviewLocation] = useState<number>(0)
     const [showEpisodeSelector, setShowEpisodeSelector] = useState(false)
+    const [showAudioTrackSelector, setShowAudioTrackSelector] = useState(false)
+    const [showSubtitleTrackSelector, setShowSubtitleTrackSelector] = useState(false)
     const [showVolumeControls, setShowVolumeControls] = useState(false)
     const [showPlaybackSpeedControls, setShowPlaybackSpeedControls] = useState(false)
     const [_, setShowControlsTimeout] = useState<NodeJS.Timeout | null>(null)
@@ -46,6 +57,10 @@ function Watch(){
     const [playing, setPlaying] = useState(false)
     const [timePlayed, setTimePlayed] = useState(0)
 
+    const [audioTracks, setAudioTracks] = useState<MediaInfo[]>([])
+    const [selectedAudioTrack, setSelectedAudioTrack] = useState<number>(0)
+    const [subtitleTracks, setSubtitleTracks] = useState<MediaInfo[]>([])
+    const [selectedSubtitleTrack, setSelectedSubtitleTrack] = useState<number>(0)
     const [volume, setVolume] = useState(parseFloat(localStorage.getItem("volume") || "1"))
     const [playbackSpeed, setPlaybackSpeed] = useState(parseFloat(localStorage.getItem("playbackSpeed") || "1"))
     const [showSkipIntro, setShowSkipIntro] = useState(false)
@@ -110,8 +125,6 @@ function Watch(){
 
         let path: string
         let streamingMode = searchParams.has(streamingModeParameterName) ? searchParams.get(streamingModeParameterName) : "file"
-        let hls: any
-        let dash: any
         if(mode == "movie"){
             path = `/movies/${uuid}/deliver/${streamingMode}/index`
             setVideoFramePreviewLink(`/movies/${uuid}/deliver/frame`)
@@ -158,6 +171,12 @@ function Watch(){
                 new_dash.initialize(videoRef.current, path, true, getStartTime())
                 new_dash.on("error", () => {
                     setDisplayError(true)
+                })
+                new_dash.on("streamInitialized", () => {
+                    setAudioTracks(new_dash.getTracksFor("audio"))
+                    setSelectedAudioTrack(new_dash.getCurrentTrackFor("audio")?.index || -1)
+                    setSubtitleTracks(new_dash.getTracksFor("text"))
+                    setSelectedSubtitleTrack(new_dash.getCurrentTrackFor("text")?.index || -1)
                 })
                 dash = new_dash
             })
@@ -215,6 +234,17 @@ function Watch(){
         }else{
             videoRef.current!.currentTime += 10
         }
+    }
+
+    function selectDashAudioTrack(index: number){
+        if(!dash) return;
+        dash.setCurrentTrack(audioTracks.find(track => track.index === index) || audioTracks[0])
+        setSelectedAudioTrack(index)
+    }
+    function selectDashSubtitleTrack(index: number){
+        if(!dash) return;
+        dash.setCurrentTrack(subtitleTracks.find(track => track.index === index) || subtitleTracks[0])
+        setSelectedSubtitleTrack(index)
     }
 
     function handleKeyDown(e: KeyboardEvent){
@@ -620,6 +650,72 @@ function Watch(){
                                         </div>
                                     )}
                                     <div className="d-flex m-2 justify-content-center align-items-center">
+                                        {audioTracks.length > 0 && (
+                                            <>
+                                                <Button ref={showAudioTrackSelectorButtonRef} variant="text" size="large" onMouseEnter={() => setShowAudioTrackSelector(s => !s)}>
+                                                    <i className="material-icons" style={{fontSize: "2rem"}}>
+                                                        language
+                                                    </i>
+                                                </Button>
+                                                <Menu
+                                                    open={showAudioTrackSelector}
+                                                    onClose={() => setShowAudioTrackSelector(false)}
+                                                    anchorEl={showAudioTrackSelectorButtonRef.current}
+                                                    anchorOrigin={{vertical: "top", horizontal: "center"}}
+                                                    transformOrigin={{vertical: "bottom", horizontal: "center"}}
+                                                >
+                                                    <List>
+                                                        {audioTracks.map((track, index) => (
+                                                            <ListItemButton
+                                                                key={index}
+                                                                selected={track.index === selectedAudioTrack}
+                                                                onClick={() => selectDashAudioTrack(track.index || -1)}
+                                                            >
+                                                                {languageNames.of(track.lang || "und")}
+                                                            </ListItemButton>
+                                                        ))}
+                                                    </List>
+                                                </Menu>
+                                            </>
+                                        )}
+                                        {subtitleTracks.length > 0 && (
+                                            <>
+                                                <Button ref={showSubtitleTrackSelectorButtonRef} variant="text" size="large" onMouseEnter={() => setShowSubtitleTrackSelector(s => !s)}>
+                                                    <i className="material-icons" style={{fontSize: "2rem"}}>
+                                                        subtitles
+                                                    </i>
+                                                </Button>
+                                                <Menu
+                                                    open={showSubtitleTrackSelector}
+                                                    onClose={() => setShowSubtitleTrackSelector(false)}
+                                                    anchorEl={showSubtitleTrackSelectorButtonRef.current}
+                                                    anchorOrigin={{vertical: "top", horizontal: "center"}}
+                                                    transformOrigin={{vertical: "bottom", horizontal: "center"}}
+                                                >
+                                                    <List>
+                                                        <ListItemButton
+                                                            selected={selectedSubtitleTrack === -1}
+                                                            onClick={() => {
+                                                                if(!dash) return;
+                                                                dash.setCurrentTrack(-1)
+                                                                setSelectedSubtitleTrack(-1)
+                                                            }}
+                                                        >
+                                                            Off
+                                                        </ListItemButton>
+                                                        {subtitleTracks.map((track, index) => (
+                                                            <ListItemButton
+                                                                key={index}
+                                                                selected={track.index === selectedSubtitleTrack}
+                                                                onClick={() => selectDashSubtitleTrack(track.index || -1)}
+                                                            >
+                                                                {languageNames.of(track.lang || "und")}
+                                                            </ListItemButton>
+                                                        ))}
+                                                    </List>
+                                                </Menu>
+                                            </>
+                                        )}
                                         <>
                                             <Button ref={showVolumeControlsButtonRef} variant="text" size="large" onMouseEnter={() => setShowVolumeControls(s => !s)}>
                                                 <i className="material-icons" style={{fontSize: "2rem"}}>
