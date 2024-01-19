@@ -1,4 +1,5 @@
 import subprocess
+import multiprocessing
 from __init__ import config
 import os
 import json
@@ -108,22 +109,15 @@ def detect_audio_offsets(search_file: bytes, video_folder: str, ignore_files: st
 
     aivd = subprocess.Popen(make_wsl_command([
         config.get("AIVD_PATH"),
-        "--find-offset-of",
+        "-r",
+        "-x", ignore_files,
+        "-w", "900",
+        "-f", "json",
+        "-c", str(multiprocessing.cpu_count()),
+        "--ffmpeg", ffmpeg if not config.get_bool("USE_WSL") else config.get("WSL_FFMPEG"),
+        "--silent",
         f"/tmp/{file}",
-        "--within",
-        get_wsl_path(video_folder),
-        "--extension-skip",
-        ignore_files,
-        "--recursive",
-        "true",
-        "--window",
-        "900",
-        "--log-level",
-        "fatal",
-        "--raw",
-        "true",
-        "--ffmpeg",
-        ffmpeg if not config.get_bool("USE_WSL") else config.get("WSL_FFMPEG")
+        get_wsl_path(video_folder)
     ]),
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT
@@ -132,7 +126,7 @@ def detect_audio_offsets(search_file: bytes, video_folder: str, ignore_files: st
     resp = aivd.stdout.read()
     os.remove(get_local_wsl_temp_dir() + file)
 
-    return json.loads(resp)
+    return json.loads(resp.strip())
 
 
 def convert_file_to_hls(input_file: str, output_file: str, re_encode: bool = False):
