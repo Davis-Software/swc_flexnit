@@ -172,8 +172,13 @@ function Watch(){
         }
 
         return () => {
-            if(!hls) return
-            hls.destroy()
+            if(hls) {
+                hls.destroy()
+            }
+            if(dash){
+                dash.reset()
+                dash.destroy()
+            }
         }
     }, [window.location.search]);
 
