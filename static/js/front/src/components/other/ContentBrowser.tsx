@@ -1,6 +1,7 @@
 import TitleEntryType from "../../types/titleEntryType";
-import React, {lazy, useEffect, useMemo, useState} from "react";
-import {Box, Skeleton, Tab, Tabs} from "@mui/material";
+import React, {lazy, useEffect, useState} from "react";
+import {Box, Skeleton, Tab, Tabs, Typography, useTheme} from "@mui/material";
+import {getTimeString} from "../../utils/FormatDate";
 
 const News = lazy(() => import("./News"))
 
@@ -10,10 +11,11 @@ interface TitlePreviewProps{
 }
 function TitlePreview(props: TitlePreviewProps){
     const [loaded, setLoaded] = useState(false)
+    const theme = useTheme()
 
     return (
         <Box
-            className="col-12 col-md-5 col-xl-4 col-xxl-3 h-100"
+            className="col-6 col-xl-4 col-xxl-3"
             sx={{
                 "&:hover":{
                     cursor: "pointer",
@@ -23,7 +25,7 @@ function TitlePreview(props: TitlePreviewProps){
             }}
             onClick={props.onClick}
         >
-            <div className="p-3 h-100">
+            <div className="p-3 position-relative">
                 {!loaded && <Skeleton className="h-100" variant="rectangular" animation="wave" />}
                 <img
                     alt=""
@@ -35,12 +37,37 @@ function TitlePreview(props: TitlePreviewProps){
                     // @ts-ignore
                     fetchpriority="low"
                 />
+                <Box
+                    className="p-5 position-absolute top-0 start-0 text-break w-100 h-100"
+                    sx={{
+                        "&:hover": {
+                            opacity: 1
+                        },
+                        transition: "opacity 0.2s ease-in-out",
+                        backgroundColor: theme.palette.mode === "dark" ? "rgba(35,35,35, .6)" : "rgba(255,255,255, .6)",
+                        opacity: 0
+                    }}
+                >
+                    <div className="fw-bold mb-2">{props.title.title}</div>
+                    {props.title.type === "movie" ? (
+                        <>
+                            <Typography variant="overline">Runtime: </Typography>
+                            <Typography variant="caption">{getTimeString(props.title.runtime!)}</Typography>
+                        </>
+                    ) : (
+                        <Typography variant="overline">Seasons: {props.title.season_count}</Typography>
+                    )}
+                    {props.title.description && (
+                        <p className="mt-1">{props.title.description?.length > 100 ? props.title.description?.slice(0, 200) + "..." : props.title.description}</p>
+                    )}
+                </Box>
             </div>
         </Box>
     )
 }
 
-const stableStorage: {[key: string] : any} = {}
+const stableStorage: { [key: string]: any } = {}
+
 function setStableProp(preKey: string, key: string, value: string | number | boolean){
     if(!stableStorage.hasOwnProperty(preKey)){
         stableStorage[preKey] = {}
@@ -56,7 +83,6 @@ function getStableProp(preKey: string, key: string) : string | number | boolean{
 
 interface TitleBrowserProps{
     id: string
-    titleFilter: "movie" | "series"
     setSelectedTitle?: (title: TitleEntryType) => void
 }
 function TitleBrowser(props: TitleBrowserProps){
@@ -66,7 +92,7 @@ function TitleBrowser(props: TitleBrowserProps){
     function loadData(reset: boolean = false){
         let currPage = reset ? 1 : (getStableProp(props.id, "page") as number + 1)
         setStableProp(props.id, "pause", true)
-        fetch(`/search/${props.titleFilter}?c=8&p=${currPage}`)
+        fetch(`/browse?c=15&p=${currPage}`)
             .then(r => r.json())
             .then((data) => {
                 if(data.length === 0) {
@@ -88,38 +114,27 @@ function TitleBrowser(props: TitleBrowserProps){
             setStableProp(props.id, "pause", false)
             setStableProp(props.id, "end", false)
         }
-    }, [props.titleFilter]);
+    }, []);
 
     function updatePage(){
         if(getStableProp(props.id, "pause") || getStableProp(props.id, "end")) return
         if(!scrollRef.current) return
-        if(scrollRef.current.clientWidth > scrollRef.current.scrollWidth) return
-        if(Math.abs(scrollRef.current.scrollWidth - scrollRef.current.scrollLeft - scrollRef.current.clientWidth) > 10) return
+        if(scrollRef.current.clientHeight > scrollRef.current.scrollHeight) return
+        if(Math.abs(scrollRef.current.scrollHeight - scrollRef.current.scrollTop - scrollRef.current.clientHeight) > 10) return
         loadData()
-    }
-    function scroll(e: any){
-        if(!scrollRef.current) return
-        scrollRef.current.scrollLeft -= (e.wheelDelta || -e.detail * 30)
-        e.preventDefault()
-        e.stopPropagation()
-
     }
     useEffect(() => {
         if(!scrollRef.current) return
         scrollRef.current.addEventListener("scroll", updatePage)
-        scrollRef.current.addEventListener("mousewheel", scroll)
-        scrollRef.current.addEventListener("DOMMouseScroll", scroll)
         return () => {
             scrollRef.current?.removeEventListener("scroll", updatePage)
-            scrollRef.current?.removeEventListener("mousewheel", scroll)
-            scrollRef.current?.removeEventListener("DOMMouseScroll", scroll)
         }
     }, [scrollRef.current])
 
     return (
         <div
-            className="d-flex flex-row flex-grow-1"
-            style={{overflowX: "auto", overflowY: "hidden"}}
+            className="row m-0 flex-grow-1"
+            style={{overflowY: "auto", overflowX: "hidden", height: "calc(100svh - 180px)"}}
             ref={scrollRef}
         >
             {titles.map((title, i) => (
@@ -167,13 +182,9 @@ function ContentBrowser(props: ContentBrowserProps){
                         className="mx-3 d-flex flex-column justify-content-evenly"
                         style={{height: `calc(100vh - 64px * ${props.forceTab === undefined ? "2" : "1"})`}}
                     >
-                        <div className="h-50 d-flex flex-column">
-                            <h2>Movies</h2>
-                            <TitleBrowser titleFilter="movie" setSelectedTitle={props.setSelectedTitle} id={"m-" + props.id} />
-                        </div>
-                        <div className="h-50 d-flex flex-column">
-                            <h2>Series</h2>
-                            <TitleBrowser titleFilter="series" setSelectedTitle={props.setSelectedTitle} id={"s-" + props.id} />
+                        <div className="d-flex flex-column">
+                            <h2>All FlexNit Titles</h2>
+                            <TitleBrowser setSelectedTitle={props.setSelectedTitle} id={"m-" + props.id} />
                         </div>
                     </div>
                 </div>

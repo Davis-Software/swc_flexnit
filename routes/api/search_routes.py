@@ -5,6 +5,7 @@ from models.movie import MovieModel
 from models.movie import get_movies, latest_movies, search_movies
 from models.series import SeriesModel, EpisodeModel, EpisodeGroup
 from models.series import get_all_series, latest_series, search_series
+from models.title.title_repo import get_titles
 from utils.password_manager import auth_required
 from utils.request_codes import RequestCode
 
@@ -46,6 +47,16 @@ def make_title_entry(title: MovieModel or SeriesModel or EpisodeModel or Episode
         entry["series"] = make_title_entry(title.series)
 
     return entry
+
+
+@app.route("/browse")
+@auth_required
+def browse():
+    return get_titles(
+        request.args.get("p", 1, type=int),
+        request.args.get("c", 15, type=int),
+        make_title_entry
+    )
 
 
 @app.route("/search/<mode>")
