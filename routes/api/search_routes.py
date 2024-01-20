@@ -49,26 +49,23 @@ def make_title_entry(title: MovieModel or SeriesModel or EpisodeModel or Episode
     return entry
 
 
-@app.route("/browse")
-@auth_required
-def browse():
-    return get_titles(
-        request.args.get("p", 1, type=int),
-        request.args.get("c", 15, type=int),
-        make_title_entry
-    )
-
-
 @app.route("/search/<mode>")
 @auth_required
 def search_title(mode):
-    if mode not in ["latest", "movie", "series", "all"]:
+    if mode not in ["latest", "movie", "series", "browse", "all"]:
         return make_response({"message": "Invalid mode"}, RequestCode.ClientError.BadRequest)
 
     results = list()
     search_term = request.args.get("q")
 
-    if mode == "latest":
+    if mode == "browse":
+        return get_titles(
+            request.args.get("p", 1, type=int),
+            request.args.get("c", 15, type=int),
+            make_title_entry
+        )
+
+    elif mode == "latest":
         count = int(request.args.get("count", 5))
         latest = []
         for movie in latest_movies(limit=count):

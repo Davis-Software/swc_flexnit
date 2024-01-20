@@ -25,7 +25,7 @@ function TitlePreview(props: TitlePreviewProps){
             }}
             onClick={props.onClick}
         >
-            <div className="p-3 position-relative">
+            <div className="p-1 p-xl-3 position-relative">
                 {!loaded && <Skeleton className="h-100" variant="rectangular" animation="wave" />}
                 <img
                     alt=""
@@ -38,7 +38,7 @@ function TitlePreview(props: TitlePreviewProps){
                     fetchpriority="low"
                 />
                 <Box
-                    className="p-5 position-absolute top-0 start-0 text-break w-100 h-100"
+                    className="p-2 p-xl-5 position-absolute top-0 start-0 text-break w-100 h-100"
                     sx={{
                         "&:hover": {
                             opacity: 1
@@ -92,7 +92,7 @@ function TitleBrowser(props: TitleBrowserProps){
     function loadData(reset: boolean = false){
         let currPage = reset ? 1 : (getStableProp(props.id, "page") as number + 1)
         setStableProp(props.id, "pause", true)
-        fetch(`/browse?c=15&p=${currPage}`)
+        fetch(`/search/browse?c=15&p=${currPage}`)
             .then(r => r.json())
             .then((data) => {
                 if(data.length === 0) {
