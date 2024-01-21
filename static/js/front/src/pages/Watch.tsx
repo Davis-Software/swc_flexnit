@@ -430,6 +430,10 @@ function Watch(){
         function nextEpisode(){
             setEpisodeEnded(true)
         }
+        function handleCheckFullscreen(){
+            setFullscreen(document.fullscreenElement !== null)
+            console.log(document.fullscreenElement)
+        }
 
         videoRef.current.addEventListener("play", handlePlay)
         videoRef.current.addEventListener("pause", handlePause)
@@ -443,6 +447,7 @@ function Watch(){
         videoRef.current.addEventListener("seeked", endLoading)
         videoRef.current.addEventListener("canplay", endLoading)
 
+        window.addEventListener("fullscreenchange", handleCheckFullscreen)
         document.addEventListener("keydown", handleKeyDown)
 
         return () => {
@@ -460,6 +465,7 @@ function Watch(){
             videoRef.current.removeEventListener("seeked", endLoading)
             videoRef.current.removeEventListener("canplay", endLoading)
 
+            window.removeEventListener("fullscreenchange", handleCheckFullscreen)
             document.removeEventListener("keydown", handleKeyDown)
         }
     }, [videoRef.current])
