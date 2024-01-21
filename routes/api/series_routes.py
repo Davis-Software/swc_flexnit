@@ -245,7 +245,8 @@ def deliver_episode_file(uuid, episode_uuid, mode=None, file_name=None, frame=No
         return make_response("Age-Restricted Content", RequestCode.ClientError.Forbidden)
 
     if frame is not None and frame.isdigit():
-        response = make_response(get_episode_frame(series.uuid, episode_uuid, int(frame)))
+        frame = get_episode_frame(series.uuid, episode_uuid, int(frame))
+        response = make_response(frame if frame is not None else "", RequestCode.Success.OK)
         response.cache_control.max_age = 60 * 60 * 24 * 365
         response.content_type = "image/jpeg"
         return response

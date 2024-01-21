@@ -190,8 +190,20 @@ def convert_file_to_dash(input_file: str, output_location: str):
         )
         sys.stdout.flush()
 
-    video = ffmpeg_streaming.input(input_file)
-    dash = video.dash(ffmpeg_streaming.Formats.h264(video="h264_nvenc" if hw_accel else "h264"), seg_duration=20, frag_duration=10)
+    video = ffmpeg_streaming.input(input_file, pre_opts={
+        "hide_banner": None,
+        "hwaccel": "cuda" if hw_accel else None,
+    })
+    c_opts = {
+        "c:s": "mov_text",
+        "pix_fmt": "yuv420p"
+    }
+    dash = video.dash(
+        ffmpeg_streaming.Formats.h264(video="h264_nvenc" if hw_accel else "h264"),
+        **c_opts,
+        seg_duration=20,
+        frag_duration=10,
+    )
     dash.auto_generate_representations([])
     dash.output(f"{output_location}/dash/index.mpd", monitor=monitor if debug else None)
 

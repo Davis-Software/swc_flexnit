@@ -173,7 +173,9 @@ function Watch(){
                     setDisplayError(true)
                 })
                 new_dash.on("streamInitialized", () => {
-                    setAudioTracks(new_dash.getTracksFor("audio"))
+                    setAudioTracks(new_dash.getTracksFor("audio").filter(track =>
+                        track.audioChannelConfiguration!.length > 0 && track.audioChannelConfiguration![0] !== "0"
+                    ))
                     setSelectedAudioTrack(new_dash.getCurrentTrackFor("audio")?.index || -1)
                     setSubtitleTracks(new_dash.getTracksFor("text"))
                     setSelectedSubtitleTrack(new_dash.getCurrentTrackFor("text")?.index || -1)
@@ -671,7 +673,7 @@ function Watch(){
                                                                 selected={track.index === selectedAudioTrack}
                                                                 onClick={() => selectDashAudioTrack(track.index || -1)}
                                                             >
-                                                                {languageNames.of(track.lang || "und")}
+                                                                {languageNames.of(track.lang || "unknown")} ({track.audioChannelConfiguration}.1)
                                                             </ListItemButton>
                                                         ))}
                                                     </List>
