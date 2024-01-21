@@ -195,8 +195,9 @@ def convert_file_to_dash(input_file: str, output_location: str):
         "hwaccel": "cuda" if hw_accel else None,
     })
     c_opts = {
-        "c:s": "mov_text",
-        "pix_fmt": "yuv420p"
+        "pix_fmt": "yuv420p",
+        "sn": None,
+        "dn": None
     }
     dash = video.dash(
         ffmpeg_streaming.Formats.h264(video="h264_nvenc" if hw_accel else "h264"),
