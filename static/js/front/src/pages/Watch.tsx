@@ -11,7 +11,7 @@ import {hasNSFWPermission} from "../utils/permissionChecks";
 import SwcModal from "../components/SwcModal";
 import {user} from "../utils/constants";
 import {checkSyncEnabled, handleSyncUpload} from "../utils/syncControls";
-import {streamingModeParameterName} from "../utils/streaming";
+import {selectStreamingMode, streamingModeParameterName} from "../utils/streaming";
 import {MediaInfo} from "dashjs";
 
 const languageNames = new Intl.DisplayNames(['en'], {
@@ -354,14 +354,14 @@ function Watch(){
 
         handleSyncUpload((state) => {
             !state && alert("Failed to sync playback progress")
+            let nextEpisode
             if(episodesInCurrentSeason.length === currentEpisode?.episode){
                 const nextSeason = episodesInCurrentSeason[0].season + 1
-                const nextEpisode = episodes.find(e => e.season === nextSeason && e.episode === 1)
-                navigateTo(`/watch?series=${uuid}&episode=${nextEpisode?.uuid}${nextEpisode?.video_hls ? "&hls" : ""}`, true)
+                nextEpisode = episodes.find(e => e.season === nextSeason && e.episode === 1)
             }else{
-                const nextEpisode = episodes.find(e => e.season === currentEpisode?.season && e.episode === currentEpisode?.episode + 1)
-                navigateTo(`/watch?series=${uuid}&episode=${nextEpisode?.uuid}${nextEpisode?.video_hls ? "&hls" : ""}`, true)
+                nextEpisode = episodes.find(e => e.season === currentEpisode?.season && e.episode === currentEpisode?.episode + 1)
             }
+            navigateTo(`/watch?series=${uuid}&episode=${nextEpisode?.uuid}&${selectStreamingMode(nextEpisode!)}`, true)
         })
 
         if(force){
@@ -815,7 +815,7 @@ function Watch(){
                                                                 handlePlayEpisode={(e) => {
                                                                     handleSyncUpload(state => {
                                                                         !state && alert("Failed to sync playback progress")
-                                                                        navigateTo(`/watch?series=${videoInfo.uuid}&episode=${e.uuid}${e?.video_hls ? "&hls" : ""}`, true)
+                                                                        navigateTo(`/watch?series=${videoInfo.uuid}&episode=${e.uuid}&${selectStreamingMode(e)}`, true)
                                                                         setShowEpisodeSelector(false)
                                                                     })
                                                                 }}
