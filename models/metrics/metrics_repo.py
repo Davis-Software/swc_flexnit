@@ -24,10 +24,14 @@ def set_user_request_metrics(user: str, request: Request, response: Response):
         case 500:
             metrics.delivered_requests_5xx += 1
 
-    if metrics.last_ip != request.remote_addr:
-        if request.remote_addr not in metrics.previous_ips:
-            metrics.previous_ips.append(request.remote_addr)
-        metrics.last_ip = request.remote_addr
+    ip = request.headers.get("X-Forwarded-For") or request.headers.get("Forwarded") or \
+        (request.remote_addr if not request.remote_addr.startswith("127.") else "unknown") \
+        .split(",")[0].strip()
+
+    if metrics.last_ip != ip:
+        if ip not in metrics.previous_ips:
+            metrics.previous_ips.append(ip)
+        metrics.last_ip = ip
 
     if metrics.last_user_agent != request.user_agent.string:
         if request.user_agent.string not in metrics.previous_user_agents:
