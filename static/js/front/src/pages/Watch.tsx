@@ -32,6 +32,7 @@ let dash: any
 function Watch(){
     const mode: "movie" | "series" = window.location.href.includes("?movie=") ? "movie" : "series"
     const videoRef = useRef<HTMLVideoElement>(null);
+    const subtitleRef = useRef<HTMLDivElement>(null);
     const showAudioTrackSelectorButtonRef = useRef<HTMLButtonElement>(null);
     const showSubtitleTrackSelectorButtonRef = useRef<HTMLButtonElement>(null);
     const showEpisodeSelectorButtonRef = useRef<HTMLButtonElement>(null);
@@ -166,9 +167,11 @@ function Watch(){
         }
         function loadVideoWithDash(){
             import("dashjs").then(({default: dashJs}) => {
-                if(!videoRef.current) return
+                if(!videoRef.current || !subtitleRef.current) return
                 const new_dash = dashJs.MediaPlayer().create()
                 new_dash.initialize(videoRef.current, path, true, getStartTime())
+                new_dash.enableText(true)
+                new_dash.attachTTMLRenderingDiv(subtitleRef.current)
                 new_dash.on("error", () => {
                     setDisplayError(true)
                 })
@@ -514,6 +517,7 @@ function Watch(){
                         style={{width: "100%", height: "100%", objectFit: "contain", zIndex: 0}}
                     />
                 )}
+                <div ref={subtitleRef}></div>
                 <Fade in={!loading && showSkipIntro}>
                     <div
                         className="position-absolute"

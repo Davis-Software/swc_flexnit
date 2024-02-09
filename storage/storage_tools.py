@@ -23,7 +23,7 @@ for file in os.listdir(thumbnail_cache):
     os.remove(os.path.join(thumbnail_cache, file))
 
 
-def get_video_file_info(file_path: str):
+def get_video_file_info(file_path: str, sort_streams: bool = False):
     ffprobe = subprocess.Popen(
         [
             config.get("FFPROBE_PATH"),
@@ -36,6 +36,21 @@ def get_video_file_info(file_path: str):
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
+
+    if sort_streams:
+        info = json.loads(ffprobe.stdout.read())
+
+        video = filter(lambda x: x["codec_type"] == "video", info["streams"])
+        audio = filter(lambda x: x["codec_type"] == "audio", info["streams"])
+        subtitle = filter(lambda x: x["codec_type"] == "subtitle", info["streams"])
+
+        return {
+            "format": info["format"],
+            "video": list(video),
+            "audio": list(audio),
+            "subtitle": list(subtitle)
+        }
+
     return json.loads(ffprobe.stdout.read())
 
 
@@ -176,9 +191,30 @@ def convert_file_to_hls(input_file: str, output_location: str, re_encode: bool =
     )
 
 
-def convert_file_to_dash(input_file: str, output_location: str):
+def convert_file_to_dash(input_file: str, output_location: str, add_lq: bool = False):
     debug = config.get_bool("DEBUG")
     hw_accel = config.get_bool("FFMPEG_NVENC")
+
+    file_info = get_video_file_info(input_file, sort_streams=True)
+
+    video_codec = file_info["video"][0]["codec_name"]
+    audio_codecs = list(map(lambda x: x["codec_name"], file_info["audio"]))
+    subtitle_codecs = list(map(lambda x: x["codec_name"], file_info["subtitle"]))
+
+    if video_codec == "h264":
+        video_encoder = "copy"
+    else:
+        video_encoder = "h264_nvenc" if hw_accel else "h264"
+
+    if all(map(lambda x: x == "aac", audio_codecs)):
+        audio_encoder = "copy"
+    else:
+        audio_encoder = "aac"
+
+    if all(map(lambda x: x == "webvtt", subtitle_codecs)):
+        encode_subtitles = True
+    else:
+        encode_subtitles = False
 
     def monitor(_ffmpeg, duration, time_, time_left, _process):
         import sys
@@ -190,17 +226,33 @@ def convert_file_to_dash(input_file: str, output_location: str):
         )
         sys.stdout.flush()
 
-    video = ffmpeg_streaming.input(input_file, pre_opts={
-        "hide_banner": None,
-        "hwaccel": "cuda" if hw_accel else None,
-    })
+    input_args = {}
+    if hw_accel:
+        input_args["hwaccel"] = "cuda"
+    if video_encoder == "copy":
+        input_args["c:v"] = "copy"
+    video = ffmpeg_streaming.input(
+        input_file,
+        **input_args
+    )
+
     c_opts = {
-        "pix_fmt": "yuv420p",
-        "sn": None,
         "dn": None
     }
+    if video_encoder != "copy":
+        c_opts["pix_fmt"] = "yuv420p"
+
+    if encode_subtitles:
+        c_opts["c:s"] = "copy"
+    else:
+        c_opts["sn"] = None
+
+    qualities = []
+    if add_lq:
+        qualities.append(72)
+
     dash = video.dash(
-        ffmpeg_streaming.Formats.h264(video="h264_nvenc" if hw_accel else "h264"),
+        ffmpeg_streaming.Formats.h264(video=video_encoder, audio=audio_encoder),
         **c_opts,
         seg_duration=20,
         frag_duration=10,

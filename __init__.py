@@ -2,6 +2,7 @@ import os
 
 from flask import Flask
 from tools.config import Config
+from tools.python_mml import load_mods
 from flask_sqlalchemy import SQLAlchemy
 from database import database_connection
 
@@ -25,6 +26,9 @@ database_connection.connect_to_database(
     {}
 )
 db = SQLAlchemy(app)
+
+# Load module modifications
+load_mods()
 
 
 with app.app_context():
