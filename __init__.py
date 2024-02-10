@@ -28,7 +28,7 @@ database_connection.connect_to_database(
 db = SQLAlchemy(app)
 
 # Load module modifications
-load_mods()
+load_mods(working_dir)
 
 
 with app.app_context():
