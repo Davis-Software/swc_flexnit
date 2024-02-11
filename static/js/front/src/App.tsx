@@ -4,8 +4,10 @@ import lightTheme from "./themes/lightTheme";
 import darkTheme from "./themes/darkTheme";
 import amoledTheme from "./themes/amoledTheme";
 
-import {CssBaseline, ThemeProvider} from "@mui/material";
-import NavBar from "./components/navigation/NavBar";
+const CssBaseline = lazy(() => import("@mui/material/CssBaseline"));
+const ThemeProvider = lazy(() => import("@mui/material/styles/ThemeProvider"));
+const NavBar = lazy(() => import("././components/navigation/NavBar"));
+
 import PageLoader from "./components/PageLoader";
 
 import {setWindowTitle} from "./utils/navigation";
@@ -119,18 +121,20 @@ function App(){
     const [showAdmin, setShowAdmin] = useState(localStorage.getItem("showAdminOptions") === "true")
 
     return (
-        <ThemeProvider theme={computedTheme}>
-            <ThemeContext.Provider value={{theme, setTheme}}>
-                <ShowAdminContext.Provider value={{showAdmin, setShowAdmin}}>
-                    <CssBaseline />
+        <Suspense fallback={<PageLoader />}>
+            <ThemeProvider theme={computedTheme}>
+                <ThemeContext.Provider value={{theme, setTheme}}>
+                    <ShowAdminContext.Provider value={{showAdmin, setShowAdmin}}>
+                        <CssBaseline />
 
-                    {page !== "/watch" && <NavBar navItems={navItems} />}
-                    <Suspense fallback={<PageLoader />}>
-                        {RenderPage}
-                    </Suspense>
-                </ShowAdminContext.Provider>
-            </ThemeContext.Provider>
-        </ThemeProvider>
+                        {page !== "/watch" && <NavBar navItems={navItems} />}
+                        <Suspense fallback={<PageLoader />}>
+                            {RenderPage}
+                        </Suspense>
+                    </ShowAdminContext.Provider>
+                </ThemeContext.Provider>
+            </ThemeProvider>
+        </Suspense>
     )
 }
 
