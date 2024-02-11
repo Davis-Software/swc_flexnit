@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html lang="en-us" user-agent="{{ request.user_agent.string.split(" ").pop().split("/").pop(0) }}">
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}SWC FlexNit{% endblock %}</title>

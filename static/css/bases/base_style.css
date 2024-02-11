@@ -52,7 +52,7 @@ body{
 ::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
-body, *{
+html[user-agent=Firefox] body, html[user-agent=Firefox] *{
     scrollbar-width: thin !important;
     scrollbar-color: #888 #555;
 }
