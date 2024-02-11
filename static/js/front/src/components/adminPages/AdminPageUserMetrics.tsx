@@ -25,7 +25,7 @@ function FileManagerUserMetricsTableRow({metric, rowClicked, clickedRow}: FileMa
     )
 }
 
-function FileManagerUserMetrics(){
+function AdminPageUserMetrics(){
     const [metrics, setMetrics] = React.useState<UserMetrics[]>([])
     const [selectedMetric, setSelectedMetric] = React.useState<UserMetrics | null>(null)
 
@@ -91,4 +91,4 @@ function FileManagerUserMetrics(){
     )
 }
 
-export default FileManagerUserMetrics
+export default AdminPageUserMetrics

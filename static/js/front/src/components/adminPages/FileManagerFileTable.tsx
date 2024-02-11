@@ -296,10 +296,11 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
                 </TableBody>
             </Table>
 
-            <TransitionGroup className="position-fixed start-0 bottom-0 p-3">
+            <TransitionGroup className="position-fixed start-0 bottom-0 p-3" style={{zIndex: 3000}}>
                 <Fade>
                     <TextField
                         label="Search"
+                        sx={{width: "200px"}}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         InputProps={{
