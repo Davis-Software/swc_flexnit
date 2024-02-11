@@ -7,5 +7,5 @@ VALID_REACT_ROUTES = [
     "library",
     "music",
     "settings",
-    "file-manager"
+    "admin"
 ]

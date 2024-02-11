@@ -8,15 +8,16 @@ interface NavButtonProps {
     noButton?: boolean
     onClick?: () => void
     className?: string
+    color?: ButtonTypeMap["props"]["color"]
 }
 function NavButton(props: NavButtonProps){
-    const [color, setColor] = React.useState<ButtonTypeMap["props"]["color"]>("inherit")
+    const [color, setColor] = React.useState<ButtonTypeMap["props"]["color"]>(props.color || "inherit")
 
     useEffect(() => {
         if(window.location.pathname === props.target){
             setColor("primary")
         }else{
-            setColor("inherit")
+            setColor(props.color || "inherit")
         }
     }, [props.target, window.location.pathname])
 

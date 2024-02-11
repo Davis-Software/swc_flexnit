@@ -26,7 +26,7 @@ const News = lazy(() => import("./pages/NewsPage"));
 const About = lazy(() => import("./pages/About"));
 const Settings = lazy(() => import("./pages/Settings"));
 
-const FileManager = lazy(() => import("./pages/FileManager"));
+const Admin = lazy(() => import("./pages/AdminPage"));
 
 const NotFound = lazy(() => import("./pages/other/NotFound"));
 
@@ -41,7 +41,7 @@ const pageNames: {[key: string]: string} = {
     "/library": "Library",
     "/music": "Music",
     "/settings": "Settings",
-    "/file-manager": "File Manager",
+    "/admin": "Admin Tools Page",
 }
 const navItems: [string, string, boolean][] = [
     ["Home", "/", false],
@@ -49,7 +49,7 @@ const navItems: [string, string, boolean][] = [
     ["Library", "/library", false],
     ["Request", "/request", false],
     ["Music", "/music", false],
-    ["File Manager", "/file-manager", true],
+    ["Admin Tools", "/admin", true],
 ]
 
 function App(){
@@ -95,8 +95,8 @@ function App(){
                 return <Music />
             case "/settings":
                 return <Settings />
-            case "/file-manager":
-                return isAdminSet ? <FileManager /> : <NotFound />
+            case "/admin":
+                return isAdminSet ? <Admin /> : <NotFound />
             default:
                 return <NotFound />
         }

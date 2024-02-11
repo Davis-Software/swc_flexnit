@@ -96,7 +96,7 @@ function ToolbarLarge(props: ToolbarProps){
             <Box sx={{marginLeft: "25px"}} />
             {props.navItems.map(([name, path, adminRequired]) => (
                 !adminRequired || isAdmin ? (
-                    <NavButton target={path} key={path}>
+                    <NavButton target={path} key={path} color={adminRequired ? "secondary" : undefined}>
                         {name}
                     </NavButton>
                 ) : null
@@ -145,7 +145,13 @@ function ToolbarSmall(props: ToolbarProps){
             >
                 {props.navItems.map(([name, path, adminRequired]) => (
                     !adminRequired || isAdmin ?
-                        <NavButton key={path} target={path} onClick={handleCloseNavMenu} noButton>{name}</NavButton> :
+                        <NavButton
+                            key={path}
+                            target={path}
+                            onClick={handleCloseNavMenu}
+                            color={adminRequired ? "secondary" : undefined}
+                            noButton
+                        >{name}</NavButton> :
                         null
                 ))}
             </Menu>

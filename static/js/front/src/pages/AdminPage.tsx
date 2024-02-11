@@ -9,7 +9,7 @@ const MovieFileManager = lazy(() => import("../components/fileManager/MovieFileM
 const SeriesFileManager = lazy(() => import("../components/fileManager/SeriesFileManager"))
 
 
-function FileManager() {
+function AdminPage() {
     const [tab, setTab] = React.useState(parseInt(sessionStorage.getItem("fm-tab") || "0"))
 
     const RenderPage = useMemo(() => {
@@ -45,4 +45,4 @@ function FileManager() {
     )
 }
 
-export default FileManager
+export default AdminPage
