@@ -17,7 +17,7 @@ import {handleSyncDownload} from "./utils/syncControls";
 
 const Home = lazy(() => import("./pages/Home"));
 const Info = lazy(() => import("./pages/InfoPage"));
-const Browser = lazy(() => import("./pages/ContentBrowserPage"))
+const Browser = lazy(() => import("./pages/BrowsePage"))
 const UserLibrary = lazy(() => import("./pages/UserLibrary"));
 const ContentRequestPage = lazy(() => import("./pages/ContentRequestPage"));
 const Music = lazy(() => import("./pages/Music"))

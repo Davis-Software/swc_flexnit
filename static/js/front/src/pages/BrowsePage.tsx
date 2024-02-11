@@ -3,7 +3,7 @@ import ContentBrowser from "../components/other/ContentBrowser";
 import React from "react";
 import {navigateToTitle} from "../utils/navigation";
 
-function ContentBrowserPage(){
+function BrowsePage(){
     return (
         <PageBase>
             <ContentBrowser id="browser-page" forceTab="browse" setSelectedTitle={navigateToTitle} />
@@ -11,4 +11,4 @@ function ContentBrowserPage(){
     )
 }
 
-export default ContentBrowserPage
+export default BrowsePage
