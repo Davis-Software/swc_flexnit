@@ -2,6 +2,7 @@ import TitleEntryType from "../../types/titleEntryType";
 import React, {lazy, useEffect, useState} from "react";
 import {Box, Skeleton, Tab, Tabs, Typography, useTheme} from "@mui/material";
 import {getTimeString} from "../../utils/FormatDate";
+import SwcLoader from "../SwcLoader";
 
 const News = lazy(() => import("./News"))
 
@@ -83,15 +84,22 @@ function getStableProp(preKey: string, key: string) : string | number | boolean{
 
 interface TitleBrowserProps{
     id: string
+    isNotStandAlone?: boolean
     setSelectedTitle?: (title: TitleEntryType) => void
 }
 function TitleBrowser(props: TitleBrowserProps){
     const [titles, setTitles] = useState<TitleEntryType[]>([])
-    const scrollRef = React.useRef<HTMLDivElement>(null);
+    const [loading, setLoading] = useState(true)
+    const scrollRef = React.useRef<HTMLDivElement | Window>(
+        props.isNotStandAlone ?
+            null :
+            window
+    );
 
     function loadData(reset: boolean = false){
         let currPage = reset ? 1 : (getStableProp(props.id, "page") as number + 1)
         setStableProp(props.id, "pause", true)
+        setLoading(true)
         fetch(`/search/browse?c=15&p=${currPage}`)
             .then(r => r.json())
             .then((data) => {
@@ -102,11 +110,16 @@ function TitleBrowser(props: TitleBrowserProps){
                     setStableProp(props.id, "page", currPage)
                 }
                 setStableProp(props.id, "pause", false)
+                setLoading(false)
             })
     }
 
     useEffect(() => {
         loadData(true)
+
+        if(scrollRef.current) {
+            scrollRef.current.scrollTo(0, 0)
+        }
 
         return () => {
             setTitles([])
@@ -119,8 +132,12 @@ function TitleBrowser(props: TitleBrowserProps){
     function updatePage(){
         if(getStableProp(props.id, "pause") || getStableProp(props.id, "end")) return
         if(!scrollRef.current) return
-        if(scrollRef.current.clientHeight > scrollRef.current.scrollHeight) return
-        if(Math.abs(scrollRef.current.scrollHeight - scrollRef.current.scrollTop - scrollRef.current.clientHeight) > 10) return
+        if(scrollRef.current instanceof Window) {
+            if(window.innerHeight + window.scrollY < document.body.offsetHeight - 100) return
+        }else{
+            if(scrollRef.current.clientHeight > scrollRef.current.scrollHeight) return
+            if(Math.abs(scrollRef.current.scrollHeight - scrollRef.current.scrollTop - scrollRef.current.clientHeight) > 10) return
+        }
         loadData()
     }
     useEffect(() => {
@@ -132,17 +149,34 @@ function TitleBrowser(props: TitleBrowserProps){
     }, [scrollRef.current])
 
     return (
-        <div
-            className="row m-0 flex-grow-1"
-            style={{overflowY: "auto", overflowX: "hidden", height: "calc(100svh - 180px)"}}
-            ref={scrollRef}
-        >
-            {titles.map((title, i) => (
-                <TitlePreview key={i} title={title} onClick={() => {
-                    if(props.setSelectedTitle) props.setSelectedTitle(title)
-                }} />
-            ))}
-        </div>
+        <>
+            {props.isNotStandAlone ? (
+                <div
+                    className="row m-0 flex-grow-1"
+                    style={{overflowY: "auto", overflowX: "hidden"}}
+                    ref={scrollRef as React.RefObject<HTMLDivElement>}
+                >
+                    {titles.map((title, i) => (
+                        <TitlePreview key={i} title={title} onClick={() => {
+                            if(props.setSelectedTitle) props.setSelectedTitle(title)
+                        }} />
+                    ))}
+                </div>
+            ) : (
+                <div className="row m-0" style={{overflowX: "hidden", overflowY: "clip", height: "auto"}}>
+                    {titles.map((title, i) => (
+                        <TitlePreview key={i} title={title} onClick={() => {
+                            if(props.setSelectedTitle) props.setSelectedTitle(title)
+                        }} />
+                    ))}
+                </div>
+            )}
+            {loading && (
+                <div className="d-flex justify-content-center">
+                    <SwcLoader />
+                </div>
+            )}
+        </>
     )
 }
 
@@ -167,27 +201,27 @@ function ContentBrowser(props: ContentBrowserProps){
 
     return (
         <>
-            <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="fullWidth" className="mb-3" hidden={!!props.forceTab}>
-                <Tab value="browse" label="Browse" />
-                <Tab value="news" label="News" />
-            </Tabs>
+            {props.forceTab === undefined && (
+                <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="fullWidth" className="mb-3">
+                    <Tab value="browse" label="Browse" />
+                    <Tab value="news" label="News" />
+                </Tabs>
+            )}
             {(props.forceTab === undefined || props.forceTab === "news") && (
                 <div hidden={tab !== "news"}>
                     <News setSelectedTitle={props.setSelectedTitle} count={7} />
                 </div>
             )}
             {(props.forceTab === undefined || props.forceTab === "browse") && (
-                <div hidden={tab !== "browse"}>
-                    <div
-                        className="mx-3 d-flex flex-column justify-content-evenly"
-                        style={{height: `calc(100vh - 64px * ${props.forceTab === undefined ? "2" : "1"})`}}
-                    >
-                        <div className="d-flex flex-column">
-                            <h2>All FlexNit Titles</h2>
-                            <TitleBrowser setSelectedTitle={props.setSelectedTitle} id={"m-" + props.id} />
+                (props.forceTab === undefined ? (
+                    <div hidden={tab !== "browse"}>
+                        <div className="d-flex flex-column" style={{height: `calc(100vh - 128px)`}}>
+                            <TitleBrowser setSelectedTitle={props.setSelectedTitle} id={"m-" + props.id} isNotStandAlone />
                         </div>
                     </div>
-                </div>
+                ) : (
+                    <TitleBrowser setSelectedTitle={props.setSelectedTitle} id={"m-" + props.id}/>
+                ))
             )}
         </>
     )
