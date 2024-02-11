@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useRef, useState} from "react";
 import PageBase from "./PageBase";
-import {Button, CircularProgress, Fade, List, ListItem, ListItemButton, Menu, Slider} from "@mui/material";
+import {Button, CircularProgress, Fade, List, ListItemButton, Menu, Slider, Tooltip} from "@mui/material";
 import MovieType from "../types/movieType";
 import SeriesType from "../types/seriesType";
 import SwcLoader from "../components/SwcLoader";
@@ -25,6 +25,21 @@ function getTimeString(seconds: number){
     return `${hours <= 9 ? "0" + hours : hours}:${minutes <= 9 ? "0" + minutes : minutes}:${seconds2 <= 9 ? "0" + seconds2 : seconds2}`
 }
 
+interface HoverMenuProps {
+    placement: "top" | "bottom" | "left" | "right"
+    children: React.ReactNode
+    icon: string
+}
+function HoverMenu(props: HoverMenuProps){
+    return (
+        <Tooltip title={props.children} placement={props.placement} arrow>
+            <Button variant="text" size="large">
+                <i className="material-icons" style={{fontSize: "2rem"}}>{props.icon}</i>
+            </Button>
+        </Tooltip>
+    )
+}
+
 let extVideoInfo: MovieType | SeriesType | null = null
 let hls: any
 let dash: any
@@ -33,11 +48,7 @@ function Watch(){
     const mode: "movie" | "series" = window.location.href.includes("?movie=") ? "movie" : "series"
     const videoRef = useRef<HTMLVideoElement>(null);
     const subtitleRef = useRef<HTMLDivElement>(null);
-    const showAudioTrackSelectorButtonRef = useRef<HTMLButtonElement>(null);
-    const showSubtitleTrackSelectorButtonRef = useRef<HTMLButtonElement>(null);
     const showEpisodeSelectorButtonRef = useRef<HTMLButtonElement>(null);
-    const showVolumeControlsButtonRef = useRef<HTMLButtonElement>(null);
-    const showPlaybackSpeedControlsRef = useRef<HTMLButtonElement>(null);
 
     const [videoFramePreviewLink, setVideoFramePreviewLink] = useState<string>("")
     const [videoInfo, setVideoInfo] = useState<MovieType | SeriesType | null>(null)
@@ -47,10 +58,6 @@ function Watch(){
     const [showTimelineFramePreview, setShowTimelineFramePreview] = useState(false)
     const [timelineFramePreviewLocation, setTimelineFramePreviewLocation] = useState<number>(0)
     const [showEpisodeSelector, setShowEpisodeSelector] = useState(false)
-    const [showAudioTrackSelector, setShowAudioTrackSelector] = useState(false)
-    const [showSubtitleTrackSelector, setShowSubtitleTrackSelector] = useState(false)
-    const [showVolumeControls, setShowVolumeControls] = useState(false)
-    const [showPlaybackSpeedControls, setShowPlaybackSpeedControls] = useState(false)
     const [_, setShowControlsTimeout] = useState<NodeJS.Timeout | null>(null)
     const [fullscreen, setFullscreen] = useState(false)
     const [loading, setLoading] = useState(true)
@@ -672,146 +679,100 @@ function Watch(){
                                     )}
                                     <div className="d-flex m-2 justify-content-center align-items-center">
                                         {audioTracks.length > 0 && (
-                                            <>
-                                                <Button ref={showAudioTrackSelectorButtonRef} variant="text" size="large" onMouseEnter={() => setShowAudioTrackSelector(s => !s)}>
-                                                    <i className="material-icons" style={{fontSize: "2rem"}}>
-                                                        language
-                                                    </i>
-                                                </Button>
-                                                <Menu
-                                                    open={showAudioTrackSelector}
-                                                    onClose={() => setShowAudioTrackSelector(false)}
-                                                    anchorEl={showAudioTrackSelectorButtonRef.current}
-                                                    anchorOrigin={{vertical: "top", horizontal: "center"}}
-                                                    transformOrigin={{vertical: "bottom", horizontal: "center"}}
-                                                >
-                                                    <List>
-                                                        {audioTracks.map((track, index) => (
-                                                            <ListItemButton
-                                                                key={index}
-                                                                selected={track.index === selectedAudioTrack}
-                                                                onClick={() => selectDashAudioTrack(track.index || -1)}
-                                                            >
-                                                                {languageNames.of(track.lang || "unknown")} ({track.audioChannelConfiguration}.1)
-                                                            </ListItemButton>
-                                                        ))}
-                                                    </List>
-                                                </Menu>
-                                            </>
+                                            <HoverMenu placement="top" icon="language">
+                                                <List>
+                                                    {audioTracks.map((track, index) => (
+                                                        <ListItemButton
+                                                            key={index}
+                                                            selected={track.index === selectedAudioTrack}
+                                                            onClick={() => selectDashAudioTrack(track.index || -1)}
+                                                        >
+                                                            {languageNames.of(track.lang || "unknown")} ({track.audioChannelConfiguration}.1)
+                                                        </ListItemButton>
+                                                    ))}
+                                                </List>
+                                            </HoverMenu>
                                         )}
                                         {subtitleTracks.length > 0 && (
-                                            <>
-                                                <Button ref={showSubtitleTrackSelectorButtonRef} variant="text" size="large" onMouseEnter={() => setShowSubtitleTrackSelector(s => !s)}>
-                                                    <i className="material-icons" style={{fontSize: "2rem"}}>
-                                                        subtitles
-                                                    </i>
-                                                </Button>
-                                                <Menu
-                                                    open={showSubtitleTrackSelector}
-                                                    onClose={() => setShowSubtitleTrackSelector(false)}
-                                                    anchorEl={showSubtitleTrackSelectorButtonRef.current}
-                                                    anchorOrigin={{vertical: "top", horizontal: "center"}}
-                                                    transformOrigin={{vertical: "bottom", horizontal: "center"}}
-                                                >
-                                                    <List>
+                                            <HoverMenu placement="top" icon="subtitles">
+                                                <List>
+                                                    <ListItemButton
+                                                        selected={selectedSubtitleTrack === -1}
+                                                        onClick={() => setSelectedSubtitleTrack(-1)}
+                                                    >
+                                                        Off
+                                                    </ListItemButton>
+                                                    {subtitleTracks.map((track, index) => (
                                                         <ListItemButton
-                                                            selected={selectedSubtitleTrack === -1}
-                                                            onClick={() => setSelectedSubtitleTrack(-1)}
+                                                            key={index}
+                                                            selected={track.index === selectedSubtitleTrack}
+                                                            onClick={() => selectDashSubtitleTrack(track.index || -1)}
                                                         >
-                                                            Off
+                                                            {languageNames.of(track.lang || "und")}
                                                         </ListItemButton>
-                                                        {subtitleTracks.map((track, index) => (
-                                                            <ListItemButton
-                                                                key={index}
-                                                                selected={track.index === selectedSubtitleTrack}
-                                                                onClick={() => selectDashSubtitleTrack(track.index || -1)}
-                                                            >
-                                                                {languageNames.of(track.lang || "und")}
-                                                            </ListItemButton>
-                                                        ))}
-                                                    </List>
-                                                </Menu>
-                                            </>
+                                                    ))}
+                                                </List>
+                                            </HoverMenu>
                                         )}
-                                        <>
-                                            <Button ref={showVolumeControlsButtonRef} variant="text" size="large" onMouseEnter={() => setShowVolumeControls(s => !s)}>
-                                                <i className="material-icons" style={{fontSize: "2rem"}}>
-                                                    {volume === 0 ? "volume_off" : volume < 0.5 ? "volume_down" : "volume_up"}
-                                                </i>
-                                            </Button>
-                                            <Menu
-                                                open={showVolumeControls}
-                                                onClose={() => setShowVolumeControls(false)}
-                                                anchorEl={showVolumeControlsButtonRef.current}
-                                                anchorOrigin={{vertical: "top", horizontal: "center"}}
-                                                transformOrigin={{vertical: "bottom", horizontal: "center"}}
-                                            >
-                                                <div className="d-flex flex-column p-1 overflow-hidden" style={{height: "150px"}}>
-                                                    <div
-                                                        className="my-3 flex-grow-1"
-                                                    >
-                                                        <Slider
-                                                            value={volume}
-                                                            onChange={(_, v) => {
-                                                                setVolume(v as number)
-                                                            }}
-                                                            orientation="vertical"
-                                                            sx={{height: "100%"}}
-                                                            min={0}
-                                                            max={1}
-                                                            step={0.01}
-                                                        />
-                                                    </div>
-                                                    <div className="d-flex justify-content-center align-items-center">
-                                                        <span className="small">{Math.round(volume * 100)}%</span>
-                                                    </div>
+                                        <HoverMenu placement="top" icon={volume === 0 ? "volume_off" : volume < 0.5 ? "volume_down" : "volume_up"}>
+                                            <div className="d-flex flex-column p-1 overflow-hidden"
+                                                 style={{height: "150px"}}>
+                                                <div
+                                                    className="my-3 flex-grow-1"
+                                                >
+                                                    <Slider
+                                                        value={volume}
+                                                        onChange={(_, v) => {
+                                                            setVolume(v as number)
+                                                        }}
+                                                        orientation="vertical"
+                                                        sx={{height: "100%"}}
+                                                        min={0}
+                                                        max={1}
+                                                        step={0.05}
+                                                    />
                                                 </div>
-                                            </Menu>
-                                        </>
-                                        <>
-                                            <Button ref={showPlaybackSpeedControlsRef} variant="text" size="large" onMouseEnter={() => setShowPlaybackSpeedControls(s => !s)}>
-                                                <i className="material-icons" style={{fontSize: "2rem"}}>speed</i>
-                                            </Button>
-                                            <Menu
-                                                open={showPlaybackSpeedControls}
-                                                onClose={() => setShowPlaybackSpeedControls(false)}
-                                                anchorEl={showPlaybackSpeedControlsRef.current}
-                                                anchorOrigin={{vertical: "top", horizontal: "center"}}
-                                                transformOrigin={{vertical: "bottom", horizontal: "center"}}
-                                            >
-                                                <div className="d-flex flex-column p-1 overflow-hidden" style={{width: "250px"}}>
-                                                    <div className="d-flex justify-content-center align-items-center">
-                                                        Playback speed {playbackSpeed}
-                                                    </div>
-                                                    <div
-                                                        className="mx-3 flex-grow-1"
-                                                    >
-                                                        <Slider
-                                                            value={playbackSpeed}
-                                                            onChange={(_, v) => {
-                                                                setPlaybackSpeed(v as number)
-                                                            }}
-                                                            orientation="horizontal"
-                                                            sx={{width: "100%"}}
-                                                            min={0.25}
-                                                            max={2.5}
-                                                            step={0.25}
-                                                            marks={[
-                                                                {value: 0.5, label: "0.5x"},
-                                                                {value: 1, label: "1x"},
-                                                                {value: 1.5, label: "1.5x"},
-                                                                {value: 2, label: "2x"},
-                                                                {value: 2.5, label: "2.5x"},
-                                                            ]}
-                                                        />
-                                                    </div>
+                                                <div className="d-flex justify-content-center align-items-center">
+                                                    <span className="small">{Math.round(volume * 100)}%</span>
                                                 </div>
-                                            </Menu>
-                                        </>
+                                            </div>
+                                        </HoverMenu>
+                                        <HoverMenu placement="top" icon="speed">
+                                            <div className="d-flex flex-column p-1 overflow-hidden"
+                                                 style={{width: "250px"}}>
+                                                <div className="d-flex justify-content-center align-items-center">
+                                                    Playback speed {playbackSpeed}
+                                                </div>
+                                                <div
+                                                    className="mx-3 flex-grow-1"
+                                                >
+                                                    <Slider
+                                                        value={playbackSpeed}
+                                                        onChange={(_, v) => {
+                                                            setPlaybackSpeed(v as number)
+                                                        }}
+                                                        orientation="horizontal"
+                                                        sx={{width: "100%"}}
+                                                        min={0.25}
+                                                        max={2.5}
+                                                        step={0.25}
+                                                        marks={[
+                                                            {value: 0.5, label: "0.5x"},
+                                                            {value: 1, label: "1x"},
+                                                            {value: 1.5, label: "1.5x"},
+                                                            {value: 2, label: "2x"},
+                                                            {value: 2.5, label: "2.5x"},
+                                                        ]}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </HoverMenu>
                                         {videoInfo && mode === "series" && (
                                             <>
-                                                <Button ref={showEpisodeSelectorButtonRef} variant="text" size="large" onClick={() => setShowEpisodeSelector(s => !s)}>
-                                                    <i className="material-icons" style={{fontSize: "2rem"}}>{showEpisodeSelector ? "menu_open" : "menu"}</i>
+                                                <Button ref={showEpisodeSelectorButtonRef} variant="text" size="large"
+                                                        onClick={() => setShowEpisodeSelector(s => !s)}>
+                                                    <i className="material-icons"
+                                                       style={{fontSize: "2rem"}}>{showEpisodeSelector ? "menu_open" : "menu"}</i>
                                                 </Button>
                                                 <Menu
                                                     open={showEpisodeSelector}
