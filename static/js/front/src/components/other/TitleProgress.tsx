@@ -53,7 +53,7 @@ function TitleProgress(props: TitleProgressProps){
     const episodesWatched = useMemo(() => (
         (props.title as SeriesType).episodes && progress[props.title.uuid] ?
         Object.keys(progress[props.title.uuid])
-            .filter(uuid => progress[props.title.uuid][uuid] > ((props.title as SeriesType).episodes.filter(e => e.uuid === uuid).pop()?.video_info.format.duration * 0.9)).length :
+            .filter(uuid => progress[props.title.uuid][uuid] > ((props.title as SeriesType).episodes.filter(e => e.uuid === uuid).pop()?.video_info.format?.duration * 0.9)).length :
         null
     ), [props.title, progress])
 

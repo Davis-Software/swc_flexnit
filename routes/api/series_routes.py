@@ -252,7 +252,8 @@ def deliver_episode_file(uuid, episode_uuid, mode=None, file_name=None, frame=No
         return response
 
     if file_name is None and mode is not None:
-        return send_file(get_episode_file(series.uuid, episode_uuid, mode))
+        file = get_episode_file(series.uuid, episode_uuid, mode)
+        return send_file(file) if file is not None else make_response("File not found", RequestCode.ClientError.NotFound)
 
     if file_name is not None and mode is not None:
         episode_file = get_episode_part(series.uuid, episode_uuid, file_name, mode)

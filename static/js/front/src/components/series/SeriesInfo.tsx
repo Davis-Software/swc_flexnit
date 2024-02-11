@@ -63,11 +63,17 @@ function EpisodeList(props: EpisodeListProps){
                             selected={props.selectedEpisode?.uuid === episode.uuid}
                             onClick={() => props.handlePlayEpisode(episode)}
                             className="d-flex flex-column align-items-start"
-                            disabled={episode.is_nsfw && !hasNSFWPermission()}
+                            disabled={
+                                (episode.is_nsfw && !hasNSFWPermission()) ||
+                                !episode.video_file
+                            }
                         >
                             <div className="d-flex justify-content-between w-100">
                                 <Typography variant="h5">{episode.episode} - {episode.title}</Typography>
-                                <Chip size="small" label={episode.is_nsfw ? "NSFW" : "SFW"} color={episode.is_nsfw ? "warning" : "secondary"} className="ms-3" />
+                                <div>
+                                    {!episode.video_file && <Chip size="small" label="No File" color="error" className="ms-3" />}
+                                    <Chip size="small" label={episode.is_nsfw ? "NSFW" : "SFW"} color={episode.is_nsfw ? "warning" : "secondary"} className="ms-3" />
+                                </div>
                             </div>
                             <div className="w-100">
                                 <TitleProgress title={props.series} episode={episode} />

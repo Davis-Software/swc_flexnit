@@ -322,6 +322,7 @@ def delete_episode_file(series_uuid: str, episode_uuid: str, file_name: str):
         episode_model.video_file = None
         episode_model.video_info = {}
         episode_model.video_hls = False
+        episode_model.video_dash = False
         episode_model.commit()
 
     return True

@@ -213,6 +213,7 @@ def delete_movie_file(movie_uuid: str, file_name: str):
     movie.video_file = None
     movie.video_info = {}
     movie.video_hls = False
+    movie.video_dash = False
     movie.commit()
     return True
 

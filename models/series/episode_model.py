@@ -32,7 +32,7 @@ class EpisodeModel(TitleModel):
         self.episode = episode
         self.series_id = series_id
 
-    def to_dict(self, show: list = None, to_json=True, parent_type = None):
+    def to_dict(self, show: list = None, to_json=True, parent_type=None):
         episode = super().to_dict(show, to_json, parent_type)
         episode["is_nsfw"] = self.is_nsfw_inherited
 

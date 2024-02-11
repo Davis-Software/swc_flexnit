@@ -77,6 +77,7 @@ function Watch(){
     const [displayPlaybackError, setDisplayPlaybackError] = useState(false)
 
     const [showNSFWModal, setShowNSFWModal] = useState(false)
+    const [showNoFileErrorModal, setShowNoFileErrorModal] = useState(false)
     const [showErrorModal, setShowErrorModal] = useState(false)
     const [errorModalMessage, setErrorModalMessage] = useState("")
 
@@ -226,6 +227,12 @@ function Watch(){
         if(!videoInfo) return;
         if(videoInfo.is_nsfw && !hasNSFWPermission()){
             setShowNSFWModal(true)
+        }
+        if(mode === "series"){
+            const episode = (videoInfo as SeriesType).episodes.find(e => e.uuid === searchParams.get("episode"))
+            if(!episode?.video_file){
+                setShowNoFileErrorModal(true)
+            }
         }
         extVideoInfo = videoInfo
     }, [videoInfo])
@@ -832,6 +839,21 @@ function Watch(){
                         <Button variant="text" onClick={() => handlePlayNextEpisode(true)} color="primary">Next Episode</Button>
                     )}
                     <Button variant="contained" color="primary" onClick={() => window.location.href = "/logout"}>Switch account</Button>
+                </div>
+            </SwcModal>
+            <SwcModal show={showNoFileErrorModal} onHide={() => {}}>
+                <div className="d-flex justify-content-center flex-column">
+                    <h3>Error - No video file found</h3>
+                    <hr />
+                </div>
+                <div className="container p-3 mb-3">
+                    <p>The video file for this episode could not be found.</p>
+                </div>
+                <div className="d-flex justify-content-between">
+                    <Button variant="text" onClick={() => navigateTo(history.state || "/")} color="secondary">Go back</Button>
+                    {mode === "series" && (
+                        <Button variant="text" onClick={() => handlePlayNextEpisode(true)} color="primary">Next Episode</Button>
+                    )}
                 </div>
             </SwcModal>
             <SwcModal show={showErrorModal} onHide={() => {}}>
