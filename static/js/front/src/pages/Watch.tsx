@@ -67,9 +67,11 @@ function Watch(){
     const [showSkipIntro, setShowSkipIntro] = useState(false)
     const [showPlayNextEpisode, setShowPlayNextEpisode] = useState(false)
     const [episodeEnded, setEpisodeEnded] = useState(false)
-    const [displayError, setDisplayError] = useState(false)
+    const [displayPlaybackError, setDisplayPlaybackError] = useState(false)
 
     const [showNSFWModal, setShowNSFWModal] = useState(false)
+    const [showErrorModal, setShowErrorModal] = useState(false)
+    const [errorModalMessage, setErrorModalMessage] = useState("")
 
     useEffect(() => {
         if(!videoRef.current) return;
@@ -78,7 +80,11 @@ function Watch(){
         const searchParams = new URLSearchParams(window.location.search)
         setSearchParams(searchParams)
         const uuid = (searchParams.get("movie") || searchParams.get("series")) as string
-        if(!uuid) return;
+        if(!uuid || !searchParams.has(streamingModeParameterName)){
+            setErrorModalMessage("An error occurred while trying to load the video")
+            setShowErrorModal(true)
+            return
+        }
 
         const library = JSON.parse(localStorage.getItem("library") || "{}")
         if(!library[mode]){
@@ -120,8 +126,8 @@ function Watch(){
             videoRef.current!.currentTime = getStartTime()
 
             videoRef.current?.play()
-                .then(() => setDisplayError(false))
-                .catch(() => setDisplayError(true))
+                .then(() => setDisplayPlaybackError(false))
+                .catch(() => setDisplayPlaybackError(true))
         }
 
         let path: string
@@ -159,7 +165,7 @@ function Watch(){
                     if(data.response?.code === 403){
                         setShowNSFWModal(true)
                     }else{
-                        setDisplayError(true)
+                        setDisplayPlaybackError(true)
                     }
                 })
                 hls = new_hls
@@ -173,7 +179,7 @@ function Watch(){
                 new_dash.enableText(true)
                 new_dash.attachTTMLRenderingDiv(subtitleRef.current)
                 new_dash.on("error", () => {
-                    setDisplayError(true)
+                    setDisplayPlaybackError(true)
                 })
                 new_dash.on("streamInitialized", () => {
                     setAudioTracks(new_dash.getTracksFor("audio").filter(track =>
@@ -191,8 +197,11 @@ function Watch(){
             loadVideoWithHls()
         }else if(streamingMode === "dash"){
             loadVideoWithDash()
-        }else{
+        }else if(streamingMode === "file"){
             loadVideo()
+        }else{
+            setErrorModalMessage("An error occurred while trying to load the video - invalid streaming mode")
+            setShowErrorModal(true)
         }
 
         return () => {
@@ -409,8 +418,8 @@ function Watch(){
         if(!videoRef.current) return;
         if(playing){
             videoRef.current.play()
-                .then(() => setDisplayError(false))
-                .catch(() => setDisplayError(true))
+                .then(() => setDisplayPlaybackError(false))
+                .catch(() => setDisplayPlaybackError(true))
         }else{
             videoRef.current.pause()
         }
@@ -510,7 +519,7 @@ function Watch(){
                 onTouchStart={handleMouseMove}
                 onClick={handleMouseMove}
             >
-                {!showNSFWModal && (
+                {!showNSFWModal && !showErrorModal && (
                     <video
                         className="position-absolute top-0 start-0"
                         ref={videoRef}
@@ -552,7 +561,7 @@ function Watch(){
                     className="w-100 h-100"
                     style={{zIndex: 1000}}
                 >
-                    <Fade in={(showControls || !playing || loading) && !showNSFWModal}>
+                    <Fade in={(showControls || !playing || loading) && !showNSFWModal && !showErrorModal}>
                         <div
                             className="w-100 h-100 position-relative"
                             style={{cursor: (showControls|| !playing) ? "default" : "none"}}
@@ -576,7 +585,7 @@ function Watch(){
                                 {!loading ? (
                                     <div style={{transform: "translateY(-50px)"}}>
                                         <div className="text-center">
-                                            {displayError && <h6>Press the Play button to start the {mode === "movie" ? mode : "episode"}</h6>}
+                                            {displayPlaybackError && <h6>Press the Play button to start the {mode === "movie" ? mode : "episode"}</h6>}
                                         </div>
                                         <div
                                             className="d-flex justify-content-center align-items-center p-5"
@@ -862,6 +871,18 @@ function Watch(){
                         <Button variant="text" onClick={() => handlePlayNextEpisode(true)} color="primary">Next Episode</Button>
                     )}
                     <Button variant="contained" color="primary" onClick={() => window.location.href = "/logout"}>Switch account</Button>
+                </div>
+            </SwcModal>
+            <SwcModal show={showErrorModal} onHide={() => {}}>
+                <div className="d-flex justify-content-center flex-column">
+                    <h3>An error occurred</h3>
+                    <hr />
+                </div>
+                <div className="container p-3 mb-3">
+                    <p>{errorModalMessage}</p>
+                </div>
+                <div className="d-flex justify-content-between">
+                    <Button variant="text" onClick={() => navigateTo(history.state || "/")} color="secondary">Go back</Button>
                 </div>
             </SwcModal>
         </PageBase>
