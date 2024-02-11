@@ -4,10 +4,9 @@ import lightTheme from "./themes/lightTheme";
 import darkTheme from "./themes/darkTheme";
 import amoledTheme from "./themes/amoledTheme";
 
-const NavBar = lazy(() => import("./components/navigation/NavBar"));
-const PageLoader = lazy(() => import("./components/PageLoader"));
-const CssBaseline = lazy(() => import("@mui/material/CssBaseline"));
-const ThemeProvider = lazy(() => import("@mui/material/styles/ThemeProvider"));
+import {CssBaseline, ThemeProvider} from "@mui/material";
+import NavBar from "./components/navigation/NavBar";
+import PageLoader from "./components/PageLoader";
 
 import {setWindowTitle} from "./utils/navigation";
 import {isAdminSet, systemThemeIsDark} from "./utils/constants";
