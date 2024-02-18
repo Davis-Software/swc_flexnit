@@ -1,44 +1,20 @@
 import React, {useCallback, useEffect, useRef, useState} from "react";
 import PageBase from "./PageBase";
-import {Button, CircularProgress, Fade, List, ListItemButton, Menu, Slider, Tooltip} from "@mui/material";
+import {Button} from "@mui/material";
 import MovieType from "../types/movieType";
 import SeriesType from "../types/seriesType";
-import SwcLoader from "../components/SwcLoader";
 import {navigateTo} from "../utils/navigation";
-import {EpisodeList} from "../components/series/SeriesInfo";
 import {closeFullscreen, openFullscreen} from "../utils/documentFunctions";
 import {hasNSFWPermission} from "../utils/permissionChecks";
 import SwcModal from "../components/SwcModal";
 import {user} from "../utils/constants";
-import {checkSyncEnabled, handleSyncUpload} from "../utils/syncControls";
+import {handleSyncUpload} from "../utils/syncControls";
 import {selectStreamingMode, streamingModeParameterName} from "../utils/streaming";
 import {MediaInfo} from "dashjs";
+import VolatileEventControls from "../components/watchPage/VolatileEventControls";
+import VideoMount from "../components/watchPage/VideoMount";
+import VideoControls from "../components/watchPage/VideoControls";
 
-const languageNames = new Intl.DisplayNames(['en'], {
-    type: 'language'
-})
-
-function getTimeString(seconds: number){
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor(seconds / 60) % 60;
-    const seconds2 = Math.round(seconds % 60);
-    return `${hours <= 9 ? "0" + hours : hours}:${minutes <= 9 ? "0" + minutes : minutes}:${seconds2 <= 9 ? "0" + seconds2 : seconds2}`
-}
-
-interface HoverMenuProps {
-    placement: "top" | "bottom" | "left" | "right"
-    children: React.ReactNode
-    icon: string
-}
-function HoverMenu(props: HoverMenuProps){
-    return (
-        <Tooltip title={props.children} placement={props.placement} arrow>
-            <Button variant="text" size="large">
-                <i className="material-icons" style={{fontSize: "2rem"}}>{props.icon}</i>
-            </Button>
-        </Tooltip>
-    )
-}
 
 let extVideoInfo: MovieType | SeriesType | null = null
 let hls: any
@@ -397,30 +373,6 @@ function Watch(){
         }
     }
 
-    function handleTimelineFramePreview(e: React.TouchEvent<HTMLSpanElement> | React.MouseEvent<HTMLSpanElement> | any){
-        const rect = e.currentTarget.getBoundingClientRect()
-        const x = e.clientX - rect.left
-        setTimelineFramePreviewLocation(x)
-        setShowControls(true)
-    }
-
-    function TimelineFramePreview(){
-        if(!videoRef.current || !timelineFramePreviewLocation) return null;
-        const frameNumber = Math.floor((timelineFramePreviewLocation / window.innerWidth) * videoRef.current!.duration)
-        let splittingAmount = Math.floor(videoRef.current!.duration / 10)
-        splittingAmount = splittingAmount > 25 ? 25 : splittingAmount
-        const nearestFrameInStorage = Math.floor(frameNumber / splittingAmount) * splittingAmount
-
-        return (
-            <img
-                alt=""
-                className="position-absolute top-0 start-0"
-                src={videoFramePreviewLink + `/${nearestFrameInStorage}`}
-                style={{width: "100%", height: "100%", objectFit: "contain"}}
-            />
-        )
-    }
-
     useEffect(() => {
         if(!videoRef.current) return;
         if(episodeEnded){
@@ -526,303 +478,58 @@ function Watch(){
 
     return (
         <PageBase className="d-flex flex-md-row flex-column" style={{backgroundColor: "black"}}>
-            <div
-                className="overflow-hidden position-relative"
-                style={{height: "100vh", width: "100vw"}}
-                onMouseMove={handleMouseMove}
-                onTouchStart={handleMouseMove}
-                onClick={handleMouseMove}
+            <VideoMount
+                mountVideo={!showNSFWModal && !showErrorModal}
+                videoRef={videoRef}
+                subtitleRef={subtitleRef}
+                handleInteract={handleMouseMove}
             >
-                {!showNSFWModal && !showErrorModal && (
-                    <video
-                        className="position-absolute top-0 start-0"
-                        ref={videoRef}
-                        style={{width: "100%", height: "100%", objectFit: "contain", zIndex: 0}}
-                    />
-                )}
-                <div ref={subtitleRef}></div>
-                <Fade in={!loading && showSkipIntro}>
-                    <div
-                        className="position-absolute"
-                        style={{left: "40px", bottom: "160px", zIndex: 2000}}
-                    >
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            size="large"
-                            onClick={handleSkipIntro}
-                        >
-                            Skip intro
-                        </Button>
-                    </div>
-                </Fade>
-                <Fade in={showPlayNextEpisode}>
-                    <div
-                        className="position-absolute"
-                        style={{right: "40px", bottom: "160px", zIndex: 2000}}
-                    >
-                        <Button
-                            variant="contained"
-                            color="secondary"
-                            size="large"
-                            onClick={() => handlePlayNextEpisode()}
-                        >
-                            Play next episode
-                        </Button>
-                    </div>
-                </Fade>
-                <div
-                    className="w-100 h-100"
-                    style={{zIndex: 1000}}
-                >
-                    <Fade in={(showControls || !playing || loading) && !showNSFWModal && !showErrorModal}>
-                        <div
-                            className="w-100 h-100 position-relative"
-                            style={{cursor: (showControls|| !playing) ? "default" : "none"}}
-                        >
-                            <div className="position-relative d-flex justify-content-between" style={{left: "40px", top: "40px", width: "calc(100% - 80px)"}}>
-                                <Button variant="text" size="large" onClick={() => {
-                                    if(!checkSyncEnabled()) {
-                                        navigateTo(history.state || "/")
-                                    }
-                                    handleSyncUpload((state) => {
-                                        !state && alert("Failed to sync playback progress")
-                                        navigateTo(history.state || "/")
-                                    })
-                                }}>
-                                    <i className="material-icons" style={{fontSize: "2rem"}}>arrow_back</i>
-                                </Button>
-                            </div>
-                            <div
-                                className="h-100 d-flex flex-column justify-content-center align-items-center"
-                            >
-                                {!loading ? (
-                                    <div style={{transform: "translateY(-50px)"}}>
-                                        <div className="text-center">
-                                            {displayPlaybackError && <h6>Press the Play button to start the {mode === "movie" ? mode : "episode"}</h6>}
-                                        </div>
-                                        <div
-                                            className="d-flex justify-content-center align-items-center p-5"
-                                            style={{background: "radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%,rgba(0,0,0,0.25) 20%,rgba(0,0,0,0) 50%)"}}
-                                        >
-                                            <Button variant="text" size="large" onClick={handleBack}>
-                                                <i className="material-icons" style={{fontSize: "2rem"}}>replay_10</i>
-                                            </Button>
-                                            <Button variant="text" size="large" onClick={() => setPlaying(p => !p)}>
-                                                <i className="material-icons" style={{fontSize: "5rem"}}>{playing ? "pause" : "play_arrow"}</i>
-                                            </Button>
-                                            <Button variant="text" size="large" onClick={handleForward}>
-                                                <i className="material-icons" style={{fontSize: "2rem"}}>forward_10</i>
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ) : <SwcLoader style={{transform: "translateY(-50px)"}} />}
-                            </div>
-                            <div
-                                className="position-absolute w-100 start-0 bottom-0"
-                                style={{backgroundColor: "rgba(0, 0, 0, 0.5)"}}
-                            >
-                                <div className="mx-2 position-relative">
-                                    <Slider
-                                        value={timePlayed}
-                                        onChange={(_, v) => {
-                                            setTimePlayed(v as number)
-                                        }}
-                                        onChangeCommitted={(_, v) => {
-                                            videoRef.current!.currentTime = v as number
-                                        }}
-                                        onMouseEnter={() => setShowTimelineFramePreview(true)}
-                                        onMouseLeave={() => setShowTimelineFramePreview(false)}
-                                        onMouseMove={handleTimelineFramePreview}
-                                        onTouchStart={() => setShowTimelineFramePreview(true)}
-                                        onTouchEnd={() => setShowTimelineFramePreview(false)}
-                                        onTouchMove={handleTimelineFramePreview}
-                                        sx={{width: "100%"}}
-                                        max={videoRef.current?.duration || 0}
-                                        step={.01}
-                                    />
-                                    <Fade in={showTimelineFramePreview}>
-                                        <div
-                                            className="position-absolute d-flex justify-content-center align-items-center"
-                                            style={{
-                                                left: `${computeTimelinePreviewFrameLocation()}px`,
-                                                bottom: "40px",
-                                                width: "200px",
-                                                height: "100px",
-                                            }}
-                                        >
-                                            <CircularProgress />
-                                            <TimelineFramePreview />
-                                        </div>
-                                    </Fade>
-                                </div>
-                                <div className="d-flex" style={{height: "100px"}}>
-                                    <div className="d-flex m-2 justify-content-center align-items-center">
-                                        <Button variant="text" size="large" onClick={() => setPlaying(p => !p)}>
-                                            <i className="material-icons" style={{fontSize: "2rem"}}>{playing ? "pause" : "play_arrow"}</i>
-                                        </Button>
-                                        <Button variant="text" size="large" onClick={handlePlayFromBeginning}>
-                                            <i className="material-icons" style={{fontSize: "2rem"}}>replay</i>
-                                        </Button>
-                                    </div>
-                                    <div className="d-flex m-2 ms-4 justify-content-center align-items-start flex-column">
-                                        <h4>{videoInfo?.title}</h4>
-                                        {mode === "series" && (() => {
-                                            const episode = (videoInfo as SeriesType)?.episodes.find(episode => episode.uuid === searchParams.get("episode"))
-                                            return (
-                                                <h6>Season {episode?.season} Episode {episode?.episode}</h6>
-                                            )
-                                        })()}
-                                    </div>
-                                    <div className="d-flex m-2 justify-content-center align-items-center flex-grow-1">
-                                        {videoInfo && mode === "series" && (
-                                            <h5>{(videoInfo as SeriesType)?.episodes.find(episode => episode.uuid === searchParams.get("episode"))?.title}</h5>
-                                        )}
-                                    </div>
-                                    {!!videoInfo && (
-                                        <div className="d-flex m-2 justify-content-center align-items-center">
-                                            {getTimeString(timePlayed)} / {getTimeString(videoRef.current?.duration || 0)}
-                                        </div>
-                                    )}
-                                    <div className="d-flex m-2 justify-content-center align-items-center">
-                                        {audioTracks.length > 0 && (
-                                            <HoverMenu placement="top" icon="language">
-                                                <List>
-                                                    {audioTracks.map((track, index) => (
-                                                        <ListItemButton
-                                                            key={index}
-                                                            selected={track.index === selectedAudioTrack}
-                                                            onClick={() => selectDashAudioTrack(track.index || -1)}
-                                                        >
-                                                            {languageNames.of(track.lang || "unknown")} ({track.audioChannelConfiguration}.1)
-                                                        </ListItemButton>
-                                                    ))}
-                                                </List>
-                                            </HoverMenu>
-                                        )}
-                                        {subtitleTracks.length > 0 && (
-                                            <HoverMenu placement="top" icon="subtitles">
-                                                <List>
-                                                    <ListItemButton
-                                                        selected={selectedSubtitleTrack === -1}
-                                                        onClick={() => setSelectedSubtitleTrack(-1)}
-                                                    >
-                                                        Off
-                                                    </ListItemButton>
-                                                    {subtitleTracks.map((track, index) => (
-                                                        <ListItemButton
-                                                            key={index}
-                                                            selected={track.index === selectedSubtitleTrack}
-                                                            onClick={() => selectDashSubtitleTrack(track.index || -1)}
-                                                        >
-                                                            {languageNames.of(track.lang || "und")}
-                                                        </ListItemButton>
-                                                    ))}
-                                                </List>
-                                            </HoverMenu>
-                                        )}
-                                        <HoverMenu placement="top" icon={volume === 0 ? "volume_off" : volume < 0.5 ? "volume_down" : "volume_up"}>
-                                            <div className="d-flex flex-column p-1 overflow-hidden"
-                                                 style={{height: "150px"}}>
-                                                <div
-                                                    className="my-3 flex-grow-1"
-                                                >
-                                                    <Slider
-                                                        value={volume}
-                                                        onChange={(_, v) => {
-                                                            setVolume(v as number)
-                                                        }}
-                                                        orientation="vertical"
-                                                        sx={{height: "100%"}}
-                                                        min={0}
-                                                        max={1}
-                                                        step={0.05}
-                                                    />
-                                                </div>
-                                                <div className="d-flex justify-content-center align-items-center">
-                                                    <span className="small">{Math.round(volume * 100)}%</span>
-                                                </div>
-                                            </div>
-                                        </HoverMenu>
-                                        <HoverMenu placement="top" icon="speed">
-                                            <div className="d-flex flex-column p-1 overflow-hidden"
-                                                 style={{width: "250px"}}>
-                                                <div className="d-flex justify-content-center align-items-center">
-                                                    Playback speed {playbackSpeed}
-                                                </div>
-                                                <div
-                                                    className="mx-3 flex-grow-1"
-                                                >
-                                                    <Slider
-                                                        value={playbackSpeed}
-                                                        onChange={(_, v) => {
-                                                            setPlaybackSpeed(v as number)
-                                                        }}
-                                                        orientation="horizontal"
-                                                        sx={{width: "100%"}}
-                                                        min={0.25}
-                                                        max={2.5}
-                                                        step={0.25}
-                                                        marks={[
-                                                            {value: 0.5, label: "0.5x"},
-                                                            {value: 1, label: "1x"},
-                                                            {value: 1.5, label: "1.5x"},
-                                                            {value: 2, label: "2x"},
-                                                            {value: 2.5, label: "2.5x"},
-                                                        ]}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </HoverMenu>
-                                        {videoInfo && mode === "series" && (
-                                            <>
-                                                <Button ref={showEpisodeSelectorButtonRef} variant="text" size="large"
-                                                        onClick={() => setShowEpisodeSelector(s => !s)}>
-                                                    <i className="material-icons"
-                                                       style={{fontSize: "2rem"}}>{showEpisodeSelector ? "menu_open" : "menu"}</i>
-                                                </Button>
-                                                <Menu
-                                                    open={showEpisodeSelector}
-                                                    onClose={() => setShowEpisodeSelector(false)}
-                                                    anchorEl={showEpisodeSelectorButtonRef.current}
-                                                    anchorOrigin={{vertical: "top", horizontal: "left"}}
-                                                    transformOrigin={{vertical: "bottom", horizontal: "left"}}
-                                                >
-                                                    <div
-                                                        style={{
-                                                            height: "50vh",
-                                                            width: "40vw",
-                                                        }}
-                                                    >
-                                                        {[...Array((videoInfo as SeriesType).season_count)].map((_, season) => (
-                                                            <EpisodeList
-                                                                key={season}
-                                                                series={videoInfo as SeriesType}
-                                                                season={season}
-                                                                handlePlayEpisode={(e) => {
-                                                                    handleSyncUpload(state => {
-                                                                        !state && alert("Failed to sync playback progress")
-                                                                        navigateTo(`/watch?series=${videoInfo.uuid}&episode=${e.uuid}&${selectStreamingMode(e)}`, true)
-                                                                        setShowEpisodeSelector(false)
-                                                                    })
-                                                                }}
-                                                                selectedEpisode={(videoInfo as SeriesType).episodes.find(e => e.uuid === searchParams.get("episode"))}
-                                                            />
-                                                        ))}
-                                                    </div>
-                                                </Menu>
-                                            </>
-                                        )}
-                                        <Button variant="text" size="large" onClick={() => setFullscreen(f => !f)}>
-                                            <i className="material-icons" style={{fontSize: "2rem"}}>{fullscreen ? "fullscreen_exit" : "fullscreen"}</i>
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </Fade>
-                </div>
-            </div>
+                <VolatileEventControls
+                    showSkipIntro={!loading && showSkipIntro}
+                    showPlayNextEpisode={showPlayNextEpisode}
+                    handleSkipIntro={handleSkipIntro}
+                    handlePlayNextEpisode={() => handlePlayNextEpisode()}
+                />
+                <VideoControls
+                    videoInfo={videoInfo}
+                    mode={mode}
+                    showControls={showControls}
+                    showTimelineFramePreview={showTimelineFramePreview}
+                    timelineFramePreviewLocation={computeTimelinePreviewFrameLocation()}
+                    showEpisodeSelector={showEpisodeSelector}
+                    showEpisodeSelectorButtonRef={showEpisodeSelectorButtonRef}
+                    setShowEpisodeSelector={setShowEpisodeSelector}
+                    setPlaying={setPlaying}
+                    playing={playing}
+                    displayPlaybackError={displayPlaybackError}
+                    loading={loading}
+                    handleBack={handleBack}
+                    handleForward={handleForward}
+                    setVolume={setVolume}
+                    setPlaybackSpeed={setPlaybackSpeed}
+                    audioTracks={audioTracks}
+                    selectedAudioTrack={selectedAudioTrack}
+                    selectDashAudioTrack={selectDashAudioTrack}
+                    subtitleTracks={subtitleTracks}
+                    selectedSubtitleTrack={selectedSubtitleTrack}
+                    selectDashSubtitleTrack={selectDashSubtitleTrack}
+                    volume={volume}
+                    playbackSpeed={playbackSpeed}
+                    setSelectedSubtitleTrack={setSelectedSubtitleTrack}
+                    setShowControls={setShowControls}
+                    setShowTimelineFramePreview={setShowTimelineFramePreview}
+                    setTimelineFramePreviewLocation={setTimelineFramePreviewLocation}
+                    computeTimelinePreviewFrameLocation={computeTimelinePreviewFrameLocation}
+                    videoFramePreviewLink={videoFramePreviewLink}
+                    timePlayed={timePlayed}
+                    fullscreen={fullscreen}
+                    handlePlayFromBeginning={handlePlayFromBeginning}
+                    setFullscreen={setFullscreen}
+                    setTimePlayed={setTimePlayed}
+                    showErrorModal={showErrorModal}
+                    showNSFWModal={showNSFWModal}
+                />
+            </VideoMount>
 
             <SwcModal show={showNSFWModal} onHide={() => {}}>
                 <div className="d-flex justify-content-center flex-column">
