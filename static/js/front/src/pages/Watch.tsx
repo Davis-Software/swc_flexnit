@@ -410,7 +410,6 @@ function Watch(){
         }
         function handleCheckFullscreen(){
             setFullscreen(document.fullscreenElement !== null)
-            console.log(document.fullscreenElement)
         }
 
         videoRef.current.addEventListener("play", handlePlay)
