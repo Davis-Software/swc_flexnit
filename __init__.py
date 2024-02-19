@@ -3,6 +3,7 @@ import os
 from flask import Flask
 from tools.config import Config
 from tools.python_mml import load_mods
+from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from database import database_connection
 
@@ -11,6 +12,7 @@ working_dir = os.path.dirname(os.path.realpath(__file__))
 config = Config(os.path.join(working_dir, 'config.ini'))
 
 app = Flask(__name__)
+socket = SocketIO(app)
 
 app.secret_key = config["SECRET_KEY"]
 database_connection.connect_to_database(

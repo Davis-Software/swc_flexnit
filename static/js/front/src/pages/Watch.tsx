@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef, useState} from "react";
+import React, {useCallback, useContext, useEffect, useRef, useState} from "react";
 import PageBase from "./PageBase";
 import {Button} from "@mui/material";
 import MovieType from "../types/movieType";
@@ -14,6 +14,7 @@ import {MediaInfo} from "dashjs";
 import VolatileEventControls from "../components/watchPage/VolatileEventControls";
 import VideoMount from "../components/watchPage/VideoMount";
 import VideoControls from "../components/watchPage/VideoControls";
+import {setActivity, SocketContext} from "../contexts/socketContext";
 
 
 let extVideoInfo: MovieType | SeriesType | null = null
@@ -21,10 +22,15 @@ let hls: any
 let dash: any
 
 function Watch(){
+    const socket = useContext(SocketContext)
+
     const mode: "movie" | "series" = window.location.href.includes("?movie=") ? "movie" : "series"
     const videoRef = useRef<HTMLVideoElement>(null);
     const subtitleRef = useRef<HTMLDivElement>(null);
     const showEpisodeSelectorButtonRef = useRef<HTMLButtonElement>(null);
+
+    const [watchAlong, setWatchAlong] = useState(false)
+    const [hostingRoom, setHostingRoom] = useState(!window.location.search.includes("watch-along"))
 
     const [videoFramePreviewLink, setVideoFramePreviewLink] = useState<string>("")
     const [videoInfo, setVideoInfo] = useState<MovieType | SeriesType | null>(null)
@@ -204,6 +210,21 @@ function Watch(){
         if(videoInfo.is_nsfw && !hasNSFWPermission()){
             setShowNSFWModal(true)
         }
+
+        let episode = (mode === "series" ?
+            (videoInfo as SeriesType).episodes.find(e => e.uuid === searchParams.get("episode")) :
+            undefined)
+        let infoCopy = {...videoInfo}
+        if(mode === "series"){
+            (infoCopy as SeriesType).episodes = []
+        }
+        setActivity({
+            activity: "watching",
+            title: infoCopy,
+            episode: episode,
+            type: mode
+        })
+
         if(mode === "series"){
             const episode = (videoInfo as SeriesType).episodes.find(e => e.uuid === searchParams.get("episode"))
             if(!episode?.video_file){
@@ -374,6 +395,38 @@ function Watch(){
     }
 
     useEffect(() => {
+        function notify(message: string){
+            console.log(message)
+        }
+        function handleRoomEvent(event: string){
+            console.log(event)
+        }
+
+        function disableWatchAlong(){
+            socket.off("user-joined", notify)
+            socket.off("user-left", notify)
+            socket.off("room-event", handleRoomEvent)
+
+            if(hostingRoom){
+                socket.emit("remove-room")
+            }else{
+                socket.emit("leave-room")
+            }
+        }
+
+        if(watchAlong){
+            socket.on("user-joined", notify)
+            socket.on("user-left", notify)
+            socket.on("room-event", handleRoomEvent)
+            socket.on("room-joined", notify)
+
+            socket.emit("create-room")
+        }else{
+            disableWatchAlong()
+        }
+    }, [watchAlong]);
+
+    useEffect(() => {
         if(!videoRef.current) return;
         if(episodeEnded){
             handlePlayNextEpisode()
@@ -527,6 +580,9 @@ function Watch(){
                     setTimePlayed={setTimePlayed}
                     showErrorModal={showErrorModal}
                     showNSFWModal={showNSFWModal}
+                    watchAlong={watchAlong}
+                    setWatchAlong={setWatchAlong}
+                    hostingRoom={hostingRoom}
                 />
             </VideoMount>
 

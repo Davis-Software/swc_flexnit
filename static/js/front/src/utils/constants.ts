@@ -1,3 +1,5 @@
+export const SOCKET_ROUTE = `ws://${window.location.hostname}:${window.location.port}`
+
 // @ts-ignore
 const user = global.hasOwnProperty("user") && global.user
 // @ts-ignore

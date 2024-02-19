@@ -4,9 +4,10 @@ psutil~=5.9.5
 SQLAlchemy==1.4.46
 sqlalchemy-json==0.6.0
 flask_sqlalchemy==2.5.1
+flask-socketio==5.3.6
 python-socketio==5.8.0
 websocket-client==1.6.2
 beautifulsoup4==4.12.2
 python-ffmpeg-video-streaming==0.1.15
 
-Werkzeug~=2.3.6
+Werkzeug~=3.0.1

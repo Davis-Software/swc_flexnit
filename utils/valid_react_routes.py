@@ -7,5 +7,6 @@ VALID_REACT_ROUTES = [
     "library",
     "music",
     "settings",
-    "admin"
+    "admin",
+    "watch-along",
 ]

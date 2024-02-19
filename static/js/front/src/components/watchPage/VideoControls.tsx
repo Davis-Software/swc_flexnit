@@ -1,7 +1,7 @@
 import {Button, CircularProgress, Fade, Slider} from "@mui/material";
 import SeriesType from "../../types/seriesType";
 import React, {useContext} from "react";
-import VideoControlGoBack from "./VideoControlGoBack";
+import VideoControlActions from "./VideoControlActions";
 import VideoControlHUD from "./VideoControlHUD";
 import VideoControlElements from "./VideoControlElements";
 import VideoControlEpisodeSelector from "./VideoControlEpisodeSelector";
@@ -53,6 +53,9 @@ interface VideoControlMountProps {
     setShowControls: React.Dispatch<React.SetStateAction<boolean>>;
     timelineFramePreviewLocation: number | null;
     videoFramePreviewLink: string;
+    watchAlong: boolean;
+    setWatchAlong: React.Dispatch<React.SetStateAction<boolean>>;
+    hostingRoom: boolean;
 }
 function VideoControls(props: VideoControlMountProps) {
     const searchParams = new URLSearchParams(window.location.search)
@@ -94,7 +97,11 @@ function VideoControls(props: VideoControlMountProps) {
                     className="w-100 h-100 position-relative"
                     style={{cursor: (props.showControls || !props.playing) ? "default" : "none"}}
                 >
-                    <VideoControlGoBack/>
+                    <VideoControlActions
+                        watchAlong={props.watchAlong}
+                        setWatchAlong={props.setWatchAlong}
+                        hostingRoom={props.hostingRoom}
+                    />
                     <div className="h-100 d-flex flex-column justify-content-center align-items-center">
                         <VideoControlHUD
                             playing={props.playing}

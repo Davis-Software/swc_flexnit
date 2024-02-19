@@ -74,6 +74,8 @@ function UserInfo(){
                 <NavButton target="/news" onClick={() => setAnchorEl(null)} noButton>News</NavButton>
                 <NavButton target="/about" onClick={() => setAnchorEl(null)} noButton>About</NavButton>
                 <Divider />
+                <NavButton target="/watch-along" onClick={() => setAnchorEl(null)} noButton>Watch Along</NavButton>
+                <Divider />
                 <NavButton target={`https://interface.software-city.org/user/${user}`} onClick={() => setAnchorEl(null)} noButton>Profile</NavButton>
                 <NavButton target="/settings" onClick={() => setAnchorEl(null)} noButton>Settings</NavButton>
                 <Divider />
