@@ -1,7 +1,7 @@
 import TitleEntryType from "../types/titleEntryType";
 
 function setWindowTitle(title: string, basic?: boolean){
-    document.title = `${basic ? "" : "SWC flexNit -"} ${title}`
+    document.title = `${basic ? "" : "FlexNit -"} ${title}`
 }
 
 function navigateTo(url: string, noSetPrevState?: boolean){

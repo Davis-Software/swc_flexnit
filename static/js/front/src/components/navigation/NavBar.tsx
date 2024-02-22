@@ -25,17 +25,9 @@ const smallStyling: SxProps = { display: { xs: 'flex', md: 'none' } }
 function Brand(){
     return (
         <Box sx={{display: "flex", alignItems: "center"}}>
-            <Typography
-                variant="h6"
-                onClick={() => {
-                    navigateTo("/")
-                }}
-                style={{
-                    cursor: "pointer"
-                }}
-            >
-                SWC flexNit
-            </Typography>
+            <img src="/static/img/icon.png" alt="FlexNit" style={{width: "100px", cursor: "pointer"}} onClick={() => {
+                navigateTo("/")
+            }} />
         </Box>
     )
 }

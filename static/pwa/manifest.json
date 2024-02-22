@@ -1,5 +1,5 @@
 {
-    "name": "FlexNit SWC Streaming Service",
+    "name": "FlexNit",
     "short_name": "FlexNit",
     "theme_color": "#272727",
     "background_color": "#222222",
@@ -10,8 +10,13 @@
     "orientation": "any",
     "icons": [
         {
-            "src": "../img/icon.png",
-            "sizes": "512x512",
+            "src": "../img/favicon-128.png",
+            "sizes": "128x128",
+            "type": "image/png"
+        },
+        {
+            "src": "../img/favicon-256.png",
+            "sizes": "256x256",
             "type": "image/png"
         }
     ]
