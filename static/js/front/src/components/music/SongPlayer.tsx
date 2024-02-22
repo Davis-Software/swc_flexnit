@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react"
+import React, {useContext, useEffect, useState} from "react"
 import {
     FormControl,
     IconButton,
@@ -11,15 +11,17 @@ import {
     useTheme
 } from "@mui/material";
 import SongType from "../../types/songType";
+import {AudioPlayerContext} from "../../contexts/AudioPlayerContextProvider";
 
 interface SongPlayerProps {
     playingSong: SongType | null
+    setPlayingSong: React.Dispatch<React.SetStateAction<SongType | null>>
     songEnded?: () => void
 }
 function SongPlayer(props: SongPlayerProps){
-    const [playing, setPlaying] = React.useState<boolean>(false)
+    const {audioRef, mounted, setMounted} = useContext(AudioPlayerContext)
 
-    const audioRef = React.useRef<HTMLAudioElement>(null)
+    const [playing, setPlaying] = React.useState<boolean>(!audioRef?.current?.paused)
     const [lockSpeedSelect, setLockSpeedSelect] = React.useState<boolean>(false)
     const [audioSpeed, setAudioSpeed] = React.useState<string>("1")
     const [volume, setVolume] = useState(parseFloat(localStorage.getItem("music-volume") || "1"))
@@ -30,38 +32,38 @@ function SongPlayer(props: SongPlayerProps){
     const theme = useTheme()
 
     function handleSetDuration(){
-        setDuration(audioRef.current?.duration!)
+        setDuration(audioRef?.current?.duration!)
     }
     function handleSetPosition(){
-        setPosition(audioRef.current?.currentTime!)
+        setPosition(audioRef?.current?.currentTime!)
     }
 
     function setNightcoreMode(speed: number, skip_ramp=false){
-        if(!audioRef.current) return
+        if(!audioRef?.current) return
         if(!skip_ramp){
             setLockSpeedSelect(true)
             function advanceValue(){
-                if(!audioRef.current) return;
+                if(!audioRef?.current) return;
                 let advance = 0.01
-                if(audioRef.current.playbackRate + advance >= speed){
+                if(audioRef?.current.playbackRate + advance >= speed){
                     setLockSpeedSelect(false)
                     audioRef.current.playbackRate = speed
                     return
                 }
-                if(audioRef.current?.playbackRate < speed){
+                if(audioRef?.current?.playbackRate < speed){
                     audioRef.current.playbackRate += advance
                 }
                 setTimeout(advanceValue, 10)
             }
             function reduceValue(){
-                if(!audioRef.current) return;
+                if(!audioRef?.current) return;
                 let reduce = 0.01
-                if(audioRef.current.playbackRate - reduce <= speed){
+                if(audioRef?.current.playbackRate - reduce <= speed){
                     setLockSpeedSelect(false)
                     audioRef.current.playbackRate = speed
                     return
                 }
-                if(audioRef.current?.playbackRate > speed){
+                if(audioRef?.current?.playbackRate > speed){
                     audioRef.current.playbackRate -= reduce
                 }
                 setTimeout(reduceValue, 10)
@@ -81,24 +83,54 @@ function SongPlayer(props: SongPlayerProps){
         setNightcoreMode(parseFloat(e.target.value))
     }
 
+    function handlePlay(){
+        setPlaying(true)
+    }
+    function handlePause() {
+        setPlaying(false)
+    }
+    function handleEnded() {
+        if (loop) {
+            if (!audioRef?.current) return
+            audioRef.current.currentTime = 0
+            audioRef.current.play().then()
+            return
+        }
+        setPlaying(false)
+        if (props.songEnded) props.songEnded()
+    }
     useEffect(() => {
-        if(!audioRef.current) return
+        if(!audioRef?.current) return
         audioRef.current.addEventListener("loadedmetadata", handleSetDuration)
         audioRef.current.addEventListener("timeupdate", handleSetPosition)
+
+        audioRef.current.addEventListener("play", handlePlay)
+        audioRef.current.addEventListener("pause", handlePause)
+        audioRef.current.addEventListener("ended", handleEnded)
 
         return () => {
             if(!audioRef.current) return
             audioRef.current.removeEventListener("loadedmetadata", handleSetDuration)
             audioRef.current.removeEventListener("timeupdate", handleSetPosition)
         }
-    }, []);
+    }, [audioRef, audioRef?.current]);
     useEffect(() => {
-        if(!audioRef.current) return;
+        if(!audioRef?.current) return;
         audioRef.current.volume = volume
         localStorage.setItem("music-volume", volume.toString())
     }, [volume])
     useEffect(() => {
         setNightcoreMode(parseFloat(audioSpeed), true)
+        if(!audioRef?.current) return
+        if(!mounted){
+            setMounted!(true)
+        }
+        if(props.playingSong){
+            audioRef.current.src = `/music/${props.playingSong.uuid}`
+        }else{
+            audioRef.current.removeAttribute("src")
+        }
+
     }, [props.playingSong]);
 
     return (
@@ -106,7 +138,7 @@ function SongPlayer(props: SongPlayerProps){
             <Paper sx={{height: "100%", width: "100%"}} className="d-flex align-items-center justify-content-between px-3" elevation={5}>
                 <IconButton
                     onClick={() => {
-                        if(!audioRef.current) return
+                        if(!audioRef?.current) return
                         !audioRef.current.paused ? audioRef.current.pause() : audioRef.current.play().then()
                     }}
                 >
@@ -147,7 +179,7 @@ function SongPlayer(props: SongPlayerProps){
                                 opacity: 0.28,
                             },
                         }}
-                        onChange={(_, value) => audioRef.current && (audioRef.current.currentTime = value as number)}
+                        onChange={(_, value) => audioRef?.current && (audioRef.current.currentTime = value as number)}
                         step={1}
                         min={0}
                         max={duration}
@@ -196,23 +228,6 @@ function SongPlayer(props: SongPlayerProps){
 
                 </FormControl>
             </Paper>
-            <audio
-                src={props.playingSong ? `/music/${props.playingSong.uuid}` : undefined}
-                onPlay={() => setPlaying(true)}
-                onPause={() => setPlaying(false)}
-                onEnded={() => {
-                    if(loop){
-                        if(!audioRef.current) return
-                        audioRef.current.currentTime = 0
-                        audioRef.current.play().then()
-                        return
-                    }
-                    setPlaying(false)
-                    if(props.songEnded) props.songEnded()
-                }}
-                ref={audioRef}
-                autoPlay
-            />
         </div>
     )
 }

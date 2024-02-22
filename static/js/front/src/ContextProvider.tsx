@@ -9,6 +9,7 @@ import darkTheme from "./themes/darkTheme";
 
 import {ThemeContext} from "./contexts/themeContext";
 import {ShowAdminContext} from "./contexts/showAdminContext";
+import {AudioPlayerContextProvider} from "./contexts/AudioPlayerContextProvider";
 
 interface ContextProviderProps {
     children: React.ReactNode;
@@ -34,11 +35,13 @@ function ContextProvider(props: ContextProviderProps) {
     return (
         <ThemeProvider theme={computedTheme}>
             <ThemeContext.Provider value={{theme, setTheme}}>
-                    <ShowAdminContext.Provider value={{showAdmin, setShowAdmin}}>
+                <ShowAdminContext.Provider value={{showAdmin, setShowAdmin}}>
+                    <AudioPlayerContextProvider>
 
                         {props.children}
 
-                    </ShowAdminContext.Provider>
+                    </AudioPlayerContextProvider>
+                </ShowAdminContext.Provider>
             </ThemeContext.Provider>
         </ThemeProvider>
     )
