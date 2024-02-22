@@ -1,20 +1,14 @@
 import React, {Suspense, lazy, useEffect, useState, useMemo} from "react"
 
-import lightTheme from "./themes/lightTheme";
-import darkTheme from "./themes/darkTheme";
-import amoledTheme from "./themes/amoledTheme";
-
 const CssBaseline = lazy(() => import("@mui/material/CssBaseline"));
-const ThemeProvider = lazy(() => import("@mui/material/styles/ThemeProvider"));
 const NavBar = lazy(() => import("././components/navigation/NavBar"));
 
 import PageLoader from "./components/PageLoader";
 
 import {setWindowTitle} from "./utils/navigation";
-import {isAdminSet, systemThemeIsDark} from "./utils/constants";
-import {ThemeContext} from "./contexts/themeContext";
-import {ShowAdminContext} from "./contexts/showAdminContext";
+import {isAdminSet} from "./utils/constants";
 import {handleSyncDownload} from "./utils/syncControls";
+import ContextProvider from "./ContextProvider";
 
 const Home = lazy(() => import("./pages/Home"));
 const Info = lazy(() => import("./pages/InfoPage"));
@@ -103,37 +97,16 @@ function App(){
         }
     }, [page])
 
-    const [theme, setTheme] = useState(localStorage.getItem("theme") || "system")
-    const computedTheme = useMemo(() => {
-        switch (theme) {
-            case "light":
-                return lightTheme
-            case "amoled":
-                return amoledTheme
-            case "system":
-                return systemThemeIsDark ? darkTheme : lightTheme
-            case "dark":
-            default:
-                return darkTheme
-        }
-    }, [theme])
-
-    const [showAdmin, setShowAdmin] = useState(localStorage.getItem("showAdminOptions") === "true")
-
     return (
         <Suspense fallback={<PageLoader />}>
-            <ThemeProvider theme={computedTheme}>
-                <ThemeContext.Provider value={{theme, setTheme}}>
-                    <ShowAdminContext.Provider value={{showAdmin, setShowAdmin}}>
-                        <CssBaseline />
+            <ContextProvider>
+                <CssBaseline />
 
-                        {page !== "/watch" && <NavBar navItems={navItems} />}
-                        <Suspense fallback={<PageLoader />}>
-                            {RenderPage}
-                        </Suspense>
-                    </ShowAdminContext.Provider>
-                </ThemeContext.Provider>
-            </ThemeProvider>
+                {page !== "/watch" && <NavBar navItems={navItems} />}
+                <Suspense fallback={<PageLoader />}>
+                    {RenderPage}
+                </Suspense>
+            </ContextProvider>
         </Suspense>
     )
 }
