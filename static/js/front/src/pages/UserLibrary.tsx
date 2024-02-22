@@ -3,11 +3,23 @@ import TitleEntryType from "../types/titleEntryType";
 import TitleProgress, {InfoCallbackType} from "../components/other/TitleProgress";
 import MovieType from "../types/movieType";
 import SeriesType, {EpisodeType} from "../types/seriesType";
-import {Button, Card, CardContent, CardMedia, LinearProgress, Paper, Skeleton, Tooltip, Zoom} from "@mui/material";
+import {
+    Button,
+    Card,
+    CardContent,
+    CardMedia,
+    LinearProgress,
+    Paper,
+    Skeleton,
+    Tooltip,
+    Typography,
+    Zoom
+} from "@mui/material";
 import {TransitionGroup} from "react-transition-group";
 import {navigateTo} from "../utils/navigation";
 import {handleSyncUpload} from "../utils/syncControls";
 import {selectStreamingMode} from "../utils/streaming";
+import SwcLoader from "../components/SwcLoader";
 
 interface TitleDisplayProps {
     titles: TitleEntryType[]
@@ -104,19 +116,21 @@ function TitleDisplay(props: TitleDisplayProps){
             <TransitionGroup component={null} enter={false} exit>
                 {props.titles
                     .filter(title => props.library[title.type] && props.library[title.type][title.uuid] && props.library[title.type][title.uuid].showInLibrary)
-                    .map((title, i) => (
-                    <Zoom key={i}>
-                        <div className="col-xxl-2 col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-3">
-                            <InnerTitleDisplay title={title} />
-                        </div>
-                    </Zoom>
-                ))}
+                        .map((title, i) => (
+                        <Zoom key={i}>
+                            <div className="col-xxl-2 col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-3">
+                                <InnerTitleDisplay title={title} />
+                            </div>
+                        </Zoom>
+                    ))
+                }
             </TransitionGroup>
         </div>
     )
 }
 
 function UserLibrary(){
+    const [loading, setLoading] = useState(true)
     const [library, setLibrary] = useState<{[key: string]: any}>(JSON.parse(localStorage.getItem("library") || "{}"))
     const [libraryTitles, setLibraryTitles] = React.useState<TitleEntryType[]>([]);
     const playbackProgress = useMemo(() => (
@@ -131,6 +145,7 @@ function UserLibrary(){
                     (!!playbackProgress[title.uuid] && !(library[title.type] && library[title.type][title.uuid])) ||
                     (library[title.type] && library[title.type][title.uuid] && library[title.type][title.uuid].showInLibrary)
                 ))
+                setLoading(false)
             })
     }, [])
 
@@ -140,6 +155,15 @@ function UserLibrary(){
                 <h4>My Library</h4>
             </Paper>
             <TitleDisplay titles={libraryTitles} library={library} setLibrary={setLibrary} />
+            {libraryTitles.length === 0 && (loading ? (
+                <div className="d-flex justify-content-center">
+                    <SwcLoader/>
+                </div>
+            ) : (
+                <div className="d-flex justify-content-center">
+                    <Typography>No titles in library</Typography>
+                </div>
+            ))}
         </div>
     )
 }
