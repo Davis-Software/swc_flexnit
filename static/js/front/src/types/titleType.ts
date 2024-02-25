@@ -2,7 +2,7 @@ interface TitleType {
     id: number;
     uuid: string;
     title: string;
-    tags: string;
+    tags?: string;
     description: string;
     year: string;
     language: string;

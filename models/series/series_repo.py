@@ -32,6 +32,7 @@ def edit_series(
         uuid: str,
         title: str = None,
         year: str = None,
+        tags: str = None,
         description: str = None,
         language: str = None,
         is_visible: str = None,
@@ -68,6 +69,8 @@ def edit_series(
         series.title = title
     if check_for_change("year", year, allow_empty=True):
         series.year = year
+    if check_for_change("tags", tags, allow_empty=True):
+        series.tags = tags
     if check_for_change("description", description):
         series.description = description
     if check_for_change("language", language):

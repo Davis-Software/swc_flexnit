@@ -4,6 +4,7 @@ import {Button, ButtonGroup, Checkbox, Collapse, FormControlLabel, TextField} fr
 import FileTable from "../FileTable";
 import FileType from "../../types/fileType";
 import {hasNSFWPermission} from "../../utils/permissionChecks";
+import TitleTagSelector from "../title/TitleTagSelector";
 
 interface EditMovieProps{
     movie: MovieType;
@@ -13,6 +14,7 @@ interface EditMovieProps{
 function EditMovie(props: EditMovieProps){
     const [title, setTitle] = React.useState<string>(props.movie.title)
     const [year, setYear] = React.useState<string>(props.movie.year || "")
+    const [tags, setTags] = React.useState<string[]>(props.movie.tags?.split(",") || [])
     const [description, setDescription] = React.useState<string>(props.movie.description || "")
     const [language, setLanguage] = React.useState<string>(props.movie.language || "")
     const [subtitles, setSubtitles] = React.useState<boolean>(props.movie.subtitles || false)
@@ -170,6 +172,7 @@ function EditMovie(props: EditMovieProps){
         const formData = new FormData()
         formData.append("title", title)
         formData.append("year", year)
+        formData.append("tags", tags.join(","))
         formData.append("description", description)
         formData.append("language", language)
         formData.append("subtitles", subtitles.toString())
@@ -208,6 +211,7 @@ function EditMovie(props: EditMovieProps){
                 error={Number.isNaN(year)}
                 fullWidth
             />
+            <TitleTagSelector tags={tags} setTags={setTags} />
             <TextField
                 variant="standard"
                 label="Description"

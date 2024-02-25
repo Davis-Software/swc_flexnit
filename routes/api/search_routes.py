@@ -5,7 +5,7 @@ from models.movie import MovieModel
 from models.movie import get_movies, latest_movies, search_movies
 from models.series import SeriesModel, EpisodeModel, EpisodeGroup
 from models.series import get_all_series, latest_series, search_series
-from models.title.title_repo import get_titles
+from models.title.title_repo import get_titles, get_title_tags
 from utils.password_manager import auth_required
 from utils.request_codes import RequestCode
 
@@ -99,3 +99,9 @@ def search_title(mode):
     return list(
         map(make_title_entry, results)
     )
+
+
+@app.route("/tags")
+@auth_required
+def get_tags():
+    return get_title_tags()

@@ -12,6 +12,7 @@ import {
     TextField
 } from "@mui/material";
 import {hasNSFWPermission} from "../../utils/permissionChecks";
+import TitleTagSelector from "../title/TitleTagSelector";
 
 const AddEpisode = React.lazy(() => import("./EditEpisode").then(module => ({default: module.AddEpisode})));
 const EditEpisode = React.lazy(() => import("./EditEpisode"));
@@ -150,6 +151,7 @@ interface EditSeriesProps {
 function EditSeries(props: EditSeriesProps){
     const [title, setTitle] = React.useState<string>(props.series.title)
     const [year, setYear] = React.useState<string>(props.series.year || "")
+    const [tags, setTags] = React.useState<string[]>(props.series.tags?.split(",") || [])
     const [description, setDescription] = React.useState<string>(props.series.description || "")
     const [language, setLanguage] = React.useState<string>(props.series.language || "")
     const [isVisible, setIsVisible] = React.useState<boolean>(props.series.is_visible || false)
@@ -261,6 +263,7 @@ function EditSeries(props: EditSeriesProps){
         const formData = new FormData()
         formData.append("title", title)
         formData.append("year", year.toString())
+        formData.append("tags", tags.join(","))
         formData.append("description", description)
         formData.append("language", language)
         formData.append("is_visible", isVisible.toString())
@@ -315,6 +318,7 @@ function EditSeries(props: EditSeriesProps){
                     onChange={e => setYear(e.target.value)}
                     fullWidth
                 />
+                <TitleTagSelector tags={tags} setTags={setTags} />
                 <TextField
                     variant="standard"
                     label="Description"

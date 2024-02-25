@@ -15,6 +15,7 @@ def edit_movie(
         uuid: str,
         title: str = None,
         year: str = None,
+        tags: str = None,
         description: str = None,
         language: str = None,
         subtitles: str = None,
@@ -43,6 +44,8 @@ def edit_movie(
         movie.title = title
     if check_for_change("year", year, allow_empty=True):
         movie.year = year
+    if check_for_change("tags", tags, allow_empty=True):
+        movie.tags = tags
     if check_for_change("description", description):
         movie.description = description
     if check_for_change("language", language):

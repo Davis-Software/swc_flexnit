@@ -18,3 +18,18 @@ def get_titles(page: int, count: int, transform=lambda title: title.to_json()) -
         TITLE_CACHE.sort(key=lambda title: title["title"].lower())
 
     return TITLE_CACHE[(page - 1) * count:page * count]
+
+
+def get_title_tags():
+    tags = set()
+
+    for movie in MovieModel.query.all():
+        if movie.tags is None:
+            continue
+        tags.update(movie.tags.split(","))
+    for series in SeriesModel.query.all():
+        if series.tags is None:
+            continue
+        tags.update(series.tags.split(","))
+
+    return list(tags)
