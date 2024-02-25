@@ -1,9 +1,9 @@
-from models.title import TitleModel
+from models.title import BasicTitleModel
 from sqlalchemy import Column, String, BLOB
 from sqlalchemy_json import NestedMutableJson
 
 
-class SongModel(TitleModel):
+class SongModel(BasicTitleModel):
     __tablename__ = "songs"
 
     artists = Column(String(2048), nullable=False, default="")

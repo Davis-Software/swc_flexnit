@@ -1,1 +1,1 @@
-from .title_model import TitleModel
+from .title_model import TitleModel, BasicTitleModel
