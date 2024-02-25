@@ -279,6 +279,7 @@ def latest_series(both: bool = True, limit: int = 25, grouping_time: int = 30):
 def search_series(search: str, limit: int = 25):
     return base_query().filter(or_(
         SeriesModel.title.ilike(f"%{search}%"),
+        SeriesModel.tags.ilike(f"%{search}%"),
         SeriesModel.description.ilike(f"%{search}%")
     )).limit(limit).all()
 

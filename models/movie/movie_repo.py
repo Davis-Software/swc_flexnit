@@ -104,5 +104,6 @@ def latest_movies(limit: int = 25):
 def search_movies(search_term: str, limit: int = 25):
     return base_query().filter(or_(
         MovieModel.title.ilike(f"%{search_term}%"),
+        MovieModel.tags.ilike(f"%{search_term}%"),
         MovieModel.description.ilike(f"%{search_term}%")
     )).limit(limit).all()
