@@ -85,8 +85,11 @@ function MovieInfoDisplay(props: MovieInfoDisplayProps){
                                 hidden={loading}
                             />
                             <div className="m-5 pt-5 w-100 pe-5">
-                                <h1>{props.movie.title}</h1>
-                                <Typography variant="caption">{props.movie.year > "0" && props.movie.year}</Typography>
+                                <h1 className="text-break text-wrap">{props.movie.title}</h1>
+                                <div className="d-flex justify-content-between">
+                                    <Typography variant="caption">{props.movie.year > "0" && props.movie.year}</Typography>
+                                    <Typography variant="caption">{props.movie.tags}</Typography>
+                                </div>
                                 <hr />
                                 {props.movie.language && <Chip label={props.movie.language} className="me-2" />}
                                 <Chip label={

@@ -30,6 +30,7 @@ def make_title_entry(title: MovieModel or SeriesModel or EpisodeModel or Episode
 
     if type(title) is not EpisodeModel and type(title) is not EpisodeGroup:
         entry["year"] = title.year
+        entry["tags"] = title.tags
         entry["is_nsfw"] = title.is_nsfw
 
     if type(title) is not SeriesModel and type(title) is not EpisodeGroup:

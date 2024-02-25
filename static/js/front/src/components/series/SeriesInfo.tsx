@@ -171,9 +171,12 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
                                 hidden={loading}
                             />
                             <div className="m-5 pt-5 w-100 pe-5">
-                                <h1>{props.series.title}</h1>
-                                <Typography variant="caption">{props.series.year > "0" && props.series.year}</Typography>
-                                <hr />
+                                <h1 className="text-break text-wrap">{props.series.title}</h1>
+                                <div className="d-flex justify-content-between">
+                                    <Typography variant="caption">{props.series.year > "0" && props.series.year}</Typography>
+                                    <Typography variant="caption">{props.series.tags}</Typography>
+                                </div>
+                                <hr/>
                                 {props.series.language && <Chip label={props.series.language} className="me-2" />}
                                 <Chip label={`${props.series.season_count} Season${props.series.season_count > 1 ? "s" : ""}`} className="me-2" />
                                 <Chip label={props.series.is_nsfw ? "NSFW" : (

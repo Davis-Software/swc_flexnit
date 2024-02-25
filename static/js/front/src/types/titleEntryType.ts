@@ -1,6 +1,7 @@
 interface TitleEntryType{
     uuid: string
     type: "movie" | "series" | "episode" | "episode_group"
+    tags: string
     title?: string
     description?: string
     year?: string

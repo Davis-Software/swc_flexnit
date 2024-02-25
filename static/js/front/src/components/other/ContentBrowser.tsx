@@ -50,14 +50,12 @@ function TitlePreview(props: TitlePreviewProps){
                     }}
                 >
                     <div className="fw-bold mb-2">{props.title.title}</div>
-                    {props.title.type === "movie" ? (
-                        <>
-                            <Typography variant="overline">Runtime: </Typography>
-                            <Typography variant="caption">{getTimeString(props.title.runtime!)}</Typography>
-                        </>
-                    ) : (
-                        <Typography variant="overline">Seasons: {props.title.season_count}</Typography>
-                    )}
+                    {/*{props.title.type === "movie" ? (*/}
+                    {/*    <Typography variant="caption">Runtime: {getTimeString(props.title.runtime!)}</Typography>*/}
+                    {/*) : (*/}
+                    {/*    <Typography variant="overline">Seasons: {props.title.season_count}</Typography>*/}
+                    {/*)}*/}
+                    <Typography variant="caption">{props.title.tags}</Typography>
                     {props.title.description && (
                         <p className="mt-1">{props.title.description?.length > 100 ? props.title.description?.slice(0, 200) + "..." : props.title.description}</p>
                     )}
