@@ -9,7 +9,7 @@
 
 }
 .swc-loader .text{
-    margin-top: 20px;
+    translate: 0 40px;
     color: #fff;
 }
 .swc-loader img.box {
@@ -17,7 +17,6 @@
     width: 100%;
     height: 60%;
     translate: 0 20%;
-    margin-bottom: 26%;
     animation: page-loader-box-animate .5s linear infinite;
     border-radius: 3px;
     object-fit: contain;
@@ -37,6 +36,7 @@
     background: #000;
     opacity: 0.3;
     border-radius: 50%;
+    translate: 0 30px;
     animation: page-loader-shadow-animate .5s linear infinite;
 }
 @keyframes page-loader-shadow-animate {
