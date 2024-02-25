@@ -19,6 +19,8 @@ TYPE_NAME_MAP = {
 
 
 def make_title_entry(title: MovieModel or SeriesModel or EpisodeModel or EpisodeGroup):
+    if title is None:
+        return None
     entry = {
         "uuid": title.uuid,
         "type": TYPE_NAME_MAP[type(title).__name__]
