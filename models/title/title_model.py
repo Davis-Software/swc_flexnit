@@ -20,15 +20,15 @@ class BasicTitleModel(BaseModel):
         self.title = title
 
 
-class TitleModel(BasicTitleModel):
+class TitleModel(BaseModel):
     __abstract__ = True
 
-    tags = Column(Text, nullable=True, default="")
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String(36), unique=True, nullable=False)
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=False, default="")
+    added_on = Column(DateTime, nullable=False, default=datetime.utcnow)
 
-    year = Column(String(64), nullable=True)
-    language = Column(String(255), nullable=True)
-    is_visible = Column(Boolean, nullable=False, default=False)
-    is_nsfw = Column(Boolean, nullable=False, default=False)
-
-    thumbnail = Column(BLOB, nullable=True)
-    poster = Column(BLOB, nullable=True)
+    def __init__(self, title):
+        self.uuid = str(uuid4())
+        self.title = title

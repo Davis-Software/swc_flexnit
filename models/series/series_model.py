@@ -1,10 +1,16 @@
 from models.title import TitleModel
-from sqlalchemy import Column, Integer, String, Boolean, BLOB
+from sqlalchemy import Column, Integer, String, Boolean, BLOB, Text
 from sqlalchemy.orm import relationship
 
 
 class SeriesModel(TitleModel):
     __tablename__ = "series"
+
+    year = Column(String(64), nullable=True)
+    tags = Column(Text, nullable=True, default="")
+    language = Column(String(255), nullable=True)
+    is_visible = Column(Boolean, nullable=False, default=False)
+    is_nsfw = Column(Boolean, nullable=False, default=False)
 
     intro_skip = Column(Boolean, nullable=False, default=False)
     intro_global = Column(Boolean, nullable=False, default=False)
@@ -13,6 +19,8 @@ class SeriesModel(TitleModel):
     endcard = Column(Boolean, nullable=False, default=False)
     endcard_length = Column(Integer, nullable=True)
 
+    thumbnail = Column(BLOB, nullable=True)
+    poster = Column(BLOB, nullable=True)
     intro_audio = Column(BLOB, nullable=True)
 
     episodes = relationship("EpisodeModel", back_populates="series")

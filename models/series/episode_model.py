@@ -1,19 +1,11 @@
-from datetime import datetime
-
-from models.base_model import BaseModel
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, Text, DateTime
+from models.title import TitleModel
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy_json import NestedMutableJson
 
 
-class EpisodeModel(BaseModel):
+class EpisodeModel(TitleModel):
     __tablename__ = "episode"
-
-    id = Column(Integer, primary_key=True)
-    uuid = Column(String(36), unique=True, nullable=False)
-    title = Column(String(255), nullable=False)
-    description = Column(Text, nullable=False, default="")
-    added_on = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     season = Column(Integer, nullable=False)
     episode = Column(Integer, nullable=False)
@@ -35,6 +27,7 @@ class EpisodeModel(BaseModel):
         return self.is_nsfw or self.series.is_nsfw
 
     def __init__(self, title, season, episode, series_id):
+        super().__init__(title)
         self.season = season
         self.episode = episode
         self.series_id = series_id
