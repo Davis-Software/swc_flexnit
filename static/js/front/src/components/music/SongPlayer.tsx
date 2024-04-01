@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react"
+import React, {useCallback, useEffect, useRef, useState} from "react"
 import {
     FormControl,
     IconButton,
@@ -27,7 +27,12 @@ function SongPlayer(props: SongPlayerProps){
     const [volume, setVolume] = useState(parseFloat(localStorage.getItem("music-volume") || "1"))
     const [duration, setDuration] = React.useState<number>(0)
     const [position, setPosition] = React.useState<number>(0)
-    const [loop, setLoop] = React.useState<boolean>(false)
+
+    const [loopState, setLoopState] = React.useState<boolean>(false)
+    const loop = useRef<boolean>(false)
+    useEffect(() => {
+        setLoopState(loop.current)
+    }, [loop.current]);
 
     const theme = useTheme()
 
@@ -90,7 +95,7 @@ function SongPlayer(props: SongPlayerProps){
         setPlaying(false)
     }
     function handleEnded() {
-        if (loop) {
+        if (loop.current) {
             if (!audioRef?.current) return
             audioRef.current.currentTime = 0
             audioRef.current.play().then()
@@ -112,6 +117,10 @@ function SongPlayer(props: SongPlayerProps){
             if(!audioRef.current) return
             audioRef.current.removeEventListener("loadedmetadata", handleSetDuration)
             audioRef.current.removeEventListener("timeupdate", handleSetPosition)
+
+            audioRef.current.removeEventListener("play", handlePlay)
+            audioRef.current.removeEventListener("pause", handlePause)
+            audioRef.current.removeEventListener("ended", handleEnded)
         }
     }, [audioRef, audioRef?.current]);
     useEffect(() => {
@@ -144,7 +153,7 @@ function SongPlayer(props: SongPlayerProps){
                 >
                     <i className="material-icons">{!playing ? "play_arrow" : "pause"}</i>
                 </IconButton>
-                <IconButton onClick={props.songEnded} color={loop ? "primary" : "default"}>
+                <IconButton onClick={props.songEnded}>
                     <i className="material-icons">skip_next</i>
                 </IconButton>
                 <div className="me-3 flex-grow-1 d-flex flex-column ps-3">
@@ -186,7 +195,13 @@ function SongPlayer(props: SongPlayerProps){
                         value={position}
                     />
                 </div>
-                <IconButton onClick={() => setLoop(l => !l)} color={loop ? "primary" : "default"}>
+                <IconButton
+                    onClick={() => {
+                        loop.current = !loop.current
+                        setLoopState(loop.current)
+                    }}
+                    color={loopState ? "primary" : "default"}
+                >
                     <i className="material-icons">repeat</i>
                 </IconButton>
                 <div className="mx-3" style={{width: "8%"}}>

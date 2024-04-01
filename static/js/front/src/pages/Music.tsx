@@ -111,17 +111,17 @@ function Music(){
                 setPlayingSong(prev[0])
                 return prev.slice(1)
             })
-        }else if(liked.length > 0 && liked.includes(playingSong!.id)){
+        }else if(liked.length > 0 && liked.includes(playingSong.id)){
             setPlayingSong(() => {
                 let likedSongs = songs.filter(song => liked.includes(song.id))
-                if(likedSongs.includes(playingSong!)){
-                    return likedSongs[(likedSongs.indexOf(playingSong!) + 1) % likedSongs.length]
+                if(likedSongs.find(s => s.id === playingSong.id)){
+                    return likedSongs[(likedSongs.findIndex(s => s.id === playingSong.id) + 1) % likedSongs.length]
                 }else{
                     return likedSongs[0]
                 }
             })
         }else{
-            setPlayingSong(songs[(songs.indexOf(playingSong!) + 1) % songs.length])
+            setPlayingSong(songs[(songs.findIndex(s => s.id === playingSong.id) + 1) % songs.length])
         }
     }
 
