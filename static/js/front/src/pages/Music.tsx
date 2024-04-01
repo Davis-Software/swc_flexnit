@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo} from "react";
+import React, {useContext, useEffect, useMemo} from "react";
 import PageBase from "./PageBase";
 import SongType from "../types/songType";
 import SongList from "../components/music/SongList";
@@ -7,17 +7,19 @@ import PageLoader from "../components/PageLoader";
 import SwcModal from "../components/SwcModal";
 import EditSong from "../components/music/EditSong";
 import {Button, ButtonGroup, List, ListItem, Tab, Tabs, TextField} from "@mui/material";
-import SongPlayer from "../components/music/SongPlayer";
 import {useIsAdmin} from "../contexts/showAdminContext";
+import {AudioPlayerContext} from "../contexts/AudioPlayerContextProvider";
 
 function Music(){
+    const playerContext = useContext(AudioPlayerContext)
+    const {playingSong, setPlayingSong} = playerContext
+
     const isAdmin = useIsAdmin()
     const [tab, setTab] = React.useState(0)
     const [requestUpdate, setRequestUpdate] = React.useState<boolean>(false)
     const [songs, setSongs] = React.useState<SongType[]>([])
     const [queue, setQueue] = React.useState<SongType[]>([])
     const [liked, setLiked] = React.useState<number[]>([])
-    const [playingSong, setPlayingSong] = React.useState<SongType | null>(null)
 
     const [showEdit, setShowEdit] = React.useState<boolean>(false)
     const [selectedSong, setSelectedSong] = React.useState<SongType | null>(null)
@@ -103,6 +105,7 @@ function Music(){
         }
     }, [tab, songs, queue])
     function songEnded(){
+        if(!playingSong) return
         if(queue.length > 0) {
             setQueue(prev => {
                 setPlayingSong(prev[0])
@@ -120,13 +123,20 @@ function Music(){
         }else{
             setPlayingSong(songs[(songs.indexOf(playingSong!) + 1) % songs.length])
         }
-
-
     }
+
+    useEffect(() => {
+        playerContext.setMounted(true)
+        return () => { playerContext.setMounted(false) }
+    }, []);
+    useEffect(() => {
+        if(playerContext.songState <= 0) return
+        songEnded()
+    }, [playerContext.songState]);
 
     return (
         <PageBase>
-            <Tabs value={tab} onChange={(e, v) => setTab(v)} variant="fullWidth">
+            <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="fullWidth">
                 <Tab label="Song Library" />
                 <Tab label={queue.length > 0 ? `Queue (${queue.length})` : "Queue"} />
                 <Tab label={liked.length > 0 ? `Liked (${liked.length})` : "Liked"} />
@@ -190,8 +200,6 @@ function Music(){
                     Upload
                 </Button>
             </SwcModal>
-
-            <SongPlayer playingSong={playingSong} songEnded={songEnded} />
         </PageBase>
     )
 }

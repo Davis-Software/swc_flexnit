@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from "react"
+import React, {useEffect, useRef, useState} from "react"
 import {
     FormControl,
     IconButton,
@@ -11,17 +11,17 @@ import {
     useTheme
 } from "@mui/material";
 import SongType from "../../types/songType";
-import {AudioPlayerContext} from "../../contexts/AudioPlayerContextProvider";
 
 interface SongPlayerProps {
     playingSong: SongType | null
     setPlayingSong: React.Dispatch<React.SetStateAction<SongType | null>>
     songEnded?: () => void
+    mounted?: boolean
 }
 function SongPlayer(props: SongPlayerProps){
-    const {audioRef, mounted, setMounted} = useContext(AudioPlayerContext)
+    const audioRef = useRef<HTMLAudioElement>(null)
 
-    const [playing, setPlaying] = React.useState<boolean>(!audioRef?.current?.paused)
+    const [playing, setPlaying] = React.useState<boolean>(!audioRef?.current?.paused || false)
     const [lockSpeedSelect, setLockSpeedSelect] = React.useState<boolean>(false)
     const [audioSpeed, setAudioSpeed] = React.useState<string>("1")
     const [volume, setVolume] = useState(parseFloat(localStorage.getItem("music-volume") || "1"))
@@ -120,25 +120,25 @@ function SongPlayer(props: SongPlayerProps){
         localStorage.setItem("music-volume", volume.toString())
     }, [volume])
     useEffect(() => {
-        setNightcoreMode(parseFloat(audioSpeed), true)
         if(!audioRef?.current) return
-        if(!mounted){
-            setMounted!(true)
-        }
         if(props.playingSong){
             audioRef.current.src = `/music/${props.playingSong.uuid}`
         }else{
             audioRef.current.removeAttribute("src")
         }
-
+        setNightcoreMode(parseFloat(audioSpeed), true)
     }, [props.playingSong]);
 
     return (
-        <div style={{height: "64px", width: "100%", position: "fixed", bottom: 0}}>
-            <Paper sx={{height: "100%", width: "100%"}} className="d-flex align-items-center justify-content-between px-3" elevation={5}>
+        <div
+            style={{height: "64px", width: "100%", position: "fixed", bottom: 0}}
+            hidden={props.mounted === false && (!playing || !props.playingSong)}
+        >
+            <Paper sx={{height: "100%", width: "100%"}}
+                   className="d-flex align-items-center justify-content-between px-3" elevation={5}>
                 <IconButton
                     onClick={() => {
-                        if(!audioRef?.current) return
+                        if (!audioRef?.current) return
                         !audioRef.current.paused ? audioRef.current.pause() : audioRef.current.play().then()
                     }}
                 >
@@ -228,6 +228,11 @@ function SongPlayer(props: SongPlayerProps){
 
                 </FormControl>
             </Paper>
+
+            <audio
+                ref={audioRef}
+                autoPlay
+            />
         </div>
     )
 }
