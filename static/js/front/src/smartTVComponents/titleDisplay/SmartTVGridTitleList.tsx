@@ -3,17 +3,13 @@ import TitleEntryType from "../../types/titleEntryType";
 import {FocusContext, useFocusable} from "@noriginmedia/norigin-spatial-navigation";
 import SmartTVTitleDisplay from "./SmartTVTitleDisplay";
 
-interface SmartTVHorizontalTitleListProps {
+interface SmartTVGridTitleListProps {
     titles: TitleEntryType[]
     setFocusedTitle: (title: TitleEntryType) => void
     name?: string
 }
-function SmartTVHorizontalTitleList(props: SmartTVHorizontalTitleListProps){
-    const { ref, focusKey } = useFocusable({
-        focusKey: "ENTRY",
-        saveLastFocusedChild: true,
-        preferredChildFocusKey: "FIRST"
-    })
+function SmartTVGridTitleList(props: SmartTVGridTitleListProps){
+    const { ref, focusKey } = useFocusable()
 
     function handleFocus(title: TitleEntryType){
         props.setFocusedTitle(title)
@@ -23,10 +19,10 @@ function SmartTVHorizontalTitleList(props: SmartTVHorizontalTitleListProps){
         <FocusContext.Provider value={focusKey}>
             <div className="position-relative ms-3" style={{zIndex: 100}}>
                 {props.name && <h4>{props.name}</h4>}
-                <div ref={ref} className="d-flex flex-row overflow-hidden ms-2">
+                <div ref={ref} className="row me-0 my-0 ms-2">
                     {props.titles.map((title, i) => (
-                        <div className="p-2" key={i}>
-                            <SmartTVTitleDisplay title={title} onFocused={() => handleFocus(title)} first={i === 0} />
+                        <div className="col p-2" key={i}>
+                            <SmartTVTitleDisplay title={title} onFocused={() => handleFocus(title)} />
                         </div>
                     ))}
                 </div>
@@ -35,4 +31,4 @@ function SmartTVHorizontalTitleList(props: SmartTVHorizontalTitleListProps){
     )
 }
 
-export default SmartTVHorizontalTitleList;
+export default SmartTVGridTitleList;

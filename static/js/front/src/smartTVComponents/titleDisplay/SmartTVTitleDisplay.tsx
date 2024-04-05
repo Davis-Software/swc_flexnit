@@ -6,15 +6,18 @@ import {Card, Skeleton} from "@mui/material";
 interface SmartTVTitleDisplayProps {
     title: TitleEntryType
     onFocused?: () => void
+    first?: boolean
 }
 function SmartTVTitleDisplay(props: SmartTVTitleDisplayProps){
-    const { ref, focused } = useFocusable()
+    const { ref, focused } = useFocusable({
+        focusKey: props.first ? "FIRST" : undefined,
+    })
     const [imageLoaded, setImageLoaded] = React.useState(false);
 
     useEffect(() => {
         if(focused && props.onFocused) {
             props.onFocused()
-            ref.current.scrollIntoView({behavior: "smooth", inline: "start"})
+            ref.current.scrollIntoView({behavior: "smooth", inline: "start", block: "end"})
         }
     }, [focused]);
 
