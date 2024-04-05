@@ -1,10 +1,21 @@
-import React from "react";
+import React, {createElement, lazy, LazyExoticComponent, useState} from "react";
+
+const SmartTVHome = lazy(() => import('../smartTVPages/SmartTVHome'));
+
+interface PageMappingInterface {
+    [key: string]: LazyExoticComponent<() => React.JSX.Element>
+}
+const pageMapping: PageMappingInterface = {
+    "home": SmartTVHome,
+}
 
 function SmartTVEntry(){
+    const [page, setPage] = useState('home');
+
     return (
-        <div>
-            <h1>Smart TV</h1>
-        </div>
+        <>
+            {createElement(pageMapping[page])}
+        </>
     )
 }
 
