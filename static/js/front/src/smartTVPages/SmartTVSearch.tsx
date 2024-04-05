@@ -6,7 +6,7 @@ function SmartTVHome(){
 
     return (
         <div ref={ref} style={{width: "400px", height: "200px", marginLeft: "200px"}}>
-            {focused ? "focused home" : "TVHome"}
+            {focused ? "focused search" : "TVSearch"}
         </div>
     )
 }

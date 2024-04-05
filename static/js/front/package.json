@@ -20,7 +20,8 @@
         "hls.js": "^1.5.1",
         "dashjs": "^4.7.3",
         "react-virtuoso": "^4.6.2",
-        "ua-parser-js": "^1.0.37"
+        "ua-parser-js": "^1.0.37",
+        "@noriginmedia/norigin-spatial-navigation": "^2.1.0"
     },
     "devDependencies": {
         "@babel/core": "^7.23.7",
