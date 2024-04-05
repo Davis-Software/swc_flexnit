@@ -8,7 +8,15 @@ function UseIsTV(){
 
     useEffect(() => {
         setIsTV(
-            (parser.getDevice().type?.toLowerCase().includes("tv") || false) &&
+            (
+                // @ts-ignore
+                (global.hasOwnProperty("tvApp") && global.tvApp.isTv()) ||
+                parser.getDevice().type?.toLowerCase().includes("tv") ||
+                parser.getDevice().model?.toLowerCase().includes("tv") ||
+                parser.getOS().name?.toLowerCase().includes("tv") ||
+                parser.getUA().toLowerCase().includes("tv") ||
+                false
+            ) &&
             sessionStorage.getItem("ignoreTV") !== "true"
         );
     }, []);
