@@ -44,6 +44,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 interface FocusableDrawerContextInterface {
     open: boolean,
     focusChanged?: (key: string) => void,
+    leaveFocus?: () => void,
 }
 const FocusableDrawerContext = React.createContext<FocusableDrawerContextInterface>({
     open: false
@@ -75,15 +76,24 @@ interface FocusableDrawerProps {
     open: boolean,
     listRef: React.RefObject<HTMLUListElement>,
     children: React.ReactNode | React.ReactNode[],
+    lowerChildren?: React.ReactNode,
     focusChanged?: (key: string) => void,
+    leaveFocus?: () => void,
 }
 function FocusableDrawer(props: FocusableDrawerProps){
     return (
-        <FocusableDrawerContext.Provider value={{open: props.open, focusChanged: props.focusChanged}}>
+        <FocusableDrawerContext.Provider value={{
+            open: props.open,
+            focusChanged: props.focusChanged,
+            leaveFocus: props.leaveFocus
+        }}>
             <Drawer variant="permanent" open={props.open}>
                 <Brand open={props.open} />
-                <List ref={props.listRef}>
+                <List ref={props.listRef} className="flex-grow-1">
                     {props.children}
+                </List>
+                <List>
+                    {props.lowerChildren}
                 </List>
             </Drawer>
         </FocusableDrawerContext.Provider>

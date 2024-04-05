@@ -13,12 +13,12 @@ import {FocusableDrawerContext} from "./FocusableDrawer";
 
 interface FocusableListItemProps {
     id?: string,
-    icon?: string,
     name?: string,
+    icon?: string | React.ReactNode,
     navItem?: {
         id: string,
         name: string,
-        icon: string
+        icon?: string | React.ReactNode
     },
     selected?: boolean,
     listItemProps?: ListItemProps,
@@ -27,19 +27,25 @@ interface FocusableListItemProps {
     listItemTextProps?: ListItemTextProps,
 }
 function FocusableDrawerListItem(props: FocusableListItemProps){
-    const {open, focusChanged} = useContext(FocusableDrawerContext)
+    const {open, focusChanged, leaveFocus} = useContext(FocusableDrawerContext)
     const {ref, focused} = useFocusable({
         onFocus: () => {
             focusChanged && focusChanged(props.id || props.navItem?.id || "null")
+        },
+        onArrowPress: (direction) => {
+            if(direction !== "right") return true
+            leaveFocus && leaveFocus()
+            return true
         }
     })
+    const icon = props.icon || props.navItem?.icon
 
     return (
         <ListItem
             ref={ref}
             {...props.listItemProps}
-            disablePadding
             sx={{ display: 'block' }}
+            disablePadding
         >
             <ListItemButton
                 {...props.listItemButtonProps}
@@ -59,7 +65,10 @@ function FocusableDrawerListItem(props: FocusableListItemProps){
                         color: (props.selected && !focused) ? 'primary.main' : 'inherit'
                     }}
                 >
-                    <i className="material-icons">{props.icon || props.navItem?.icon}</i>
+                    {typeof icon === "string" ? (
+                        <i className="material-icons">{props.icon || props.navItem?.icon}</i>)
+                        : icon
+                    }
                 </ListItemIcon>
                 <ListItemText
                     {...props.listItemTextProps}

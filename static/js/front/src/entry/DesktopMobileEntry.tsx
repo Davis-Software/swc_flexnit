@@ -1,5 +1,4 @@
 import React, {lazy, Suspense, useEffect, useMemo, useState} from "react";
-import {handleSyncDownload} from "../utils/syncControls";
 import {setWindowTitle} from "../utils/navigation";
 import {isAdminSet} from "../utils/constants";
 import PageLoader from "../components/PageLoader";
@@ -50,7 +49,6 @@ function DesktopMobileEntry(){
         function pageSetter(){
             setPage(window.location.pathname)
         }
-        handleSyncDownload(undefined, false, true)
         window.addEventListener("popstate", pageSetter)
 
         return () => {

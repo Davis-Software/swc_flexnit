@@ -20,6 +20,7 @@ import {navigateTo} from "../utils/navigation";
 import {handleSyncUpload} from "../utils/syncControls";
 import {selectStreamingMode} from "../utils/streaming";
 import SwcLoader from "../components/SwcLoader";
+import fetchUserLibrary from "../fetcher/fetchUserLibrary";
 
 interface TitleDisplayProps {
     titles: TitleEntryType[]
@@ -133,20 +134,12 @@ function UserLibrary(){
     const [loading, setLoading] = useState(true)
     const [library, setLibrary] = useState<{[key: string]: any}>(JSON.parse(localStorage.getItem("library") || "{}"))
     const [libraryTitles, setLibraryTitles] = React.useState<TitleEntryType[]>([]);
-    const playbackProgress = useMemo(() => (
-        JSON.parse(localStorage.getItem("playbackProgress") || "{}")
-    ), [])
 
     useEffect(() => {
-        fetch("/search/all")
-            .then(res => res.json())
-            .then((titles: TitleEntryType[]) => {
-                setLibraryTitles(titles.filter(title =>
-                    (!!playbackProgress[title.uuid] && !(library[title.type] && library[title.type][title.uuid])) ||
-                    (library[title.type] && library[title.type][title.uuid] && library[title.type][title.uuid].showInLibrary)
-                ))
-                setLoading(false)
-            })
+        fetchUserLibrary(library).then(titles => {
+            setLibraryTitles(titles)
+            setLoading(false)
+        })
     }, [])
 
     return (

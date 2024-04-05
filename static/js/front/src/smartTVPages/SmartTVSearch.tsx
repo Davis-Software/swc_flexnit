@@ -5,7 +5,7 @@ function SmartTVHome(){
     const {ref, focused} = useFocusable()
 
     return (
-        <div ref={ref} style={{width: "400px", height: "200px", marginLeft: "200px"}}>
+        <div ref={ref}>
             {focused ? "focused search" : "TVSearch"}
         </div>
     )
