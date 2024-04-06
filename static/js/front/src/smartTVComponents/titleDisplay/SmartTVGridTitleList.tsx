@@ -15,8 +15,7 @@ function SmartTVGridTitleList(props: SmartTVGridTitleListProps){
             setFocusedTitle={props.setFocusedTitle}
             name={props.name}
             skeletonAmount={props.skeletonAmount || 20}
-            refClassName="row me-0 my-0"
-            displayClassName="col"
+            refClassName="d-flex flex-wrap me-0 my-0"
         />
     )
 }
