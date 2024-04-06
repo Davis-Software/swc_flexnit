@@ -20,29 +20,34 @@ function SmartTVTitlePreview(props: SmartTVTitlePreviewProps){
     }, [props.title])
 
     return (
-        <div style={{width: "100%", height: "300px", maxHeight: "50%"}} className="position-relative">
-            <img
-                src={props.title ? `/${props.title?.type === "movie" ? "movies" : "series"}/${props.title?.uuid}?poster` : undefined}
-                alt={props.title?.title}
-                style={{width: "100%", height: "150%", objectFit: "cover", zIndex: 1}}
-            />
-            <div
-                className="position-absolute start-0 top-0 w-100"
-                style={{
-                    transform: "blur(2px)",
-                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                    height: "150%"
-            }}
-            >
-                <h1 className="p-4">{props.title?.title}</h1>
-                <div className="ps-5 pe-5 m-3">
-                    {actualTitle && <TitleProgress title={actualTitle} />}
-                </div>
-                <div className="ps-5 pe-5 m-3">
-                    {props.title?.description}
+        <>
+            <div className="position-fixed start-0 top-0 w-100 h-100" style={{
+                zIndex: 1,
+                filter: "blur(7px)"
+            }}>
+                <img
+                    src={props.title ? `/${props.title?.type === "movie" ? "movies" : "series"}/${props.title?.uuid}?poster` : undefined}
+                    alt={props.title?.title}
+                    style={{objectFit: "cover"}}
+                    className="w-100 h-100 position-absolute start-0 top-0"
+                />
+                <div
+                    className="w-100 h-100 position-absolute start-0 top-0"
+                    style={{background: "linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.8), rgba(0,0,0,0.9))"}}
+                />
+            </div>
+            <div style={{height: "300px", maxHeight: "50%", zIndex: 100}} className="w-100 position-relative">
+                <div className="position-absolute start-0 top-0 w-100">
+                    <h1 className="p-4">{props.title?.title}</h1>
+                    <div className="ps-5 pe-5 m-3">
+                        {actualTitle && <TitleProgress title={actualTitle}/>}
+                    </div>
+                    <div className="ps-5 pe-5 m-3">
+                        {props.title?.description}
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     )
 }
 
