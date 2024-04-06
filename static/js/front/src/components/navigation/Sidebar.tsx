@@ -50,7 +50,8 @@ function CreateNewModal(props: CreateNewModalProps){
                             uuid: res.uuid,
                             title: title,
                             type: createMode,
-                            description: ""
+                            description: "",
+                            tags: res.tags || [],
                         });
                         props.onHide();
                     })
