@@ -6,6 +6,7 @@ interface SmartTVGridTitleListProps {
     titles: TitleEntryType[] | null
     setFocusedTitle: (title: TitleEntryType) => void
     name?: string
+    skeletonAmount?: number
 }
 function SmartTVGridTitleList(props: SmartTVGridTitleListProps){
     return (
@@ -13,7 +14,7 @@ function SmartTVGridTitleList(props: SmartTVGridTitleListProps){
             titles={props.titles}
             setFocusedTitle={props.setFocusedTitle}
             name={props.name}
-            skeletonAmount={20}
+            skeletonAmount={props.skeletonAmount || 20}
             refClassName="row me-0 my-0"
             displayClassName="col"
         />
