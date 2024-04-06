@@ -38,13 +38,21 @@ function SmartTVTitlePreview(props: SmartTVTitlePreviewProps){
             </div>
             <div style={{height: "300px", maxHeight: "50%", zIndex: 100}} className="w-100 position-relative">
                 <div className="position-absolute start-0 top-0 w-100">
-                    <h1 className="p-4">{props.title?.title}</h1>
-                    <div className="ps-5 pe-5 m-3">
-                        {actualTitle && <TitleProgress title={actualTitle}/>}
-                    </div>
-                    <div className="ps-5 pe-5 m-3">
-                        {props.title?.description}
-                    </div>
+                    {props.title ? (
+                        <>
+                            <h1 className="p-4">{props.title?.title}</h1>
+                            <div className="ps-5 pe-5 m-3">
+                                {actualTitle && <TitleProgress title={actualTitle}/>}
+                            </div>
+                            <div className="ps-5 pe-5 m-3">
+                                {props.title?.description}
+                            </div>
+                        </>
+                    ) : (
+                        <div className="w-100 mt-5 pt-5 d-flex justify-content-center">
+                            <img src="/static/img/icon.png" alt=""/>
+                        </div>
+                    )}
                 </div>
             </div>
         </>
