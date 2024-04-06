@@ -2,9 +2,10 @@ import React, {useEffect} from "react";
 import TitleEntryType from "../../types/titleEntryType";
 import {useFocusable} from "@noriginmedia/norigin-spatial-navigation";
 import {Card, Skeleton} from "@mui/material";
+import useIsInView from "../../hooks/useIsInView";
 
 interface SmartTVTitleDisplayProps {
-    title: TitleEntryType
+    title: TitleEntryType | null
     onFocused?: () => void
     first?: boolean
 }
@@ -13,6 +14,7 @@ function SmartTVTitleDisplay(props: SmartTVTitleDisplayProps){
         focusKey: props.first ? "FIRST" : undefined,
     })
     const [imageLoaded, setImageLoaded] = React.useState(false);
+    const isInView = useIsInView(ref, true)
 
     useEffect(() => {
         if(focused && props.onFocused) {
@@ -30,14 +32,14 @@ function SmartTVTitleDisplay(props: SmartTVTitleDisplayProps){
                 width: 200,
             }}>
                 {!imageLoaded && <Skeleton animation="wave" variant="rectangular" width="100%" height="100%" />}
-                <img
+                {props.title && isInView && <img
                     src={`/${props.title.type === "movie" ? "movies" : "series"}/${props.title.uuid}?thumbnail&q=h`}
                     alt={props.title.title}
                     className="card-img-top"
                     onLoad={() => setImageLoaded(true)}
                     hidden={!imageLoaded}
                     style={{height: "100%", width: "100%", objectFit: "cover"}}
-                />
+                />}
             </Card>
         </div>
     );

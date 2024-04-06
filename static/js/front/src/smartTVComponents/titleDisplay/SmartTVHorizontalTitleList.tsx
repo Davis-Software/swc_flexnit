@@ -1,7 +1,6 @@
 import React from "react";
 import TitleEntryType from "../../types/titleEntryType";
-import {FocusContext, useFocusable} from "@noriginmedia/norigin-spatial-navigation";
-import SmartTVTitleDisplay from "./SmartTVTitleDisplay";
+import SmartTVTitleList from "./SmartTVTitleList";
 
 interface SmartTVHorizontalTitleListProps {
     titles: TitleEntryType[]
@@ -9,29 +8,20 @@ interface SmartTVHorizontalTitleListProps {
     name?: string
 }
 function SmartTVHorizontalTitleList(props: SmartTVHorizontalTitleListProps){
-    const { ref, focusKey } = useFocusable({
-        focusKey: "ENTRY",
-        saveLastFocusedChild: true,
-        preferredChildFocusKey: "FIRST"
-    })
-
-    function handleFocus(title: TitleEntryType){
-        props.setFocusedTitle(title)
-    }
-
     return (
-        <FocusContext.Provider value={focusKey}>
-            <div className="position-relative ms-3" style={{zIndex: 100}}>
-                {props.name && <h4>{props.name}</h4>}
-                <div ref={ref} className="d-flex flex-row overflow-hidden ms-2">
-                    {props.titles.map((title, i) => (
-                        <div className="p-2" key={i}>
-                            <SmartTVTitleDisplay title={title} onFocused={() => handleFocus(title)} first={i === 0} />
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </FocusContext.Provider>
+        <SmartTVTitleList
+            titles={props.titles}
+            setFocusedTitle={props.setFocusedTitle}
+            name={props.name}
+            skeletonAmount={8}
+            refClassName="d-flex flex-row overflow-hidden"
+            focusOptions={{
+                focusKey: "ENTRY",
+                saveLastFocusedChild: true,
+                preferredChildFocusKey: "FIRST"
+            }}
+            testFirst
+        />
     )
 }
 
