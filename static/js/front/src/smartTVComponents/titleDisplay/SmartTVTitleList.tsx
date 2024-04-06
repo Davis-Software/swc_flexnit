@@ -27,7 +27,7 @@ function SmartTVTitleList(props: SmartTVTitleListProps){
                 {props.name && <h4>{props.name}</h4>}
                 <div ref={ref} className={`${props.refClassName} ms-2`}>
                     {(
-                        props.titles ||
+                        (props.titles && props.titles.length > 0) ? props.titles :
                         Array.from(new Array(props.skeletonAmount || 8)).map(() => null)
                     ).map((title, i) => (
                         <div className={`${props.displayClassName} p-2`} key={i}>
