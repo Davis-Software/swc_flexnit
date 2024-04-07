@@ -35,7 +35,12 @@ function SmartTVEntry(){
     return (
         <>
             {!hideNavigation && (
-                <SmartTVNavigation page={page} navItems={navItems} onNavigate={setPage} />
+                <SmartTVNavigation
+                    page={page}
+                    navItems={navItems}
+                    onNavigate={setPage}
+                    setFocus={page === "home"}
+                />
             )}
             <Box style={{paddingLeft: hideNavigation? "0" : "65px"}}>
                 <Suspense fallback={<PageLoader />}>

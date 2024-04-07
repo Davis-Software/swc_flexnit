@@ -16,8 +16,8 @@ function SmartTVTitleDisplay(props: SmartTVTitleDisplayProps){
         focusKey: props.first ? "FIRST" : undefined,
         onEnterPress: () => {
             if(!props.title) return
-            // navigate("info", {title: props.title})
-            navigate("watch", {title: props.title})
+            navigate("info", {title: props.title})
+            // navigate("watch", {title: props.title})
         }
     })
     const [imageLoaded, setImageLoaded] = React.useState(false);

@@ -16,7 +16,7 @@ function SmartTVWatch(){
         {
             action: "custom",
             align: "left",
-            onPress: () => navigate("info"),
+            onPress: () => navigate("info", {...state}),
             label: "Go Back"
         },
         { action: "skipback", align: "center" },

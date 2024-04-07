@@ -54,6 +54,7 @@ interface SmartTVNavigationProps {
         icon?: string
     }[]
     onNavigate: (key: string) => void
+    setFocus?: boolean
 }
 function SmartTVNavigation(props: SmartTVNavigationProps){
     const {ref, focusKey, hasFocusedChild, focusSelf} = useFocusable({
@@ -65,6 +66,7 @@ function SmartTVNavigation(props: SmartTVNavigationProps){
     })
 
     useEffect(() => {
+        if(!props.setFocus) return
         focusSelf()
     }, []);
     function handleFocusOut(){

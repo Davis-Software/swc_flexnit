@@ -1,12 +1,13 @@
 import React, {useEffect} from "react";
 import TitleEntryType from "../../types/titleEntryType";
-import TitleProgress from "../../components/other/TitleProgress";
+import TitleProgress, {InfoCallbackType} from "../../components/other/TitleProgress";
 import MovieType from "../../types/movieType";
 import SeriesType from "../../types/seriesType";
 import {Box, Typography, useTheme} from "@mui/material";
 
 interface SmartTVTitlePreviewProps {
     title: TitleEntryType | null
+    setProgress?: (progress: InfoCallbackType) => void
 }
 function SmartTVTitlePreview(props: SmartTVTitlePreviewProps){
     const [actualTitle, setActualTitle] = React.useState<MovieType | SeriesType | null>(null);
@@ -48,7 +49,7 @@ function SmartTVTitlePreview(props: SmartTVTitlePreviewProps){
                         <>
                             <Typography variant="h3" className="p-4">{props.title?.title}</Typography>
                             <Box className="ps-5 pe-5 m-3">
-                                {actualTitle && <TitleProgress title={actualTitle}/>}
+                                {actualTitle && <TitleProgress title={actualTitle} infoCallback={props.setProgress}/>}
                             </Box>
                             <Box className="ps-5 pe-5 m-3">
                                 {props.title?.description}

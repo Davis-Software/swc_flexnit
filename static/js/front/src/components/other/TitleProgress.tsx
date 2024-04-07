@@ -16,6 +16,7 @@ interface TitleProgressProps {
     episode?: EpisodeType
     hideProgress?: boolean
     infoCallback?: (info: InfoCallbackType) => void
+    progressCallback?: (progress: number) => void
 }
 function TitleProgress(props: TitleProgressProps){
     const [progress, _] = useState(JSON.parse(localStorage.getItem("playbackProgress") || "{}"))
@@ -65,6 +66,7 @@ function TitleProgress(props: TitleProgressProps){
             episodesWatched: episodesWatched!,
             seriesWatched: episodesWatched !== null ? (episodesWatched / (props.title as SeriesType).episodes.length * 100) : undefined
         })
+        props.progressCallback && props.progressCallback(progressValue)
     }, [props.title, props.episode, progressValue, lastEpisode, episodesWatched])
 
     return (
