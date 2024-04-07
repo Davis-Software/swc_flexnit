@@ -3,6 +3,7 @@ import TitleEntryType from "../../types/titleEntryType";
 import {useFocusable} from "@noriginmedia/norigin-spatial-navigation";
 import {Box, Card, Skeleton} from "@mui/material";
 import useIsInView from "../../hooks/useIsInView";
+import {useNavigation} from "../navigation/SmartTVNavigation";
 
 interface SmartTVTitleDisplayProps {
     title: TitleEntryType | null
@@ -10,8 +11,14 @@ interface SmartTVTitleDisplayProps {
     first?: boolean
 }
 function SmartTVTitleDisplay(props: SmartTVTitleDisplayProps){
+    const {navigate} = useNavigation()
     const { ref, focused } = useFocusable({
         focusKey: props.first ? "FIRST" : undefined,
+        onEnterPress: () => {
+            if(!props.title) return
+            // navigate("info", {title: props.title})
+            navigate("watch", {title: props.title})
+        }
     })
     const [imageLoaded, setImageLoaded] = React.useState(false);
     const isInView = useIsInView(ref, true)

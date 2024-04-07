@@ -3,6 +3,8 @@ import {user} from "../utils/constants";
 
 const SmartTVHome = lazy(() => import('../smartTVPages/SmartTVHome'));
 const SmartTVSearch = lazy(() => import('../smartTVPages/SmartTVSearch'));
+const SmartTVTitleEntryInfo = lazy(() => import('./SmartTVTitleEntryInfo'));
+const SmartTVWatch = lazy(() => import('../smartTVPages/SmartTVWatch'));
 const SmartTVSettings = lazy(() => import('../smartTVPages/SmartTVSettings'));
 const SmartTVUser = lazy(() => import('../smartTVPages/SmartTVUser'));
 
@@ -26,6 +28,14 @@ const smartTVPageMapping: PageMappingInterface = {
         icon: "search",
         component: SmartTVSearch,
         spawn: true
+    },
+    "info": {
+        name: "Info",
+        component: SmartTVTitleEntryInfo
+    },
+    "watch": {
+        name: "Watch",
+        component: SmartTVWatch
     },
     "settings": {
         name: "Settings",

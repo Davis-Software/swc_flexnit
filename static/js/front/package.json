@@ -21,7 +21,8 @@
         "dashjs": "^4.7.3",
         "react-virtuoso": "^4.6.2",
         "ua-parser-js": "^1.0.37",
-        "@noriginmedia/norigin-spatial-navigation": "^2.1.0"
+        "@noriginmedia/norigin-spatial-navigation": "^2.1.0",
+        "react-tv-player": "^1.1.7"
     },
     "devDependencies": {
         "@babel/core": "^7.23.7",

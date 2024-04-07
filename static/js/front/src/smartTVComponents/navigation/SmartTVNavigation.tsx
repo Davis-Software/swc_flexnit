@@ -1,9 +1,22 @@
-import React, {useEffect} from "react";
+import React, {createContext, useContext, useEffect} from "react";
 import {FocusContext, setFocus, useFocusable, doesFocusableExist} from "@noriginmedia/norigin-spatial-navigation";
 import FocusableDrawerListItem from "./FocusableDrawerListItem";
 import FocusableDrawer from "./FocusableDrawer";
 import {isAdminSet, user} from "../../utils/constants";
 import {Avatar, Badge} from "@mui/material";
+
+interface NavigationContextType {
+    page: string
+    state?: any
+    navigate: (page: string, state?: any) => void
+}
+const NavigationContext = createContext<NavigationContextType>({
+    page: 'home',
+    navigate: () => {}
+})
+function useNavigation(){
+    return useContext(NavigationContext)
+}
 
 function LowerNav(){
     return (
@@ -77,3 +90,4 @@ function SmartTVNavigation(props: SmartTVNavigationProps){
 }
 
 export default SmartTVNavigation;
+export {NavigationContext, useNavigation};
