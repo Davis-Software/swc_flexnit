@@ -3,7 +3,7 @@ import MovieType from "../../types/movieType";
 import TitleEntryType from "../../types/titleEntryType";
 import PageLoader from "../PageLoader";
 import {TransitionGroup} from "react-transition-group";
-import {Button, Chip, Fade, Skeleton, Typography, useTheme} from "@mui/material";
+import {Box, Button, Chip, Fade, Skeleton, Typography, useTheme} from "@mui/material";
 import SwcModal from "../SwcModal";
 import {SwcFab, SwcFabContainer} from "../SwcFab";
 import {navigateTo} from "../../utils/navigation";
@@ -66,7 +66,7 @@ function MovieInfoDisplay(props: MovieInfoDisplayProps){
 
     return (
         <>
-            <div
+            <Box
                 className="content-inner px-lg-5 pt-lg-5"
                 style={{
                     backgroundImage: `url(/movies/${props.movie.uuid}?poster)`,
@@ -74,22 +74,23 @@ function MovieInfoDisplay(props: MovieInfoDisplayProps){
                     backgroundSize: "cover"
                 }}
             >
-                <div className="content-info rounded-top rounded-3 d-lg-flex d-block">
-                    <div className={`d-flex flex-column theme-${theme.palette.mode}`}>
-                        <div className="info-inner d-flex flex-column flex-lg-row">
+                <Box className="content-info d-lg-flex d-block">
+                    <Box className={`d-flex flex-column rounded-top theme-${theme.palette.mode}`}>
+                        <Box className="info-inner d-flex flex-column flex-lg-row">
                             {loading && <Skeleton variant="rectangular" sx={{minWidth: "300px", minHeight: "450px"}} className="m-5" animation="wave" />}
                             <img
-                                className="m-5" src={`/movies/${props.movie.uuid}?thumbnail&q=h`}
+                                className="m-5 rounded-1"
+                                src={`/movies/${props.movie.uuid}?thumbnail&q=h`}
                                 alt={props.movie.title}
                                 onLoad={() => setLoading(false)}
                                 hidden={loading}
                             />
-                            <div className="m-5 pt-5 w-100 pe-5">
-                                <h1 className="text-break text-wrap">{props.movie.title}</h1>
-                                <div className="d-flex justify-content-between">
+                            <Box className="m-5 pt-5 w-100 pe-5">
+                                <Typography variant="h3" className="text-break text-wrap">{props.movie.title}</Typography>
+                                <Box className="d-flex justify-content-between">
                                     <Typography variant="caption">{props.movie.year > "0" && props.movie.year}</Typography>
                                     <Typography variant="caption">{props.movie.tags}</Typography>
-                                </div>
+                                </Box>
                                 <hr />
                                 {props.movie.language && <Chip label={props.movie.language} className="me-2" />}
                                 <Chip label={
@@ -110,14 +111,14 @@ function MovieInfoDisplay(props: MovieInfoDisplayProps){
                                 >{progressInfo?.progress && progressInfo.progress > 1 ? (
                                     progressInfo.progress < 100 ? "Continue Watching" : "Watch Again"
                                 ) : "Play"}</Button>
-                            </div>
-                        </div>
-                        <div className="m-5">
+                            </Box>
+                        </Box>
+                        <Box className="m-5">
                             {props.movie.description}
-                        </div>
-                    </div>
-                </div>
-            </div>
+                        </Box>
+                    </Box>
+                </Box>
+            </Box>
 
             <SwcFabContainer>
                 <SwcFab
@@ -179,9 +180,9 @@ function MovieInfo(props: MovieInfoProps){
         <>
             <TransitionGroup>
                 <Fade>
-                    <div>
+                    <Box>
                         <MovieInfoDisplay setShowEdit={setShowEdit} movie={movie} resetMovie={handleDeleted} />
-                    </div>
+                    </Box>
                 </Fade>
             </TransitionGroup>
             <SwcModal show={showEdit} onHide={() => {}} width="95%">

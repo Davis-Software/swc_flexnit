@@ -1,7 +1,6 @@
 import TitleEntryType from "../../types/titleEntryType";
 import React, {lazy, useEffect, useState} from "react";
 import {Box, Skeleton, Tab, Tabs, Typography, useTheme} from "@mui/material";
-import {getTimeString} from "../../utils/FormatDate";
 import SwcLoader from "../SwcLoader";
 
 const News = lazy(() => import("./News"))
@@ -16,17 +15,17 @@ function TitlePreview(props: TitlePreviewProps){
 
     return (
         <Box
-            className="col-6 col-xl-4 col-xxl-3"
+            className="p-0 col-12 col-md-6 col-lg-4 col-xxl-2"
             sx={{
                 "&:hover":{
                     cursor: "pointer",
-                    transform: "scale(1.05)"
+                    transform: "scale(1.01)"
                 },
                 transition: "transform 0.2s ease-in-out"
             }}
             onClick={props.onClick}
         >
-            <div className="p-1 p-xl-3 position-relative">
+            <Box className="p-2 position-relative w-100 h-100">
                 {!loaded && <Skeleton className="h-100" variant="rectangular" animation="wave" />}
                 <img
                     alt=""
@@ -37,6 +36,7 @@ function TitlePreview(props: TitlePreviewProps){
                     // make sure the image is loaded after the page is loaded
                     // @ts-ignore
                     fetchpriority="low"
+                    className="rounded-1"
                 />
                 <Box
                     className="p-2 p-xl-5 position-absolute top-0 start-0 text-break w-100 h-100"
@@ -49,18 +49,13 @@ function TitlePreview(props: TitlePreviewProps){
                         opacity: 0
                     }}
                 >
-                    <div className="fw-bold mb-2">{props.title.title}</div>
-                    {/*{props.title.type === "movie" ? (*/}
-                    {/*    <Typography variant="caption">Runtime: {getTimeString(props.title.runtime!)}</Typography>*/}
-                    {/*) : (*/}
-                    {/*    <Typography variant="overline">Seasons: {props.title.season_count}</Typography>*/}
-                    {/*)}*/}
+                    <Box className="fw-bold mb-2">{props.title.title}</Box>
                     <Typography variant="caption">{props.title.tags}</Typography>
                     {props.title.description && (
                         <p className="mt-1">{props.title.description?.length > 100 ? props.title.description?.slice(0, 200) + "..." : props.title.description}</p>
                     )}
                 </Box>
-            </div>
+            </Box>
         </Box>
     )
 }
@@ -149,7 +144,7 @@ function TitleBrowser(props: TitleBrowserProps){
     return (
         <>
             {props.isNotStandAlone ? (
-                <div
+                <Box
                     className="row m-0 flex-grow-1"
                     style={{overflowY: "auto", overflowX: "hidden"}}
                     ref={scrollRef as React.RefObject<HTMLDivElement>}
@@ -159,20 +154,20 @@ function TitleBrowser(props: TitleBrowserProps){
                             if(props.setSelectedTitle) props.setSelectedTitle(title)
                         }} />
                     ))}
-                </div>
+                </Box>
             ) : (
-                <div className="row m-0" style={{overflowX: "hidden", overflowY: "clip", height: "auto"}}>
+                <Box className="row m-0" style={{overflowX: "hidden", overflowY: "clip", height: "auto"}}>
                     {titles.map((title, i) => (
                         <TitlePreview key={i} title={title} onClick={() => {
                             if(props.setSelectedTitle) props.setSelectedTitle(title)
                         }} />
                     ))}
-                </div>
+                </Box>
             )}
             {loading && (
-                <div className="d-flex justify-content-center">
+                <Box className="d-flex justify-content-center">
                     <SwcLoader />
-                </div>
+                </Box>
             )}
         </>
     )
@@ -206,17 +201,17 @@ function ContentBrowser(props: ContentBrowserProps){
                 </Tabs>
             )}
             {(props.forceTab === undefined || props.forceTab === "news") && (
-                <div hidden={tab !== "news"}>
+                <Box hidden={tab !== "news"}>
                     <News setSelectedTitle={props.setSelectedTitle} count={7} />
-                </div>
+                </Box>
             )}
             {(props.forceTab === undefined || props.forceTab === "browse") && (
                 (props.forceTab === undefined ? (
-                    <div hidden={tab !== "browse"}>
-                        <div className="d-flex flex-column" style={{height: `calc(100vh - 128px)`}}>
+                    <Box hidden={tab !== "browse"}>
+                        <Box className="d-flex flex-column" style={{height: `calc(100vh - 128px)`}}>
                             <TitleBrowser setSelectedTitle={props.setSelectedTitle} id={"m-" + props.id} isNotStandAlone />
-                        </div>
-                    </div>
+                        </Box>
+                    </Box>
                 ) : (
                     <TitleBrowser setSelectedTitle={props.setSelectedTitle} id={"m-" + props.id}/>
                 ))

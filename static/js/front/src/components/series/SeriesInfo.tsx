@@ -4,6 +4,7 @@ import TitleEntryType from "../../types/titleEntryType";
 import PageLoader from "../PageLoader";
 import {TransitionGroup} from "react-transition-group";
 import {
+    Box,
     Button,
     Chip,
     Collapse,
@@ -52,7 +53,7 @@ function EpisodeList(props: EpisodeListProps){
     return (
         <>
             <ListItemButton onClick={() => setOpen(v => !v)}>
-                <h4>Season {props.season + 1}</h4>
+                <Typography variant="h5">Season {props.season + 1}</Typography>
             </ListItemButton>
             <Collapse in={open}>
                 <List className="ms-4" ref={listRef}>
@@ -68,17 +69,17 @@ function EpisodeList(props: EpisodeListProps){
                                 !episode.video_file
                             }
                         >
-                            <div className="d-flex justify-content-between w-100">
+                            <Box className="d-flex justify-content-between w-100">
                                 <Typography variant="h5">{episode.episode} - {episode.title}</Typography>
-                                <div>
+                                <Box>
                                     {!episode.video_file && <Chip size="small" label="No File" color="error" className="ms-3" />}
                                     <Chip size="small" label={episode.is_nsfw ? "NSFW" : "SFW"} color={episode.is_nsfw ? "warning" : "secondary"} className="ms-3" />
-                                </div>
-                            </div>
-                            <div className="w-100">
+                                </Box>
+                            </Box>
+                            <Box className="w-100">
                                 <TitleProgress title={props.series} episode={episode} />
-                                <p>{episode.description}</p>
-                            </div>
+                                <Typography className="pt-1 ps-2">{episode.description}</Typography>
+                            </Box>
                         </ListItemButton>
                     ))}
                 </List>
@@ -152,7 +153,7 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
 
     return (
         <>
-            <div
+            <Box
                 className="content-inner px-lg-5 pt-lg-5"
                 style={{
                     backgroundImage: `url(/series/${props.series.uuid}?poster)`,
@@ -160,22 +161,23 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
                     backgroundSize: "cover"
                 }}
             >
-                <div className="content-info rounded-top rounded-3 d-lg-flex d-block">
-                    <div className={`d-flex flex-column theme-${theme.palette.mode}`}>
-                        <div className="info-inner d-flex flex-column flex-lg-row">
+                <Box className="content-info d-lg-flex d-block">
+                    <Box className={`d-flex flex-column rounded-top theme-${theme.palette.mode}`}>
+                        <Box className="info-inner d-flex flex-column flex-lg-row">
                             {loading && <Skeleton variant="rectangular" sx={{minWidth: "300px", minHeight: "450px"}} className="m-5" animation="wave" />}
                             <img
-                                className="m-5" src={`/series/${props.series.uuid}?thumbnail&q=h`}
+                                className="m-5 rounded-1"
+                                src={`/series/${props.series.uuid}?thumbnail&q=h`}
                                 alt={props.series.title}
                                 onLoad={() => setLoading(false)}
                                 hidden={loading}
                             />
-                            <div className="m-5 pt-5 w-100 pe-5">
-                                <h1 className="text-break text-wrap">{props.series.title}</h1>
-                                <div className="d-flex justify-content-between">
+                            <Box className="m-5 pt-5 w-100 pe-5">
+                                <Typography variant="h3" className="text-break text-wrap">{props.series.title}</Typography>
+                                <Box className="d-flex justify-content-between">
                                     <Typography variant="caption">{props.series.year > "0" && props.series.year}</Typography>
                                     <Typography variant="caption">{props.series.tags}</Typography>
-                                </div>
+                                </Box>
                                 <hr/>
                                 {props.series.language && <Chip label={props.series.language} className="me-2" />}
                                 <Chip label={`${props.series.season_count} Season${props.series.season_count > 1 ? "s" : ""}`} className="me-2" />
@@ -201,14 +203,14 @@ function SeriesInfoDisplay(props: SeriesInfoDisplayProps){
                                     className="mt-3 ms-lg-3"
                                     size="large"
                                 >Show Episodes</Button>
-                            </div>
-                        </div>
-                        <div className="m-5">
+                            </Box>
+                        </Box>
+                        <Box className="m-5">
                             {props.series.description}
-                        </div>
-                    </div>
-                </div>
-            </div>
+                        </Box>
+                    </Box>
+                </Box>
+            </Box>
 
             <SwcFabContainer>
                 <SwcFab
@@ -282,9 +284,9 @@ function SeriesInfo(props: SeriesInfoProps){
         <>
             <TransitionGroup>
                 <Fade>
-                    <div>
+                    <Box>
                         <SeriesInfoDisplay setShowEdit={setShowEdit} series={series} resetSeries={handleDeleted} />
-                    </div>
+                    </Box>
                 </Fade>
             </TransitionGroup>
             <SwcModal show={showEdit} onHide={() => {}} width="95%">
