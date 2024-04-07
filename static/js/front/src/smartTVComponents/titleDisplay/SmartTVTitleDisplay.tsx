@@ -1,7 +1,7 @@
 import React, {useEffect} from "react";
 import TitleEntryType from "../../types/titleEntryType";
 import {useFocusable} from "@noriginmedia/norigin-spatial-navigation";
-import {Card, Skeleton} from "@mui/material";
+import {Box, Card, Skeleton} from "@mui/material";
 import useIsInView from "../../hooks/useIsInView";
 
 interface SmartTVTitleDisplayProps {
@@ -24,7 +24,7 @@ function SmartTVTitleDisplay(props: SmartTVTitleDisplayProps){
     }, [focused]);
 
     return (
-        <div ref={ref}>
+        <Box ref={ref}>
             <Card className="position-relative" sx={{
                 transition: "transform 0.1s",
                 transform: focused ? "scale(1.05)" : "scale(1)",
@@ -41,7 +41,7 @@ function SmartTVTitleDisplay(props: SmartTVTitleDisplayProps){
                     style={{height: "100%", width: "100%", objectFit: "cover"}}
                 />}
             </Card>
-        </div>
+        </Box>
     );
 }
 

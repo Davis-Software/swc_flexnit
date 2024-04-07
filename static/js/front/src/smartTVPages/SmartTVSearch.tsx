@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {useFocusable} from "@noriginmedia/norigin-spatial-navigation";
 import SmartTVPageBase from "./SmartTVPageBase";
-import {TextField} from "@mui/material";
+import {Box, TextField} from "@mui/material";
 import SmartTVGridTitleList from "../smartTVComponents/titleDisplay/SmartTVGridTitleList";
 import TitleEntryType from "../types/titleEntryType";
 
@@ -28,7 +28,7 @@ function SmartTVHome(){
 
     return (
         <SmartTVPageBase>
-            <div className="d-flex justify-content-center my-3">
+            <Box className="d-flex justify-content-center my-3">
                 <TextField
                     label="Search"
                     value={searchText}
@@ -38,7 +38,7 @@ function SmartTVHome(){
                     sx={{width: "50%"}}
                     inputRef={inputRef}
                 />
-            </div>
+            </Box>
             <SmartTVGridTitleList titles={titles} setFocusedTitle={() => {}} skeletonAmount={35} />
         </SmartTVPageBase>
     )

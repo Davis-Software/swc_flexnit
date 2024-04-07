@@ -3,6 +3,7 @@ import TitleEntryType from "../../types/titleEntryType";
 import TitleProgress from "../../components/other/TitleProgress";
 import MovieType from "../../types/movieType";
 import SeriesType from "../../types/seriesType";
+import {Box, Typography, useTheme} from "@mui/material";
 
 interface SmartTVTitlePreviewProps {
     title: TitleEntryType | null
@@ -21,7 +22,7 @@ function SmartTVTitlePreview(props: SmartTVTitlePreviewProps){
 
     return (
         <>
-            <div className="position-fixed start-0 top-0 w-100 h-100" style={{
+            <Box className="position-fixed start-0 top-0 w-100 h-100" style={{
                 zIndex: 1,
                 filter: "blur(7px)"
             }}>
@@ -31,30 +32,30 @@ function SmartTVTitlePreview(props: SmartTVTitlePreviewProps){
                     style={{objectFit: "cover"}}
                     className="w-100 h-100 position-absolute start-0 top-0"
                 />
-                <div
+                <Box
                     className="w-100 h-100 position-absolute start-0 top-0"
                     style={{background: "linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.8), rgba(0,0,0,0.9))"}}
                 />
-            </div>
-            <div style={{height: "300px", maxHeight: "50%", zIndex: 100}} className="w-100 position-relative">
-                <div className="position-absolute start-0 top-0 w-100">
+            </Box>
+            <Box style={{height: "300px", maxHeight: "50%", zIndex: 100}} className="w-100 position-relative">
+                <Box className="position-absolute start-0 top-0 w-100">
                     {props.title ? (
                         <>
-                            <h1 className="p-4">{props.title?.title}</h1>
-                            <div className="ps-5 pe-5 m-3">
+                            <Typography variant="h3" className="p-4">{props.title?.title}</Typography>
+                            <Box className="ps-5 pe-5 m-3">
                                 {actualTitle && <TitleProgress title={actualTitle}/>}
-                            </div>
-                            <div className="ps-5 pe-5 m-3">
+                            </Box>
+                            <Box className="ps-5 pe-5 m-3">
                                 {props.title?.description}
-                            </div>
+                            </Box>
                         </>
                     ) : (
-                        <div className="w-100 mt-5 pt-5 d-flex justify-content-center">
+                        <Box className="w-100 mt-5 pt-5 d-flex justify-content-center">
                             <img src="/static/img/icon.png" alt=""/>
-                        </div>
+                        </Box>
                     )}
-                </div>
-            </div>
+                </Box>
+            </Box>
         </>
     )
 }

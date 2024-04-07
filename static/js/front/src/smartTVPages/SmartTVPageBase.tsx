@@ -1,5 +1,5 @@
 import {TransitionGroup} from "react-transition-group";
-import {Fade} from "@mui/material";
+import {Box, Fade} from "@mui/material";
 import React from "react";
 import {FocusContext, useFocusable} from "@noriginmedia/norigin-spatial-navigation";
 
@@ -17,11 +17,11 @@ function SmartTVPageBase(props: SmartTVPageBaseProps){
         <FocusContext.Provider value={focusKey}>
             <TransitionGroup component={null}>
                 <Fade>
-                    <div
+                    <Box
                         ref={ref}
                         style={props.style}
                         className={props.className}
-                    >{props.children}</div>
+                    >{props.children}</Box>
                 </Fade>
             </TransitionGroup>
         </FocusContext.Provider>

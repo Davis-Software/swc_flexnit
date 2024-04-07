@@ -2,6 +2,7 @@ import React from "react";
 import SmartTVTitleDisplay from "./SmartTVTitleDisplay";
 import TitleEntryType from "../../types/titleEntryType";
 import {FocusContext, useFocusable, UseFocusableConfig} from "@noriginmedia/norigin-spatial-navigation";
+import {Box, Typography} from "@mui/material";
 
 interface SmartTVTitleListProps {
     titles: TitleEntryType[] | null
@@ -23,19 +24,19 @@ function SmartTVTitleList(props: SmartTVTitleListProps){
 
     return (
         <FocusContext.Provider value={focusKey}>
-            <div className="position-relative ms-3" style={{zIndex: 100}}>
-                {props.name && <h4>{props.name}</h4>}
-                <div ref={ref} className={`${props.refClassName} ms-2`}>
+            <Box className="position-relative ms-3" style={{zIndex: 100}}>
+                {props.name && <Typography variant="h5">{props.name}</Typography>}
+                <Box ref={ref} className={`${props.refClassName} ms-2`}>
                     {(
                         (props.titles && props.titles.length > 0) ? props.titles :
                         Array.from(new Array(props.skeletonAmount || 8)).map(() => null)
                     ).map((title, i) => (
-                        <div className={`${props.displayClassName} p-2`} key={i}>
+                        <Box className={`${props.displayClassName} p-2`} key={i}>
                             <SmartTVTitleDisplay title={title} onFocused={() => handleFocus(title)} first={props.testFirst && i === 0}/>
-                        </div>
+                        </Box>
                     ))}
-                </div>
-            </div>
+                </Box>
+            </Box>
         </FocusContext.Provider>
     )
 }
