@@ -1,5 +1,9 @@
 <!DOCTYPE html>
-<html lang="en-us" user-agent="{{ request.user_agent.string.split(" ").pop().split("/").pop(0) }}">
+<html lang="en-us" user-agent="{{
+    "Firefox"
+    if request.user_agent.string.split(" ").pop().split("/").pop(0) == "Firefox"
+    else "Chrome"
+}}">
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}FlexNit{% endblock %}</title>
