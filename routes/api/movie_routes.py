@@ -131,6 +131,8 @@ def movie_actions(uuid, action):
 
 @app.route("/movies/<uuid>/deliver/frame/<frame>", methods=["GET"])
 @app.route("/movies/<uuid>/deliver/<mode>/index", methods=["GET"])
+@app.route("/movies/<uuid>/deliver/<mode>/index.mpd", methods=["GET"])
+@app.route("/movies/<uuid>/deliver/<mode>/index.m3u8", methods=["GET"])
 @app.route("/movies/<uuid>/deliver/<mode>/<file_name>", methods=["GET"])
 @auth_required
 def deliver_movie(uuid, mode=None, file_name=None, frame=None):
@@ -149,8 +151,10 @@ def deliver_movie(uuid, mode=None, file_name=None, frame=None):
         return response
 
     if file_name is None and mode is not None:
+        mimetype = "application/vnd.apple.mpegurl" if mode == "hls" else "application/dash+xml" if mode == "dash" else None
         return send_file(
-            get_movie_file(movie.uuid, mode)
+            get_movie_file(movie.uuid, mode),
+            mimetype=mimetype,
         )
 
     if file_name is not None and mode is not None:

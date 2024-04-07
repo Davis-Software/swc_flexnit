@@ -3,18 +3,22 @@ import {EpisodeType} from "../types/seriesType";
 
 const streamingModeParameterName = "streamingMode"
 
-function selectStreamingMode(video: MovieType | EpisodeType, favor: "hls" | "dash" | undefined = undefined){
+function selectStreamingMode(video: MovieType | EpisodeType, favor: "hls" | "dash" | undefined = undefined, noUrl: boolean = false){
+    let streamingMode
     if(video.video_dash && favor === "dash") {
-        return `${streamingModeParameterName}=dash`
+        streamingMode = "dash"
     }else if(video.video_hls && favor === "hls") {
-        return `${streamingModeParameterName}=hls`
+        streamingMode = "hls"
     }else if(video.video_dash) {
-        return `${streamingModeParameterName}=dash`
+        streamingMode = "dash"
     }else if(video.video_hls) {
-        return `${streamingModeParameterName}=hls`
+        streamingMode = "hls"
     }else{
-        return `${streamingModeParameterName}=file`
+        streamingMode = "file"
     }
+
+    if(noUrl) return streamingMode
+    return `${streamingModeParameterName}=${streamingMode}`
 }
 
 export {streamingModeParameterName}
