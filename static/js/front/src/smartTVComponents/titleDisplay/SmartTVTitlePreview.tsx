@@ -10,6 +10,11 @@ interface SmartTVTitlePreviewProps {
 }
 function SmartTVTitlePreview(props: SmartTVTitlePreviewProps){
     const [actualTitle, setActualTitle] = React.useState<MovieType | SeriesType | null>(null);
+    const theme = useTheme()
+
+    const background = theme.palette.mode === "dark"
+        ? "linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.8), rgba(0,0,0,0.9))"
+        : "linear-gradient(rgba(255,255,255,0), rgba(255,255,255,0.8), rgba(255,255,255,0.9))";
 
     useEffect(() => {
         if(!props.title) return;
@@ -34,7 +39,7 @@ function SmartTVTitlePreview(props: SmartTVTitlePreviewProps){
                 />
                 <Box
                     className="w-100 h-100 position-absolute start-0 top-0"
-                    style={{background: "linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.8), rgba(0,0,0,0.9))"}}
+                    style={{background: background}}
                 />
             </Box>
             <Box style={{height: "300px", maxHeight: "50%", zIndex: 100}} className="w-100 position-relative">
