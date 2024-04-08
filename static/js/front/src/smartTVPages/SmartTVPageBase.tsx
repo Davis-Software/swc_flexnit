@@ -10,7 +10,8 @@ interface SmartTVPageBaseProps {
 }
 function SmartTVPageBase(props: SmartTVPageBaseProps){
     const {ref, focusKey} = useFocusable({
-        saveLastFocusedChild: true
+        saveLastFocusedChild: true,
+        autoRestoreFocus: true
     })
 
     return (

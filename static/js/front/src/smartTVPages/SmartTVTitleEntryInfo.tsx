@@ -7,6 +7,7 @@ import {InfoCallbackType} from "../components/other/TitleProgress";
 import FocusableButton from "../smartTVComponents/FocusableButton";
 import {FocusContext, useFocusable} from "@noriginmedia/norigin-spatial-navigation";
 import {EpisodeType} from "../types/seriesType";
+import SmartTVSeriesEpisodeList from "../smartTVComponents/SmartTVSeriesEpisodeList";
 
 function SmartTVTitleEntryInfo() {
     const {state, navigate} = useNavigation()
@@ -52,13 +53,21 @@ function SmartTVTitleEntryInfo() {
                             <FocusableButton
                                 variant="contained"
                                 color="secondary"
-                                onClick={() => setShowEpisodes(true)}
+                                onClick={() => setShowEpisodes(s => !s)}
                                 className="mt-3 ms-lg-3"
                                 size="large"
-                            >Show Episodes</FocusableButton>
+                            >{showEpisodes ? "Hide" : "Show"} Episodes</FocusableButton>
                         </>
                     )}
                 </Box>
+                {state.title.type === "series" && (
+                    <SmartTVSeriesEpisodeList
+                        title={state.title}
+                        show={showEpisodes}
+                        className="z-1"
+                        onChoose={handlePlay}
+                    />
+                )}
             </FocusContext.Provider>
         </SmartTVPageBase>
     )
