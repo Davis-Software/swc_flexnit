@@ -4,14 +4,14 @@ const CssBaseline = lazy(() => import("@mui/material/CssBaseline"));
 
 import PageLoader from "./components/PageLoader";
 import ContextProvider from "./ContextProvider";
-import useIsTV from "./hooks/useIsTV";
 import {handleSyncDownload} from "./utils/syncControls";
+import {useIsSmartTV} from "./contexts/isSmartTVContext";
 
 const DesktopMobileEntry = lazy(() => import("./entry/DesktopMobileEntry"));
 const SmartTVEntry = lazy(() => import("./entry/SmartTVEntry"));
 
 function App(){
-    const isTV = useIsTV()
+    const isTV = useIsSmartTV()
 
     useEffect(() => {
         handleSyncDownload(undefined, false, true)

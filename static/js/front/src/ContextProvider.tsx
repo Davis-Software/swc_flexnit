@@ -10,6 +10,7 @@ import darkTheme from "./themes/darkTheme";
 import {ThemeContext} from "./contexts/themeContext";
 import {ShowAdminContext} from "./contexts/showAdminContext";
 import {AudioPlayerContextProvider} from "./contexts/AudioPlayerContextProvider";
+import {IsSmartTVContext} from "./contexts/isSmartTVContext";
 
 interface ContextProviderProps {
     children: React.ReactNode;
@@ -47,4 +48,17 @@ function ContextProvider(props: ContextProviderProps) {
     )
 }
 
+function BaseContextProvider(props: ContextProviderProps) {
+    const [forceSmartTV, setForceSmartTV] = useState(localStorage.getItem("forceSmartTV") === "true")
+
+    return (
+        <IsSmartTVContext.Provider value={{forceSmartTV, setForceSmartTV}}>
+
+            {props.children}
+
+        </IsSmartTVContext.Provider>
+    )
+}
+
 export default ContextProvider;
+export {BaseContextProvider};

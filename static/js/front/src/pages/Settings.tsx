@@ -15,11 +15,13 @@ import SyncPlaybackProgress, {ResetPlaybackProgress} from "../components/SyncPla
 import {isAdminSet} from "../utils/constants";
 import {ThemeContext} from "../contexts/themeContext";
 import {ShowAdminContext} from "../contexts/showAdminContext";
+import {IsSmartTVContext} from "../contexts/isSmartTVContext";
 
 function Settings(){
     const [syncPlayback, setSyncPlayback] = useState(localStorage.getItem("syncPlayback") !== null ? localStorage.getItem("syncPlayback") === "true" : true)
     const {showAdmin, setShowAdmin} = useContext(ShowAdminContext)
     const {theme, setTheme} = useContext(ThemeContext)
+    const {forceSmartTV, setForceSmartTV} = useContext(IsSmartTVContext)
 
     useEffect(() => {
         localStorage.setItem("syncPlayback", syncPlayback.toString());
@@ -30,6 +32,9 @@ function Settings(){
     useEffect(() => {
         localStorage.setItem("theme", theme);
     }, [theme]);
+    useEffect(() => {
+        localStorage.setItem("forceSmartTV", forceSmartTV.toString());
+    }, [forceSmartTV]);
 
     return (
         <PageBase>
@@ -81,6 +86,15 @@ function Settings(){
                             <MenuItem value="system">System</MenuItem>
                         </Select>
                     </FormControl>
+                    <div>
+                        <FormControlLabel
+                            control={<Checkbox
+                                checked={forceSmartTV}
+                                onChange={e => setForceSmartTV(e.target.checked)}
+                            />}
+                            label="Force SmartTV Mode"
+                        />
+                    </div>
                 </Paper>
             </Container>
         </PageBase>
