@@ -42,14 +42,26 @@ function SmartTVWatch(){
 
     if(!streamingPath) return <PageLoader />
 
-    return <TVPlayer
-        url={streamingPath}
-        title={state.title?.title}
-        light={`/${state.title.type === "movie" ? "movies" : "series"}/${state.title.uuid}?poster`}
-        customButtons={customButtons}
-        hideControlsOnArrowUp
-        playing
-    />
+    return (
+        <>
+            <style>
+                {`
+                    .progress-bar {
+                        flex-direction: revert;
+                    }
+                `}
+            </style>
+            <TVPlayer
+                url={streamingPath}
+                title={state.title?.type === "series" ? state.episode?.title : state.title?.title}
+                subTitle={state.title?.type === "series" ? state.title?.title : undefined}
+                light={`/${state.title.type === "movie" ? "movies" : "series"}/${state.title.uuid}?poster`}
+                customButtons={customButtons}
+                hideControlsOnArrowUp
+                playing
+            />
+        </>
+    )
 }
 
 export default SmartTVWatch;
