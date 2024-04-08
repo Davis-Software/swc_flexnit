@@ -1,17 +1,24 @@
 import MovieType from "../types/movieType";
 import {EpisodeType} from "../types/seriesType";
+import TitleEntryType from "../types/titleEntryType";
 
 const streamingModeParameterName = "streamingMode"
 
-function selectStreamingMode(video: MovieType | EpisodeType, favor: "hls" | "dash" | undefined = undefined, noUrl: boolean = false){
+function selectStreamingMode(video: MovieType | EpisodeType | TitleEntryType, favor: "hls" | "dash" | undefined = undefined, noUrl: boolean = false){
     let streamingMode
-    if(video.video_dash && favor === "dash") {
+    if(
+        ((video as MovieType | EpisodeType).video_dash || (video as TitleEntryType).dash)
+        && favor === "dash"
+    ) {
         streamingMode = "dash"
-    }else if(video.video_hls && favor === "hls") {
+    }else if(
+        ((video as MovieType | EpisodeType).video_hls || (video as TitleEntryType).hls)
+        && favor === "hls"
+    ) {
         streamingMode = "hls"
-    }else if(video.video_dash) {
+    }else if((video as MovieType | EpisodeType).video_dash || (video as TitleEntryType).dash) {
         streamingMode = "dash"
-    }else if(video.video_hls) {
+    }else if((video as MovieType | EpisodeType).video_hls || (video as TitleEntryType).hls) {
         streamingMode = "hls"
     }else{
         streamingMode = "file"

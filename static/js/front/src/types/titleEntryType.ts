@@ -10,6 +10,7 @@ interface TitleEntryType{
     season_count?: number
     series?: TitleEntryType,
     hls?: boolean
+    dash?: boolean
     episodes?: number
 }
 

@@ -37,6 +37,7 @@ def make_title_entry(title: MovieModel or SeriesModel or EpisodeModel or Episode
 
     if type(title) is not SeriesModel and type(title) is not EpisodeGroup:
         entry["hls"] = title.video_hls
+        entry["dash"] = title.video_dash
 
     if type(title) is EpisodeGroup:
         entry["series"] = make_title_entry(title.series)

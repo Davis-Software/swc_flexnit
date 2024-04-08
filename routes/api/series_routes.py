@@ -225,6 +225,8 @@ def episode_info(uuid, episode_uuid, action=None):
 
 @app.route("/series/<uuid>/episode/<episode_uuid>/deliver/frame/<frame>", methods=["GET"])
 @app.route("/series/<uuid>/episode/<episode_uuid>/deliver/<mode>/index", methods=["GET"])
+@app.route("/series/<uuid>/episode/<episode_uuid>/deliver/<mode>/index.mpd", methods=["GET"])
+@app.route("/series/<uuid>/episode/<episode_uuid>/deliver/<mode>/index.m3u8", methods=["GET"])
 @app.route("/series/<uuid>/episode/<episode_uuid>/deliver/<mode>/<file_name>", methods=["GET"])
 @auth_required
 def deliver_episode_file(uuid, episode_uuid, mode=None, file_name=None, frame=None):
@@ -252,8 +254,12 @@ def deliver_episode_file(uuid, episode_uuid, mode=None, file_name=None, frame=No
         return response
 
     if file_name is None and mode is not None:
+        mimetype = "application/vnd.apple.mpegurl" if mode == "hls" else "application/dash+xml" if mode == "dash" else None
         file = get_episode_file(series.uuid, episode_uuid, mode)
-        return send_file(file) if file is not None else make_response("File not found", RequestCode.ClientError.NotFound)
+        return send_file(
+            file,
+            mimetype=mimetype,
+        ) if file is not None else make_response("File not found", RequestCode.ClientError.NotFound)
 
     if file_name is not None and mode is not None:
         episode_file = get_episode_part(series.uuid, episode_uuid, file_name, mode)

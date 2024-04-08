@@ -1,5 +1,5 @@
 import React, {useEffect} from "react";
-import {Box, Button} from "@mui/material";
+import {Box} from "@mui/material";
 import {useNavigation} from "../smartTVComponents/navigation/SmartTVNavigation";
 import SmartTVPageBase from "./SmartTVPageBase";
 import SmartTVTitlePreview from "../smartTVComponents/titleDisplay/SmartTVTitlePreview";
@@ -19,10 +19,6 @@ function SmartTVTitleEntryInfo() {
     }, []);
 
     function handlePlay(episode?: EpisodeType){
-        if(episode){
-            console.log("Playing episode", episode)
-            return
-        }
         navigate("watch", {title: state.title, progressInfo, episode})
     }
 
