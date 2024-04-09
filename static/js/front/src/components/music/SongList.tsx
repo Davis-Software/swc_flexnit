@@ -1,6 +1,6 @@
 import {TableComponents, TableVirtuoso} from "react-virtuoso";
 import {
-    Button, IconButton,
+    Button, FormControl, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent,
     Table,
     TableBody,
     TableCell,
@@ -10,7 +10,7 @@ import {
     TextField,
     Tooltip, Typography
 } from "@mui/material";
-import React from "react";
+import React, {useCallback} from "react";
 import SongType from "../../types/songType";
 import {getTimeString} from "../../utils/FormatDate";
 import {useIsAdmin} from "../../contexts/showAdminContext";
@@ -88,15 +88,38 @@ function rowContent(_index: number, props: RowContentProps){
     )
 }
 
-function fixedHeaderContent(){
+interface FixedHeaderContentProps {
+    search: string
+    setSearch: (search: string) => void
+    albums: string[]
+}
+function FixedHeaderContent(props: FixedHeaderContentProps){
     const isAdmin = useIsAdmin()
+
+    function handleSearchChange(e: SelectChangeEvent){
+        props.setSearch(e.target.value !== "" ? `album:${e.target.value}` : "")
+    }
 
     return (
         <TableRow sx={{backgroundColor: "background.paper"}}>
             <TableCell padding="checkbox"></TableCell>
             <TableCell padding="checkbox"></TableCell>
             <TableCell>Title</TableCell>
-            <TableCell>Album</TableCell>
+            <TableCell padding="none">
+                <FormControl variant="standard" size="small" fullWidth>
+                    <InputLabel>Album</InputLabel>
+                    <Select
+                        value={props.search.startsWith("album:") ? props.search.substring("album:".length) : ""}
+                        onChange={handleSearchChange}
+                    >
+                        <MenuItem value="">All</MenuItem>
+                        {props.albums.map(album => (
+                            <MenuItem key={album} value={album}>{album}</MenuItem>
+                        ))}
+                    </Select>
+
+                </FormControl>
+            </TableCell>
             <TableCell align="right">Duration</TableCell>
             {isAdmin && (
                 <TableCell align="right">Operations</TableCell>
@@ -166,6 +189,14 @@ function SongList(props: SongListProps){
         props.setQueue(prev => prev.filter(s => s.uuid !== song.uuid))
     }
 
+    const LoadedFixedHeaderContent = useCallback(() => (
+        <FixedHeaderContent
+            search={search}
+            setSearch={setSearch}
+            albums={props.songs.map(s => s.album).filter((v, i, a) => a.indexOf(v) === i)}
+        />
+    ), [search, setSearch, props.songs])
+
     return (
         <>
             <TextField
@@ -177,7 +208,7 @@ function SongList(props: SongListProps){
                 fullWidth
             />
             <TableVirtuoso
-                fixedHeaderContent={fixedHeaderContent}
+                fixedHeaderContent={LoadedFixedHeaderContent}
                 components={VirtuosoTableComponents}
                 itemContent={rowContent}
                 data={props.songs.filter(filterFunc).map(song =>
