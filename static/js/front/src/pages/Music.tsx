@@ -111,17 +111,28 @@ function Music(){
                 setPlayingSong(prev[0])
                 return prev.slice(1)
             })
-        }else if(liked.length > 0 && liked.includes(playingSong.id)){
-            setPlayingSong(() => {
-                let likedSongs = songs.filter(song => liked.includes(song.id))
-                if(likedSongs.find(s => s.id === playingSong.id)){
-                    return likedSongs[(likedSongs.findIndex(s => s.id === playingSong.id) + 1) % likedSongs.length]
-                }else{
-                    return likedSongs[0]
-                }
-            })
+        // }else if(liked.length > 0 && liked.includes(playingSong.id)){
+        //     setPlayingSong(() => {
+        //         let likedSongs = songList.filter(song => liked.includes(song.id))
+        //         if(likedSongs.find(s => s.id === playingSong.id)){
+        //             return likedSongs[(likedSongs.findIndex(s => s.id === playingSong.id) + 1) % likedSongs.length]
+        //         }else{
+        //             return likedSongs[0]
+        //         }
+        //     })
         }else{
-            setPlayingSong(songs[(songs.findIndex(s => s.id === playingSong.id) + 1) % songs.length])
+            let songAlbum = songList
+                .filter(song => song.album === playingSong.album)
+            let songInAlbumIndex = songAlbum
+                .findIndex(song => song.id === playingSong.id)
+            let nextSongInAlbum = songAlbum.
+                at((songInAlbumIndex + 1) % songAlbum.length)
+
+            if(songInAlbumIndex >= 0 && nextSongInAlbum){
+                setPlayingSong(nextSongInAlbum)
+            }else{
+                setPlayingSong(songList[(songList.findIndex(s => s.id === playingSong.id) + 1) % songList.length])
+            }
         }
     }
 
