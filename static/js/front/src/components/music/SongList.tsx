@@ -105,7 +105,7 @@ function FixedHeaderContent(props: FixedHeaderContentProps){
             <TableCell padding="checkbox"></TableCell>
             <TableCell padding="checkbox"></TableCell>
             <TableCell>Title</TableCell>
-            <TableCell padding="none">
+            <TableCell width="25%" padding="none">
                 <FormControl variant="standard" size="small" fullWidth>
                     <InputLabel>Album</InputLabel>
                     <Select
@@ -120,9 +120,9 @@ function FixedHeaderContent(props: FixedHeaderContentProps){
 
                 </FormControl>
             </TableCell>
-            <TableCell align="right">Duration</TableCell>
+            <TableCell align="right" width="30px">Duration</TableCell>
             {isAdmin && (
-                <TableCell align="right">Operations</TableCell>
+                <TableCell align="right" width="80px">Operations</TableCell>
             )}
             <TableCell padding="checkbox"></TableCell>
         </TableRow>
@@ -136,6 +136,7 @@ const VirtuosoTableComponents: TableComponents<RowContentProps> = {
     Table: (props) => (
         <Table {...props} />
     ),
+    // @ts-ignore
     TableHead,
     TableRow: ({item: _item, ...props}) => <TableRow selected={_item.song.uuid === _item.playingSong?.uuid} hover {...props} />,
     TableBody: React.forwardRef<HTMLTableSectionElement>((props, ref) => (
