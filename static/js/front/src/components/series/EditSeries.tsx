@@ -132,7 +132,10 @@ function SeasonOverview(props: SeasonOverviewProps){
                                     <Button variant="contained" color="warning"
                                             onClick={() => props.setSelectedEpisode(episode)}>Edit</Button>
                                     <Button variant="contained" color="error"
-                                            onClick={() => handleDeleteEpisode(episode)}>Delete</Button>
+                                            onClick={e => {
+                                                e.stopPropagation()
+                                                handleDeleteEpisode(episode)
+                                            }}>Delete</Button>
                                 </ButtonGroup>
                             </ListItemButton>
                         ))}
