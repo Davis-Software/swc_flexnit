@@ -14,6 +14,7 @@ import {MediaInfo} from "dashjs";
 import VolatileEventControls from "../components/watchPage/VolatileEventControls";
 import VideoMount from "../components/watchPage/VideoMount";
 import VideoControls from "../components/watchPage/VideoControls";
+import {setMediaInfo} from "../utils/mediaControls";
 
 
 let extVideoInfo: MovieType | SeriesType | null = null
@@ -200,6 +201,8 @@ function Watch(){
     }, [window.location.search]);
 
     useEffect(() => {
+        // @ts-ignore
+        setMediaInfo(videoInfo)
         if(!videoInfo) return;
         if(videoInfo.is_nsfw && !hasNSFWPermission()){
             setShowNSFWModal(true)

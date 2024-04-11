@@ -11,6 +11,7 @@ import {
     useTheme
 } from "@mui/material";
 import SongType from "../../types/songType";
+import {setMediaInfo} from "../../utils/mediaControls";
 
 interface SongPlayerProps {
     playingSong: SongType | null
@@ -132,8 +133,10 @@ function SongPlayer(props: SongPlayerProps){
         if(!audioRef?.current) return
         if(props.playingSong){
             audioRef.current.src = `/music/${props.playingSong.uuid}`
+            setMediaInfo(props.playingSong)
         }else{
             audioRef.current.removeAttribute("src")
+            setMediaInfo(null)
         }
         setNightcoreMode(parseFloat(audioSpeed), true)
     }, [props.playingSong]);
