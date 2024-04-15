@@ -32,6 +32,8 @@ def set_user_request_metrics(user: str, request: Request, response: Response):
 
     if match := title_detect_regex.search(request.path):
         title_uuid = match.group(2) or match.group(4)
+        if metrics.delivered_title_uuids is None:
+            metrics.delivered_title_uuids = []
         if title_uuid not in metrics.delivered_title_uuids:
             metrics.delivered_title_uuids.append(title_uuid)
 
@@ -40,11 +42,15 @@ def set_user_request_metrics(user: str, request: Request, response: Response):
         .split(",")[0].strip()
 
     if metrics.last_ip != ip:
+        if metrics.previous_ips is None:
+            metrics.previous_ips = []
         if ip not in metrics.previous_ips:
             metrics.previous_ips.append(ip)
         metrics.last_ip = ip
 
     if metrics.last_user_agent != request.user_agent.string:
+        if metrics.previous_user_agents is None:
+            metrics.previous_user_agents = []
         if request.user_agent.string not in metrics.previous_user_agents:
             metrics.previous_user_agents.append(request.user_agent.string)
         metrics.last_user_agent = request.user_agent.string
