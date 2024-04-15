@@ -64,7 +64,7 @@ def parse_metrics(formatter: callable = None):
     for user_metric in metrics:
         user_metric["delivered_titles"] = list(map(
             lambda title_uuid: f(make_title_entry(get_movie(title_uuid) or get_series(title_uuid))) or title_uuid,
-            user_metric["delivered_title_uuids"]
+            user_metric["delivered_title_uuids"] or []
         ))
 
     return metrics
