@@ -30,7 +30,7 @@ function AdminPageUserMetrics(){
     const [selectedMetric, setSelectedMetric] = React.useState<UserMetrics | null>(null)
 
     useEffect(() => {
-        fetch("/metrics")
+        fetch("/metrics?parse")
             .then(res => res.json())
             .then(setMetrics)
     }, []);
@@ -69,6 +69,11 @@ function AdminPageUserMetrics(){
                         <p>Delivered Requests 3xx: {selectedMetric.delivered_requests_3xx}</p>
                         <p>Delivered Requests 4xx: {selectedMetric.delivered_requests_4xx}</p>
                         <p>Delivered Requests 5xx: {selectedMetric.delivered_requests_5xx}</p>
+                        <hr/>
+                        <p>Delivered Titles</p>
+                        <ul>
+                            {selectedMetric.delivered_titles?.map((title, i) => <li key={i}>{title.title} ({title.type})</li>)}
+                        </ul>
                         <hr/>
                         <p>Id: {selectedMetric.id}</p>
                         <p>Created At: {(new Date(selectedMetric.created_at)).toLocaleString()}</p>

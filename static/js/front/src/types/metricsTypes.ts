@@ -1,3 +1,5 @@
+import TitleEntryType from "./titleEntryType";
+
 interface UserMetrics {
     id: number;
     username: string;
@@ -7,6 +9,8 @@ interface UserMetrics {
     delivered_requests_3xx: number;
     delivered_requests_4xx: number;
     delivered_requests_5xx: number;
+    delivered_title_uuids: string[];
+    delivered_titles?: TitleEntryType[];
     last_ip: string;
     last_user_agent: string;
     previous_ips: string[];
