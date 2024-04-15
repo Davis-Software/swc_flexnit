@@ -1,56 +1,11 @@
 from __init__ import app
 from flask import request, make_response
 
-from models.movie import MovieModel
 from models.movie import get_movies, latest_movies, search_movies
-from models.series import SeriesModel, EpisodeModel, EpisodeGroup
 from models.series import get_all_series, latest_series, search_series
-from models.title.title_repo import get_titles, get_title_tags
+from models.title.title_repo import get_titles, get_title_tags, make_title_entry
 from utils.password_manager import auth_required
 from utils.request_codes import RequestCode
-
-
-TYPE_NAME_MAP = {
-    "MovieModel": "movie",
-    "SeriesModel": "series",
-    "EpisodeModel": "episode",
-    "EpisodeGroup": "episode_group"
-}
-
-
-def make_title_entry(title: MovieModel or SeriesModel or EpisodeModel or EpisodeGroup):
-    if title is None:
-        return None
-    entry = {
-        "uuid": title.uuid,
-        "type": TYPE_NAME_MAP[type(title).__name__]
-    }
-
-    if type(title) is not EpisodeGroup:
-        entry["title"] = title.title
-        entry["description"] = title.description
-
-    if type(title) is not EpisodeModel and type(title) is not EpisodeGroup:
-        entry["year"] = title.year
-        entry["tags"] = title.tags
-        entry["is_nsfw"] = title.is_nsfw
-
-    if type(title) is not SeriesModel and type(title) is not EpisodeGroup:
-        entry["hls"] = title.video_hls
-        entry["dash"] = title.video_dash
-
-    if type(title) is EpisodeGroup:
-        entry["series"] = make_title_entry(title.series)
-        entry["episodes"] = len(title.episodes)
-
-    if type(title) is MovieModel:
-        entry["runtime"] = title.video_info["format"]["duration"] if title.video_info is not None and title.video_info != {} else None
-    elif type(title) is SeriesModel:
-        entry["season_count"] = title.season_count
-    elif type(title) is EpisodeModel:
-        entry["series"] = make_title_entry(title.series)
-
-    return entry
 
 
 @app.route("/search/<mode>")

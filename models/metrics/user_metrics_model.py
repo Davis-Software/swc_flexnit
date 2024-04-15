@@ -24,6 +24,8 @@ class UserMetrics(BaseModel):
     delivered_requests_4xx = Column(Integer, nullable=False, default=0)
     delivered_requests_5xx = Column(Integer, nullable=False, default=0)
 
+    delivered_title_uuids = Column(MutableList.as_mutable(PickleType), nullable=False, default=[])
+
     last_ip = Column(String(255), nullable=True)
     last_user_agent = Column(String(4096), nullable=True)
     previous_ips = Column(MutableList.as_mutable(PickleType), nullable=False, default=[])
@@ -33,6 +35,8 @@ class UserMetrics(BaseModel):
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     def __init__(self, username: str):
+        super().__init__()
+
         self.username = username
 
         self.delivered_media = 0
@@ -41,6 +45,8 @@ class UserMetrics(BaseModel):
         self.delivered_requests_3xx = 0
         self.delivered_requests_4xx = 0
         self.delivered_requests_5xx = 0
+
+        self.delivered_title_uuids = []
 
         self.last_ip = None
         self.last_user_agent = None
@@ -78,6 +84,7 @@ class UserMetricStruct:
         self.delivered_requests_3xx = self.__model.delivered_requests_3xx
         self.delivered_requests_4xx = self.__model.delivered_requests_4xx
         self.delivered_requests_5xx = self.__model.delivered_requests_5xx
+        self.delivered_title_uuids = self.__model.delivered_title_uuids
         self.last_ip = self.__model.last_ip
         self.last_user_agent = self.__model.last_user_agent
         self.previous_ips = self.__model.previous_ips
@@ -91,6 +98,7 @@ class UserMetricStruct:
         model.delivered_requests_3xx = self.delivered_requests_3xx
         model.delivered_requests_4xx = self.delivered_requests_4xx
         model.delivered_requests_5xx = self.delivered_requests_5xx
+        model.delivered_title_uuids = self.delivered_title_uuids
         model.last_ip = self.last_ip
         model.last_user_agent = self.last_user_agent
         model.previous_ips = self.previous_ips
