@@ -1,5 +1,5 @@
 import {AdvancedFileType} from "../../types/fileType";
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import hrFileSize from "../../utils/hrFileSize";
 import {
     Button,
@@ -32,6 +32,78 @@ function hrPath(path: string, files: AdvancedFileType[]){
         return p
     }).join("/")
 }
+function parseVideoInfo(info: any){
+    if(!info || !info.streams) return null
+    let videoStreams = info.streams.filter((s: any) => s.codec_type === "video")
+    let audioStreams = info.streams.filter((s: any) => s.codec_type === "audio")
+    let subtitleStreams = info.streams.filter((s: any) => s.codec_type === "subtitle")
+
+    videoStreams = videoStreams.map((s: any) => ({
+        codec: s.codec_name,
+        width: s.width,
+        height: s.height,
+        bitrate: s.bit_rate,
+        framerate: s.avg_frame_rate
+    }))
+    audioStreams = audioStreams.map((s: any) => ({
+        codec: s.codec_name,
+        language: s.tags.language,
+        bitrate: s.bit_rate
+    }))
+    subtitleStreams = subtitleStreams.map((s: any) => ({
+        codec: s.codec_name,
+        language: s.tags.language
+    }))
+
+    return {
+        videoStreams,
+        audioStreams,
+        subtitleStreams
+    }
+}
+
+interface FileEntryInfoModalProps{
+    file: AdvancedFileType | null
+    show: boolean
+    onHide: () => void
+}
+function FileEntryInfoModal(props: FileEntryInfoModalProps){
+    const parsedInfo = useMemo(() => parseVideoInfo(props.file?.video_info), [props.file])
+
+    function InnerInfoDisplay({streams, name}: {streams: any[], name: string}){
+        return <>
+            <h4>{name}</h4>
+            <ul>
+                {streams.map((s, i) => (
+                    <li key={i}>
+                        {JSON.stringify(s)}
+                    </li>
+                ))}
+            </ul>
+        </>
+    }
+
+    if(!props.file) return null
+    return (
+        <SwcModal show={props.show} onHide={props.onHide}>
+            <div>
+                <h4>{props.file.display_name}</h4>
+                <p>Filename: {props.file.filename}</p>
+                <p>Size: {hrFileSize(props.file.size)}</p>
+                <p>Not Found: {props.file.not_found ? "Yes" : "No"}</p>
+                <p>Directory: {props.file.is_dir ? "Yes" : "No"}</p>
+            </div>
+            <hr/>
+            {parsedInfo && (
+                <div>
+                    <InnerInfoDisplay streams={parsedInfo.videoStreams} name="Video Streams" />
+                    <InnerInfoDisplay streams={parsedInfo.audioStreams} name="Audio Streams" />
+                    <InnerInfoDisplay streams={parsedInfo.subtitleStreams} name="Subtitle Streams" />
+                </div>
+            )}
+        </SwcModal>
+    )
+}
 
 interface FileTableEntryProps{
     file: AdvancedFileType
@@ -39,8 +111,9 @@ interface FileTableEntryProps{
     setSelected: (selected: (prevState: string[]) => string[]) => void
     setPath: (path: (prevState: string) => string) => void
     onRecover?: (file: AdvancedFileType) => void
+    onInfo?: (file: AdvancedFileType) => void
 }
-function FileTableEntry({file, selected, setSelected, setPath, onRecover}: FileTableEntryProps){
+function FileTableEntry({file, selected, setSelected, setPath, onRecover, ...props}: FileTableEntryProps){
     return (
         <TableRow
             hover
@@ -88,6 +161,11 @@ function FileTableEntry({file, selected, setSelected, setPath, onRecover}: FileT
             </TableCell>
             <TableCell>
                 {hrFileSize(file.size)}
+            </TableCell>
+            <TableCell padding="checkbox" align="right">
+                <IconButton onClick={() => props.onInfo && props.onInfo(file)}>
+                    <i className="material-icons">info</i>
+                </IconButton>
             </TableCell>
         </TableRow>
     )
@@ -150,6 +228,7 @@ function FileManagerTableHead(props: FileManagerTableHeadProps){
                 >
                     <i className={`material-icons ${props.sort !== "size" ? "text-muted" : ""}`}>{(props.sort === "size" && props.order === "asc") ? "arrow_upward" : "arrow_downward"}</i>Size
                 </TableCell>
+                <TableCell padding="checkbox" />
             </TableRow>
         </TableHead>
     )
@@ -171,6 +250,9 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
     const [search, setSearch] = useState<string>("")
     const [showConverterModal, setShowConverterModal] = useState<boolean>(false)
+
+    const [showInfoModal, setShowInfoModal] = useState<boolean>(false)
+    const [infoFile, setInfoFile] = useState<AdvancedFileType | null>(null)
 
     useEffect(() => {
         setFiles(() => {
@@ -237,6 +319,11 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
             })
     }
 
+    function handleOnInfo(file: AdvancedFileType){
+        setInfoFile(file)
+        setShowInfoModal(true)
+    }
+
     return (
         <>
             <Table>
@@ -283,6 +370,7 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
                                         props.setPath(path)
                                     }}
                                     onRecover={props.onRecover}
+                                    onInfo={handleOnInfo}
                                 />
                             ))}
                         </>
@@ -295,6 +383,12 @@ function FileManagerFileTable(props: FileManagerFileTableProps){
                     )}
                 </TableBody>
             </Table>
+
+            <FileEntryInfoModal
+                file={infoFile}
+                show={showInfoModal}
+                onHide={() => setShowInfoModal(false)}
+            />
 
             <TransitionGroup className="position-fixed start-0 bottom-0 p-3" style={{zIndex: 3000}}>
                 <Fade>

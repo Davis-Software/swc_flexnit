@@ -86,6 +86,7 @@ def get_movie_files(path_var):
                 "size": calculate_size(os.path.join(path, file)),
                 "is_dir": True,
                 "not_found": movie is None,
+                "video_info": movie.video_info if movie is not None and movie.video_file is not None else "",
             })
 
     else:

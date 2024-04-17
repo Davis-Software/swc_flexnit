@@ -9,6 +9,7 @@ interface AdvancedFileType{
     display_name: string;
     is_dir: boolean;
     not_found: boolean;
+    video_info?: any
 }
 
 export default FileType;
