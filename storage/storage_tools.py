@@ -138,6 +138,47 @@ def detect_audio_offsets(search_file: bytes, video_folder: str, ignore_files: st
     return json.loads(resp.strip())
 
 
+def extract_subtitles(input_file: str, output_location: str, file_info: dict = None):
+    ffmpeg = config.get("FFMPEG_PATH")
+    file_info = file_info or get_video_file_info(input_file, sort_streams=True)
+
+    subtitle_tracks = file_info["subtitle"]
+
+    if not os.path.exists(output_location):
+        os.makedirs(output_location)
+
+    generated_files = []
+    for track in subtitle_tracks:
+        if "tags" in track and "language" in track["tags"]:
+            lang = track["tags"]["language"]
+        else:
+            lang = track['index']
+        file_target = os.path.join(output_location, f"{lang}.vtt")
+
+        opts = [
+            ffmpeg,
+            "-y", "-hide_banner",
+            "-loglevel", "quiet",
+            "-i", input_file,
+            "-map", f"0:{track['index']}",
+            "-c:s", "webvtt",
+            file_target
+        ]
+
+        subprocess.run(
+            opts,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
+
+        generated_files.append({
+            "path": file_target,
+            "lang": lang
+        })
+
+    return generated_files
+
+
 def convert_file_to_hls(input_file: str, output_location: str, re_encode: bool = False):
     ffmpeg = config.get("FFMPEG_PATH")
     hw_accel = config.get_bool("FFMPEG_NVENC")
@@ -211,7 +252,7 @@ def convert_file_to_dash(input_file: str, output_location: str, add_lq: bool = F
     else:
         audio_encoder = "aac"
 
-    if all(map(lambda x: x == "webvtt", subtitle_codecs)):
+    if all(map(lambda x: x in ["webvtt", "ass", "srt"], subtitle_codecs)):
         encode_subtitles = True
     else:
         encode_subtitles = False
@@ -237,20 +278,17 @@ def convert_file_to_dash(input_file: str, output_location: str, add_lq: bool = F
     )
 
     c_opts = {
-        "dn": None
+        "dn": None,
+        "sn": None
     }
     if video_encoder != "copy":
         c_opts["pix_fmt"] = "yuv420p"
-
-    if encode_subtitles:
-        c_opts["c:s"] = "copy"
-    else:
-        c_opts["sn"] = None
 
     qualities = []
     if add_lq:
         qualities.append(72)
 
+    dash_target = f"{output_location}/dash/index.mpd"
     dash = video.dash(
         ffmpeg_streaming.Formats.h264(video=video_encoder, audio=audio_encoder),
         **c_opts,
@@ -258,7 +296,37 @@ def convert_file_to_dash(input_file: str, output_location: str, add_lq: bool = F
         frag_duration=10,
     )
     dash.auto_generate_representations([])
-    dash.output(f"{output_location}/dash/index.mpd", monitor=monitor if debug else None)
+    dash.output(dash_target, monitor=monitor if debug else None)
+
+    if encode_subtitles:
+        import xml.dom.minidom as minidom
+
+        subtitles = extract_subtitles(
+            input_file,
+            f"{output_location}/dash",
+            file_info
+        )
+        mpd = minidom.parse(dash_target)
+
+        for subtitle in subtitles:
+            adaptation_set = mpd.createElement("AdaptationSet")
+            adaptation_set.setAttribute("contentType", "text")
+            adaptation_set.setAttribute("mimeType", "text/vtt")
+            adaptation_set.setAttribute("lang", subtitle["lang"])
+
+            representation = mpd.createElement("Representation")
+            representation.setAttribute("id", f"textstream_{subtitle['lang']}")
+            representation.setAttribute("bandwidth", "1")
+
+            base_url = mpd.createElement("BaseURL")
+            base_url.appendChild(mpd.createTextNode(f"{subtitle['lang']}.vtt"))
+
+            representation.appendChild(base_url)
+            adaptation_set.appendChild(representation)
+            mpd.getElementsByTagName("Period")[0].appendChild(adaptation_set)
+
+        with open(dash_target, "w") as f:
+            f.write(mpd.toxml())
 
 
 def reinitialize_hls(file_path: str):

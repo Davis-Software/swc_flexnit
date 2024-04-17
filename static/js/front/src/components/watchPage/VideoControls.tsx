@@ -20,7 +20,6 @@ interface VideoControlMountProps {
     playing: boolean;
     setPlaying: React.Dispatch<React.SetStateAction<boolean>>;
     handlePlayFromBeginning: () => void;
-    setSelectedSubtitleTrack: React.Dispatch<React.SetStateAction<number>>;
     loading: boolean;
     showNSFWModal: boolean;
     showErrorModal: boolean;

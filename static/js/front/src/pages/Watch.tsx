@@ -171,8 +171,14 @@ function Watch(){
                         track.audioChannelConfiguration!.length > 0 && track.audioChannelConfiguration![0] !== "0"
                     ))
                     setSelectedAudioTrack(new_dash.getCurrentTrackFor("audio")?.index || -1)
+                })
+                new_dash.on("allTextTracksAdded", () => {
                     setSubtitleTracks(new_dash.getTracksFor("text"))
                     setSelectedSubtitleTrack(new_dash.getCurrentTrackFor("text")?.index || -1)
+                    let dashjs_text_settings = JSON.parse(localStorage.getItem("dashjs_text_settings") || "{}")
+                    if(!dashjs_text_settings || !dashjs_text_settings.settings){
+                        selectDashSubtitleTrack(-1)
+                    }
                 })
                 dash = new_dash
             })
@@ -250,7 +256,12 @@ function Watch(){
     }
     function selectDashSubtitleTrack(index: number){
         if(!dash) return;
-        dash.setCurrentTrack(subtitleTracks.find(track => track.index === index) || subtitleTracks[0])
+        let direct_index = subtitleTracks.find(track => track.index === index)
+        if(direct_index){
+            dash.setTextTrack(subtitleTracks.indexOf(direct_index))
+        }else{
+            dash.setTextTrack(-1)
+        }
         setSelectedSubtitleTrack(index)
     }
 
@@ -517,7 +528,6 @@ function Watch(){
                     selectDashSubtitleTrack={selectDashSubtitleTrack}
                     volume={volume}
                     playbackSpeed={playbackSpeed}
-                    setSelectedSubtitleTrack={setSelectedSubtitleTrack}
                     setShowControls={setShowControls}
                     setShowTimelineFramePreview={setShowTimelineFramePreview}
                     setTimelineFramePreviewLocation={setTimelineFramePreviewLocation}
