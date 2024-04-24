@@ -1,5 +1,6 @@
 .idea/
 venv/
+ai_tools/ai_models
 static/js/bundle/
 static/db/db.sqlite
 templates/pages/index.html

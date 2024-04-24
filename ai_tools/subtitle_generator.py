@@ -9,6 +9,7 @@ from ai_tools.ai_helper_funcs import format_srt_timestamp, format_vtt_timestamp
 
 
 WHISPER_MODEL = config.get("AI_SUBTITLE_MODEL", "small")
+MODEL_LOCATION = os.path.join(working_dir, "ai_tools/ai_models")
 
 
 def write_srt(transcript: Iterator[dict], file: TextIO):
@@ -41,7 +42,7 @@ def generate_subtitles_from_audio_stream(
     assert WHISPER_MODEL in ["tiny", "small", "medium", "large"], f"Unsupported model: {WHISPER_MODEL}"
     assert output_format in ["srt", "vtt"], f"Unsupported output format: {output_format}"
 
-    model = whisper.load_model(WHISPER_MODEL, download_root=os.path.join(working_dir, "ai_tools/models"))
+    model = whisper.load_model(WHISPER_MODEL, download_root=MODEL_LOCATION)
     audio = np.frombuffer(audio_stream, np.int16).flatten().astype(np.float32) / 32768.0
 
     result = model.transcribe(audio, language=language, verbose=None if not verbose else False)
