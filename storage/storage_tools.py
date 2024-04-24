@@ -17,6 +17,10 @@ from utils.wsl_compatability import make_wsl_command, get_wsl_path, get_local_ws
 frame_cache = {}
 thumbnail_cache = os.path.join(config.get("VIDEO_DIR"), "thumbnail_cache")
 
+AIVD = config.get("AIVD_PATH")
+FFMPEG = config.get("FFMPEG_PATH")
+FFPROBE = config.get("FFPROBE_PATH")
+
 if not os.path.exists(thumbnail_cache):
     os.makedirs(thumbnail_cache)
 for file in os.listdir(thumbnail_cache):
@@ -26,7 +30,7 @@ for file in os.listdir(thumbnail_cache):
 def get_video_file_info(file_path: str, sort_streams: bool = False):
     ffprobe = subprocess.Popen(
         [
-            config.get("FFPROBE_PATH"),
+            FFPROBE,
             "-v", "quiet",
             "-print_format", "json",
             "-show_format",
@@ -57,19 +61,19 @@ def get_video_file_info(file_path: str, sort_streams: bool = False):
 def get_dir_files(file_path: str):
     files = []
     dir_files = os.listdir(file_path)
-    for file in dir_files:
-        if file.endswith(".ts"):
+    for file_ in dir_files:
+        if file_.endswith(".ts"):
             continue
-        elif file.endswith(".m3u8"):
+        elif file_.endswith(".m3u8"):
             segments = list(filter(lambda x: x.endswith(".ts"), dir_files))
-            display_name = f"{file} (HLS with {len(segments)} segments)"
+            display_name = f"{file_} (HLS with {len(segments)} segments)"
             size = sum([os.path.getsize(os.path.join(file_path, segment)) for segment in segments])
         else:
-            display_name = file
-            size = os.path.getsize(os.path.join(file_path, file))
+            display_name = file_
+            size = os.path.getsize(os.path.join(file_path, file_))
 
         files.append({
-            "name": file,
+            "name": file_,
             "size": size,
             "display_name": display_name,
         })
@@ -88,7 +92,7 @@ def get_video_frame(file_path: str, time_index: int):
 
     ffmpeg = subprocess.Popen(
         [
-            config.get("FFMPEG_PATH"),
+            FFMPEG,
             "-y",
             "-loglevel", "quiet",
             "-ss", str(time_index),
@@ -110,22 +114,20 @@ def get_video_frame(file_path: str, time_index: int):
 
 
 def detect_audio_offsets(search_file: bytes, video_folder: str, ignore_files: str = "m3u8,ts"):
-    ffmpeg = config.get("FFMPEG_PATH")
-
-    file = str(uuid4()) + ".wav"
+    audio_file = str(uuid4()) + ".wav"
     with open(get_local_wsl_temp_dir() + file, "wb") as f:
         f.write(search_file)
 
     aivd = subprocess.Popen(make_wsl_command([
-        config.get("AIVD_PATH"),
+        AIVD,
         "-r",
         "-x", ignore_files,
         "-w", "900",
         "-f", "json",
         "-c", str(multiprocessing.cpu_count()),
-        "--ffmpeg", ffmpeg if not config.get_bool("USE_WSL") else config.get("WSL_FFMPEG"),
+        "--ffmpeg", FFMPEG if not config.get_bool("USE_WSL") else config.get("WSL_FFMPEG"),
         "--silent",
-        f"/tmp/{file}",
+        f"/tmp/{audio_file}",
         get_wsl_path(video_folder)
     ]),
         stdout=subprocess.PIPE,
@@ -139,7 +141,6 @@ def detect_audio_offsets(search_file: bytes, video_folder: str, ignore_files: st
 
 
 def extract_subtitles(input_file: str, output_location: str, file_info: dict = None):
-    ffmpeg = config.get("FFMPEG_PATH")
     file_info = file_info or get_video_file_info(input_file, sort_streams=True)
 
     subtitle_tracks = file_info["subtitle"]
@@ -156,7 +157,7 @@ def extract_subtitles(input_file: str, output_location: str, file_info: dict = N
         file_target = os.path.join(output_location, f"{lang}.vtt")
 
         opts = [
-            ffmpeg,
+            FFMPEG,
             "-y", "-hide_banner",
             "-loglevel", "quiet",
             "-i", input_file,
@@ -206,7 +207,6 @@ def add_subtitles_to_dash(mpd_path: str, subtitles: list):
 
 
 def convert_file_to_hls(input_file: str, output_location: str, re_encode: bool = False):
-    ffmpeg = config.get("FFMPEG_PATH")
     hw_accel = config.get_bool("FFMPEG_NVENC")
     accelerator = config.get("FFMPEG_NVENC_ACCELERATOR")
     encoder_preset = config.get("FFMPEG_NVENC_PRESET")
@@ -223,7 +223,7 @@ def convert_file_to_hls(input_file: str, output_location: str, re_encode: bool =
 
     if re_encode and hw_accel:
         opts = [
-            ffmpeg,
+            FFMPEG,
             "-hwaccel", accelerator,
             "-hwaccel_output_format", "cuda",
             "-i", input_file,
@@ -234,7 +234,7 @@ def convert_file_to_hls(input_file: str, output_location: str, re_encode: bool =
         ]
     else:
         opts = [
-            ffmpeg,
+            FFMPEG,
             "-i", input_file,
             "-c:v", "copy" if not re_encode else "h264",
             "-c:a", "copy" if not re_encode else "aac",
@@ -340,15 +340,15 @@ def generate_subtitles_for_dash(input_file: str, output_location: str):
 
 def reinitialize_hls(file_path: str):
     os.makedirs(os.path.join(file_path, "hls"), exist_ok=True)
-    for file in os.listdir(file_path):
-        if file.endswith(".ts") or file.endswith(".m3u8"):
-            shutil.move(os.path.join(file_path, file), os.path.join(file_path, "hls", file))
+    for file_ in os.listdir(file_path):
+        if file_.endswith(".ts") or file_.endswith(".m3u8"):
+            shutil.move(os.path.join(file_path, file_), os.path.join(file_path, "hls", file_))
 
 
 def cleanup_legacy_files(file_path: str):
-    for file in os.listdir(file_path):
-        if file.endswith(".ts") or file.endswith(".m3u8"):
-            os.remove(os.path.join(file_path, file))
+    for file_ in os.listdir(file_path):
+        if file_.endswith(".ts") or file_.endswith(".m3u8"):
+            os.remove(os.path.join(file_path, file_))
 
 
 def remove_hls_files(file_path: str):
@@ -390,7 +390,7 @@ def get_sized_thumbnail(title: MovieModel or SeriesModel, quality: str = "o"):
 
     ffmpeg = subprocess.Popen(
         [
-            config.get("FFMPEG_PATH"),
+            FFMPEG,
             "-y",
             "-loglevel", "quiet",
             "-i", "-",
@@ -429,7 +429,7 @@ def extract_song_thumbnail(song: SongModel, file_path: str):
     png_index = png_stream["index"]
 
     ffmpeg = subprocess.Popen([
-        config.get("FFMPEG_PATH"),
+        FFMPEG,
         "-y",
         "-loglevel", "quiet",
         "-i", file_path,
