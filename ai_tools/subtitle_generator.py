@@ -31,14 +31,20 @@ def write_vtt(transcript: Iterator[dict], file: TextIO):
         )
 
 
-def generate_subtitles_from_audio_stream(audio_stream: bytes, output_file: str, language: str = "en", output_format: str = "srt"):
+def generate_subtitles_from_audio_stream(
+        audio_stream: bytes,
+        output_file: str,
+        language: str = "en",
+        output_format: str = "srt",
+        verbose: bool = False
+):
     assert WHISPER_MODEL in ["tiny", "small", "medium", "large"], f"Unsupported model: {WHISPER_MODEL}"
     assert output_format in ["srt", "vtt"], f"Unsupported output format: {output_format}"
 
     model = whisper.load_model(WHISPER_MODEL, download_root=os.path.join(working_dir, "ai_tools/models"))
     audio = np.frombuffer(audio_stream, np.int16).flatten().astype(np.float32) / 32768.0
 
-    result = model.transcribe(audio, language=language)
+    result = model.transcribe(audio, language=language, verbose=None if not verbose else False)
 
     with open(output_file, "w") as f:
         if output_format == "srt":
