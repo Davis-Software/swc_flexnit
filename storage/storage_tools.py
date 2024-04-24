@@ -21,6 +21,8 @@ AIVD = config.get("AIVD_PATH")
 FFMPEG = config.get("FFMPEG_PATH")
 FFPROBE = config.get("FFPROBE_PATH")
 
+DEBUG = config.get_bool("DEBUG")
+
 if not os.path.exists(thumbnail_cache):
     os.makedirs(thumbnail_cache)
 for file in os.listdir(thumbnail_cache):
@@ -259,7 +261,6 @@ def convert_file_to_hls(input_file: str, output_location: str, re_encode: bool =
 
 
 def convert_file_to_dash(input_file: str, output_location: str, add_lq: bool = False):
-    debug = config.get_bool("DEBUG")
     hw_accel = config.get_bool("FFMPEG_NVENC")
 
     file_info = get_video_file_info(input_file, sort_streams=True)
@@ -322,7 +323,7 @@ def convert_file_to_dash(input_file: str, output_location: str, add_lq: bool = F
         frag_duration=10,
     )
     dash.auto_generate_representations([])
-    dash.output(dash_target, monitor=monitor if debug else None)
+    dash.output(dash_target, monitor=monitor if DEBUG else None)
 
     if encode_subtitles:
         subtitles = extract_subtitles(
