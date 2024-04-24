@@ -4,7 +4,8 @@ from flask import request, make_response, send_file
 from models.movie import get_movie, add_movie, edit_movie, get_movies
 from storage.movie_storage import upload_movie, convert_movie_to_hls, revert_movie_to_mp4, get_movie_files, \
     get_movie_file, delete_movie, get_movie_part, delete_movie_file, set_main_file, delete_movie_hls_files, \
-    get_movie_frame, convert_movie_to_dash, delete_movie_dash_files, reinitialize_legacy_hls
+    get_movie_frame, convert_movie_to_dash, delete_movie_dash_files, reinitialize_legacy_hls, \
+    generate_movie_subtitles
 from storage.storage_tools import get_sized_thumbnail
 from scraper.imdb_scraper import IMDBScraper
 from utils.adv_responses import send_binary_image
@@ -105,6 +106,10 @@ def movie_actions(uuid, action):
             convert_movie_to_dash(movie.uuid)
 
         return make_response("Converted", RequestCode.Success.OK)
+
+    if action == "subtitles":
+        generate_movie_subtitles(movie.uuid)
+        return make_response("Generated", RequestCode.Success.OK)
 
     if action == "revert":
         revert_movie_to_mp4(movie.uuid)

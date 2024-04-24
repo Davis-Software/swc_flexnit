@@ -1,6 +1,7 @@
 import os
 import json
 import shutil
+import iso639
 import subprocess
 import multiprocessing
 import ffmpeg_streaming
@@ -344,6 +345,8 @@ def generate_subtitles_for_video(input_file: str, add_to_dash: bool = False, sam
         return
 
     output_location = os.path.dirname(input_file)
+    if add_to_dash:
+        output_location = os.path.join(output_location, "dash")
 
     subtitle_files = []
     for track in audio_tracks:
@@ -363,18 +366,28 @@ def generate_subtitles_for_video(input_file: str, add_to_dash: bool = False, sam
         language = track["tags"]["language"] if "tags" in track and "language" in track["tags"] else track["index"]
         audio_stream = subprocess.run(cmd, capture_output=True, check=True).stdout
 
-        subtitle_files.append(
-            generate_subtitles_from_audio_stream(
-                audio_stream,
-                os.path.join(output_location, f"{language}.vtt"),
-                language=language,
-                output_format="vtt",
-                verbose=DEBUG
-            )
-        )
+        try:
+            language = iso639.Lang(language).pt1
+        except iso639.iso639.InvalidLanguageValue:
+            language = None
 
-        if add_to_dash:
-            pass
+        file_name = generate_subtitles_from_audio_stream(
+            audio_stream,
+            os.path.join(output_location, f"{language}.vtt"),
+            language=language,
+            output_format="vtt",
+            verbose=DEBUG
+        )
+        subtitle_files.append({
+            "path": file_name,
+            "lang": language
+        })
+
+    if add_to_dash:
+        add_subtitles_to_dash(
+            os.path.join(output_location, "index.mpd"),
+            subtitle_files
+        )
 
 
 def reinitialize_hls(file_path: str):

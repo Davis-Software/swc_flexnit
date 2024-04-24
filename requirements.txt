@@ -10,5 +10,6 @@ beautifulsoup4==4.12.2
 python-ffmpeg-video-streaming==0.1.15
 openai-whisper
 numpy
+iso639-lang
 
 Werkzeug~=3.0.1

@@ -45,7 +45,12 @@ def generate_subtitles_from_audio_stream(
     model = whisper.load_model(WHISPER_MODEL, download_root=MODEL_LOCATION)
     audio = np.frombuffer(audio_stream, np.int16).flatten().astype(np.float32) / 32768.0
 
-    result = model.transcribe(audio, language=language, verbose=None if not verbose else False)
+    result = model.transcribe(
+        audio,
+        task="transcribe",
+        language=language,
+        verbose=None if not verbose else False
+    )["segments"]
 
     with open(output_file, "w") as f:
         if output_format == "srt":
