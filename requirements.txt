@@ -8,5 +8,7 @@ python-socketio==5.8.0
 websocket-client==1.6.2
 beautifulsoup4==4.12.2
 python-ffmpeg-video-streaming==0.1.15
+openai-whisper
+numpy
 
 Werkzeug~=3.0.1
