@@ -179,6 +179,32 @@ def extract_subtitles(input_file: str, output_location: str, file_info: dict = N
     return generated_files
 
 
+def add_subtitles_to_dash(mpd_path: str, subtitles: list):
+    import xml.dom.minidom as minidom
+
+    mpd = minidom.parse(mpd_path)
+
+    for subtitle in subtitles:
+        adaptation_set = mpd.createElement("AdaptationSet")
+        adaptation_set.setAttribute("contentType", "text")
+        adaptation_set.setAttribute("mimeType", "text/vtt")
+        adaptation_set.setAttribute("lang", subtitle["lang"])
+
+        representation = mpd.createElement("Representation")
+        representation.setAttribute("id", f"textstream_{subtitle['lang']}")
+        representation.setAttribute("bandwidth", "1")
+
+        base_url = mpd.createElement("BaseURL")
+        base_url.appendChild(mpd.createTextNode(f"{subtitle['lang']}.vtt"))
+
+        representation.appendChild(base_url)
+        adaptation_set.appendChild(representation)
+        mpd.getElementsByTagName("Period")[0].appendChild(adaptation_set)
+
+    with open(mpd_path, "w") as f:
+        f.write(mpd.toxml())
+
+
 def convert_file_to_hls(input_file: str, output_location: str, re_encode: bool = False):
     ffmpeg = config.get("FFMPEG_PATH")
     hw_accel = config.get_bool("FFMPEG_NVENC")
@@ -299,34 +325,17 @@ def convert_file_to_dash(input_file: str, output_location: str, add_lq: bool = F
     dash.output(dash_target, monitor=monitor if debug else None)
 
     if encode_subtitles:
-        import xml.dom.minidom as minidom
-
         subtitles = extract_subtitles(
             input_file,
             f"{output_location}/dash",
             file_info
         )
-        mpd = minidom.parse(dash_target)
 
-        for subtitle in subtitles:
-            adaptation_set = mpd.createElement("AdaptationSet")
-            adaptation_set.setAttribute("contentType", "text")
-            adaptation_set.setAttribute("mimeType", "text/vtt")
-            adaptation_set.setAttribute("lang", subtitle["lang"])
+        add_subtitles_to_dash(dash_target, subtitles)
 
-            representation = mpd.createElement("Representation")
-            representation.setAttribute("id", f"textstream_{subtitle['lang']}")
-            representation.setAttribute("bandwidth", "1")
 
-            base_url = mpd.createElement("BaseURL")
-            base_url.appendChild(mpd.createTextNode(f"{subtitle['lang']}.vtt"))
-
-            representation.appendChild(base_url)
-            adaptation_set.appendChild(representation)
-            mpd.getElementsByTagName("Period")[0].appendChild(adaptation_set)
-
-        with open(dash_target, "w") as f:
-            f.write(mpd.toxml())
+def generate_subtitles_for_dash(input_file: str, output_location: str):
+    pass
 
 
 def reinitialize_hls(file_path: str):
