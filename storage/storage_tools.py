@@ -13,6 +13,7 @@ from models.movie import MovieModel
 from models.music import SongModel
 from models.series import SeriesModel
 from utils.wsl_compatability import make_wsl_command, get_wsl_path, get_local_wsl_temp_dir
+from ai_tools.subtitle_generator import generate_subtitles_from_audio_stream
 
 frame_cache = {}
 thumbnail_cache = os.path.join(config.get("VIDEO_DIR"), "thumbnail_cache")
@@ -335,8 +336,45 @@ def convert_file_to_dash(input_file: str, output_location: str, add_lq: bool = F
         add_subtitles_to_dash(dash_target, subtitles)
 
 
-def generate_subtitles_for_dash(input_file: str, output_location: str):
-    pass
+def generate_subtitles_for_video(input_file: str, add_to_dash: bool = False, sample_rate: int = 16000):
+    file_info = get_video_file_info(input_file, sort_streams=True)
+    audio_tracks = file_info["audio"]
+
+    if not audio_tracks:
+        return
+
+    output_location = os.path.dirname(input_file)
+
+    subtitle_files = []
+    for track in audio_tracks:
+        cmd = [
+            FFMPEG,
+            "-nostdin",
+            "-threads", "0",
+            "-i", input_file,
+            "-map", f"0:{track['index']}",
+            "-f", "s16le",
+            "-ac", "1",
+            "-acodec", "pcm_s16le",
+            "-ar", str(sample_rate),
+            "-"
+        ]
+
+        language = track["tags"]["language"] if "tags" in track and "language" in track["tags"] else track["index"]
+        audio_stream = subprocess.run(cmd, capture_output=True, check=True).stdout
+
+        subtitle_files.append(
+            generate_subtitles_from_audio_stream(
+                audio_stream,
+                os.path.join(output_location, f"{language}.vtt"),
+                language=language,
+                output_format="vtt",
+                verbose=DEBUG
+            )
+        )
+
+        if add_to_dash:
+            pass
 
 
 def reinitialize_hls(file_path: str):
