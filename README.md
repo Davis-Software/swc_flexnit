@@ -9,6 +9,8 @@
 > Access to the official website itself is only permitted to swc members
 
 ### Development
+> If you are on Windows you need to run the following commands before installing the requirements:
+> `pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121`
 ```shell
 python3 -m venv venv
 source venv/bin/activate

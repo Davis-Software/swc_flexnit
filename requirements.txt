@@ -12,4 +12,7 @@ openai-whisper
 numpy
 iso639-lang
 
+# if on windows
+# run "pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121" before installing other packages
+
 Werkzeug~=3.0.1

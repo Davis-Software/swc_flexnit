@@ -24,6 +24,7 @@ FFMPEG = config.get("FFMPEG_PATH")
 FFPROBE = config.get("FFPROBE_PATH")
 
 DEBUG = config.get_bool("DEBUG")
+HW_ACCELERATION = config.get_bool("FFMPEG_NVENC")
 
 if not os.path.exists(thumbnail_cache):
     os.makedirs(thumbnail_cache)
@@ -211,7 +212,6 @@ def add_subtitles_to_dash(mpd_path: str, subtitles: list):
 
 
 def convert_file_to_hls(input_file: str, output_location: str, re_encode: bool = False):
-    hw_accel = config.get_bool("FFMPEG_NVENC")
     accelerator = config.get("FFMPEG_NVENC_ACCELERATOR")
     encoder_preset = config.get("FFMPEG_NVENC_PRESET")
     accelerator = accelerator if (accelerator in
@@ -225,7 +225,7 @@ def convert_file_to_hls(input_file: str, output_location: str, re_encode: bool =
     if not os.path.exists(destination):
         os.makedirs(destination)
 
-    if re_encode and hw_accel:
+    if re_encode and HW_ACCELERATION:
         opts = [
             FFMPEG,
             "-hwaccel", accelerator,
@@ -263,8 +263,6 @@ def convert_file_to_hls(input_file: str, output_location: str, re_encode: bool =
 
 
 def convert_file_to_dash(input_file: str, output_location: str, add_lq: bool = False):
-    hw_accel = config.get_bool("FFMPEG_NVENC")
-
     file_info = get_video_file_info(input_file, sort_streams=True)
 
     video_codec = file_info["video"][0]["codec_name"]
@@ -274,7 +272,7 @@ def convert_file_to_dash(input_file: str, output_location: str, add_lq: bool = F
     if video_codec == "h264":
         video_encoder = "copy"
     else:
-        video_encoder = "h264_nvenc" if hw_accel else "h264"
+        video_encoder = "h264_nvenc" if HW_ACCELERATION else "h264"
 
     if all(map(lambda x: x == "aac", audio_codecs)):
         audio_encoder = "copy"
@@ -297,7 +295,7 @@ def convert_file_to_dash(input_file: str, output_location: str, add_lq: bool = F
         sys.stdout.flush()
 
     input_args = {}
-    if hw_accel:
+    if HW_ACCELERATION:
         input_args["hwaccel"] = "cuda"
     if video_encoder == "copy":
         input_args["c:v"] = "copy"
@@ -353,7 +351,7 @@ def generate_subtitles_for_video(input_file: str, add_to_dash: bool = False, sam
         cmd = [
             FFMPEG,
             "-nostdin",
-            "-threads", "0",
+            "-threads", "8",
             "-i", input_file,
             "-map", f"0:{track['index']}",
             "-f", "s16le",
@@ -362,6 +360,9 @@ def generate_subtitles_for_video(input_file: str, add_to_dash: bool = False, sam
             "-ar", str(sample_rate),
             "-"
         ]
+        if HW_ACCELERATION:
+            cmd.insert(1, "-hwaccel")
+            cmd.insert(2, "cuda")
 
         language = track["tags"]["language"] if "tags" in track and "language" in track["tags"] else track["index"]
         audio_stream = subprocess.run(cmd, capture_output=True, check=True).stdout

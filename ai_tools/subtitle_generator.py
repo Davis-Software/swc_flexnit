@@ -1,9 +1,6 @@
 import os
 from typing import Iterator, TextIO
 
-import whisper
-import numpy as np
-
 from __init__ import working_dir, config
 from ai_tools.ai_helper_funcs import format_srt_timestamp, format_vtt_timestamp
 
@@ -39,6 +36,11 @@ def generate_subtitles_from_audio_stream(
         output_format: str = "srt",
         verbose: bool = False
 ):
+    import torch
+    import whisper
+    import numpy as np
+
+    assert torch.cuda.is_available(), "CUDA is required for this operation"
     assert WHISPER_MODEL in ["tiny", "small", "medium", "large"], f"Unsupported model: {WHISPER_MODEL}"
     assert output_format in ["srt", "vtt"], f"Unsupported output format: {output_format}"
 
@@ -52,7 +54,7 @@ def generate_subtitles_from_audio_stream(
         verbose=None if not verbose else False
     )["segments"]
 
-    with open(output_file, "w") as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         if output_format == "srt":
             write_srt(result, f)
         else:
