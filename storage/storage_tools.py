@@ -377,13 +377,21 @@ def generate_subtitles_for_video(
         except iso639.iso639.InvalidLanguageValue:
             language = None
 
+        def internal_monitor(progress: float):
+            if monitor is None:
+                return
+            monitor({
+                "progress": progress,
+                "language": language
+            })
+
         file_name = generate_subtitles_from_audio_stream(
             audio_stream,
             os.path.join(output_location, f"{language}.vtt"),
             language=language,
             output_format="vtt",
             verbose=DEBUG,
-            monitor=monitor
+            monitor=internal_monitor if monitor is not None else None
         )
         subtitle_files.append({
             "path": file_name,

@@ -112,9 +112,7 @@ def movie_actions(uuid, action):
     if action == "subtitles":
         def get_progress():
             for progress in generate_movie_subtitles(movie.uuid):
-                yield json.dumps(
-                    {"progress": progress}
-                )
+                yield f"data: message: {json.dumps(progress)}\n\n"
 
         return Response(
             get_progress(),

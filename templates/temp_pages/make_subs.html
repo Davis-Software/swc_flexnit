@@ -1,0 +1,33 @@
+{% extends "bases/main_base.html" %}
+
+{% block title %}Admin tools - make subs{% endblock %}
+
+{% block body %}
+    <label>
+        Movie UUID:
+        <input type="text" name="movie_uuid" id="movie_uuid">
+    </label>
+    <button name="make_subs">Make subs</button>
+    <div id="subs-info"></div>
+
+    <script>
+        const movieUUID = document.querySelector("input[name=movie_uuid]")
+        const button = document.querySelector("button[name=make_subs]")
+
+        button.addEventListener("click", () => {
+            movieUUID.disabled = true
+            button.disabled = true
+
+            let source = new EventSource(`/movies/${movieUUID.value}/subtitles`)
+            source.onmessage = (event) => {
+                const subsInfo = document.querySelector("#subs-info")
+                subsInfo.innerHTML = event.data
+            }
+            source.onerror = () => {
+                source.close()
+                movieUUID.disabled = false
+                button.disabled = false
+            }
+        })
+    </script>
+{% endblock %}
