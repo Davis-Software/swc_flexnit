@@ -18,7 +18,8 @@ def set_user_request_metrics(user: str, request: Request, response: Response):
     if response.content_type in ["image/png", "image/jpeg", "image/jpg", "audio/x-mpegurl", "audio/mpegurl", "text/plain", "video/mp4", "video/webm"]:
         metrics.delivered_media += 1
 
-    metrics.delivered_bytes += response.content_length
+    if response.content_length:
+        metrics.delivered_bytes += response.content_length
 
     match response.status_code:
         case 200:

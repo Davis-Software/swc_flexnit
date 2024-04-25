@@ -9,5 +9,5 @@ def load_routes(working_dir: str, route_path: str, recursive: bool = True):
 
         if file.endswith(".py"):
             importlib.import_module(
-                os.path.join(route_path, file).replace("\\", ".").replace("/", ".").strip(".py"),
+                os.path.join(route_path, file).replace("\\", ".").replace("/", ".")[:-3],
             )
