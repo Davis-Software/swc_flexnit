@@ -9,6 +9,7 @@ from werkzeug.utils import secure_filename
 from models.movie import get_movie, delete_movie as delete_movie_model
 from .storage_tools import get_video_file_info, convert_file_to_hls, remove_hls_files, get_video_frame, get_dir_files, \
     remove_dash_files, convert_file_to_dash, reinitialize_hls, generate_subtitles_for_video
+from utils.generator_utils import generator_from_callback_consumer
 
 MOVIE_STORAGE_PATH = path.join(config.get("VIDEO_DIR"), "movies")
 
@@ -81,9 +82,10 @@ def generate_movie_subtitles(movie_uuid: str):
     movie_path = get_movie_storage_path(movie_uuid)
     file_path = path.join(movie_path, movie.video_file)
 
-    generate_subtitles_for_video(file_path, movie.video_dash)
-
-    return True
+    return generator_from_callback_consumer(
+        generate_subtitles_for_video,
+        (file_path, movie.video_dash,)
+    )
 
 
 def revert_movie_to_mp4(movie_uuid: str):

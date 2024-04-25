@@ -1,8 +1,9 @@
 import os
+import sys
 from typing import Iterator, TextIO
 
 from __init__ import working_dir, config
-from ai_tools.ai_helper_funcs import format_srt_timestamp, format_vtt_timestamp
+from ai_tools.ai_helper_funcs import make_custom_monitor, format_srt_timestamp, format_vtt_timestamp
 
 
 WHISPER_MODEL = config.get("AI_SUBTITLE_MODEL", "small")
@@ -30,12 +31,18 @@ def write_vtt(transcript: Iterator[dict], file: TextIO):
 
 
 def generate_subtitles_from_audio_stream(
-        audio_stream: bytes,
-        output_file: str,
-        language: str = "en",
-        output_format: str = "srt",
-        verbose: bool = False
+    audio_stream: bytes,
+    output_file: str,
+    language: str = "en",
+    output_format: str = "srt",
+    verbose: bool = False,
+    monitor: callable = None
 ):
+    if monitor is not None:
+        import whisper.transcribe
+        transcription_module = sys.modules["whisper.transcribe"]
+        transcription_module.tqdm.tqdm = make_custom_monitor(monitor)
+
     import torch
     import whisper
     import numpy as np

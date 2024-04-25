@@ -335,7 +335,12 @@ def convert_file_to_dash(input_file: str, output_location: str, add_lq: bool = F
         add_subtitles_to_dash(dash_target, subtitles)
 
 
-def generate_subtitles_for_video(input_file: str, add_to_dash: bool = False, sample_rate: int = 16000):
+def generate_subtitles_for_video(
+    input_file: str,
+    add_to_dash: bool = False,
+    sample_rate: int = 16000,
+    monitor: callable = None
+):
     file_info = get_video_file_info(input_file, sort_streams=True)
     audio_tracks = file_info["audio"]
 
@@ -377,7 +382,8 @@ def generate_subtitles_for_video(input_file: str, add_to_dash: bool = False, sam
             os.path.join(output_location, f"{language}.vtt"),
             language=language,
             output_format="vtt",
-            verbose=DEBUG
+            verbose=DEBUG,
+            monitor=monitor
         )
         subtitle_files.append({
             "path": file_name,

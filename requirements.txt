@@ -10,6 +10,7 @@ beautifulsoup4==4.12.2
 python-ffmpeg-video-streaming==0.1.15
 openai-whisper
 numpy
+tqdm
 iso639-lang
 
 # if on windows

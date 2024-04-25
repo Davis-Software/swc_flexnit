@@ -1,5 +1,7 @@
+import json
+
 from __init__ import app
-from flask import request, make_response, send_file
+from flask import request, make_response, send_file, Response
 
 from models.movie import get_movie, add_movie, edit_movie, get_movies
 from storage.movie_storage import upload_movie, convert_movie_to_hls, revert_movie_to_mp4, get_movie_files, \
@@ -108,8 +110,17 @@ def movie_actions(uuid, action):
         return make_response("Converted", RequestCode.Success.OK)
 
     if action == "subtitles":
-        generate_movie_subtitles(movie.uuid)
-        return make_response("Generated", RequestCode.Success.OK)
+        def get_progress():
+            for progress in generate_movie_subtitles(movie.uuid):
+                yield json.dumps(
+                    {"progress": progress}
+                )
+
+        return Response(
+            get_progress(),
+            content_type="text/event-stream",
+            status=RequestCode.Success.OK
+        )
 
     if action == "revert":
         revert_movie_to_mp4(movie.uuid)
