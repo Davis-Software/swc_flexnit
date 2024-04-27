@@ -2,7 +2,7 @@ import requests
 
 from functools import wraps
 from utils.request_codes import RequestCode
-from flask import session, request, render_template, abort
+from flask import session, request, render_template, abort, redirect
 
 
 def check_password(user, password) -> (bool, bool):
@@ -31,7 +31,7 @@ def auth_required(func):
     def check(*args, **kwargs):
         if check_auth():
             return func(*args, **kwargs)
-        return render_template("auth/login.html", redirect=request.path)
+        return redirect(f"/login?redirect={request.path}")
 
     return check
 
