@@ -63,7 +63,11 @@ def _get_dash_stream(key, rep):
 
 
 def _dash(dash):
+    """
+    @flexnit: Modified to include custom options from media and input_args
+    """
     dirname, name = get_path_info(dash.output_)
+    extra_ops = dash.options.get("extra_ops", [])
     _args = dash.format.all
     _args.update({
         'use_timeline':     USE_TIMELINE,
@@ -72,11 +76,16 @@ def _dash(dash):
         "media_seg_name":   '{}_chunk_$RepresentationID$_$Number%05d$.$ext$'.format(name),
         'f': 'dash'
     })
+    if "extra_ops" in dash.options:
+        dash.options.pop("extra_ops")
     _args.update(dash.options)
     args = cnv_options_to_args(_args)
 
     for key, rep in enumerate(dash.reps):
         args += _get_dash_stream(key, rep)
+
+    for extra_op in extra_ops:
+        args += cnv_options_to_args(extra_op)
 
     return args + ['-strict', '-2', '{}/{}.mpd'.format(dirname, name)]
 

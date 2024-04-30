@@ -52,12 +52,14 @@ def get_video_file_info(file_path: str, sort_streams: bool = False):
         video = filter(lambda x: x["codec_type"] == "video", info["streams"])
         audio = filter(lambda x: x["codec_type"] == "audio", info["streams"])
         subtitle = filter(lambda x: x["codec_type"] == "subtitle", info["streams"])
+        attachment = filter(lambda x: x["codec_type"] == "attachment", info["streams"])
 
         return {
             "format": info["format"],
             "video": list(video),
             "audio": list(audio),
-            "subtitle": list(subtitle)
+            "subtitle": list(subtitle),
+            "attachment": list(attachment)
         }
 
     return json.loads(ffprobe.stdout.read())
@@ -308,6 +310,7 @@ def convert_file_to_dash(input_file: str, output_location: str, add_lq: bool = F
         "dn": None,
         "sn": None
     }
+    extra_ops = []
     if video_encoder != "copy":
         c_opts["pix_fmt"] = "yuv420p"
 
@@ -315,12 +318,17 @@ def convert_file_to_dash(input_file: str, output_location: str, add_lq: bool = F
     if add_lq:
         qualities.append(72)
 
+    if len(file_info["attachment"]) > 0:
+        for stream in file_info["attachment"]:
+            extra_ops.append({"map": f"-0:{stream['index']}"})
+
     dash_target = f"{output_location}/dash/index.mpd"
     dash = video.dash(
         ffmpeg_streaming.Formats.h264(video=video_encoder, audio=audio_encoder),
         **c_opts,
         seg_duration=20,
         frag_duration=10,
+        extra_ops=extra_ops
     )
     dash.auto_generate_representations([])
     dash.output(dash_target, monitor=monitor if DEBUG else None)
