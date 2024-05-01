@@ -5,6 +5,16 @@ import SwcLoader from "../SwcLoader";
 
 const News = lazy(() => import("./News"))
 
+function TitleLoader(){
+    return (
+        <Box className="p-0 col-12 col-md-6 col-lg-4 col-xxl-2" sx={{minHeight: "400px"}}>
+            <Box className="p-2 position-relative w-100 h-100">
+                <Skeleton className="h-100" variant="rectangular" animation="wave" />
+            </Box>
+        </Box>
+    )
+}
+
 interface TitlePreviewProps{
     title: TitleEntryType
     onClick?: () => void
@@ -147,32 +157,27 @@ function TitleBrowser(props: TitleBrowserProps){
 
     return (
         <>
-            {props.isNotStandAlone ? (
-                <Box
-                    className="row m-0 flex-grow-1"
-                    style={{overflowY: "auto", overflowX: "hidden"}}
-                    ref={scrollRef as React.RefObject<HTMLDivElement>}
-                >
-                    {titles.map((title, i) => (
-                        <TitlePreview key={i} title={title} onClick={() => {
-                            if(props.setSelectedTitle) props.setSelectedTitle(title)
-                        }} />
-                    ))}
-                </Box>
-            ) : (
-                <Box className="row m-0" style={{overflowX: "hidden", overflowY: "clip", height: "auto"}}>
-                    {titles.map((title, i) => (
-                        <TitlePreview key={i} title={title} onClick={() => {
-                            if(props.setSelectedTitle) props.setSelectedTitle(title)
-                        }} />
-                    ))}
-                </Box>
-            )}
-            {loading && (
-                <Box className="d-flex justify-content-center">
-                    <SwcLoader />
-                </Box>
-            )}
+            <Box
+                className={`row m-0 ${props.isNotStandAlone ? "flex-grow-1" : ""}`}
+                style={{overflowX: "hidden", overflowY: props.isNotStandAlone ? "auto" : "clip", height: props.isNotStandAlone ? undefined : "auto"}}
+                ref={props.isNotStandAlone ? scrollRef as React.RefObject<HTMLDivElement> : undefined}
+            >
+                {titles.map((title, i) => (
+                    <TitlePreview key={i} title={title} onClick={() => {
+                        if(props.setSelectedTitle) props.setSelectedTitle(title)
+                    }} />
+                ))}
+                {loading && (
+                    Array.from(new Array(15)).map((_, i) => (
+                        <TitleLoader key={i} />
+                    ))
+                )}
+                {loading && (
+                    <Box className="d-flex justify-content-center">
+                        <SwcLoader />
+                    </Box>
+                )}
+            </Box>
         </>
     )
 }
