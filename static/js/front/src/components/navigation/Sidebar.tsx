@@ -118,14 +118,22 @@ function Sidebar(props: SidebarProps){
     const [createNewModal, setCreateNewModal] = React.useState(false)
 
     useEffect(() => {
+        const abortController = new AbortController()
+
         sessionStorage.setItem("search", search)
         sessionStorage.setItem("search-mode", searchMode)
-        fetch(`/search/${searchMode}${search !== "" ? "?q=" + search : ""}`)
+        fetch(`/search/${searchMode}${search !== "" ? "?q=" + search : ""}`, {
+            signal: abortController.signal
+        })
             .then(res => res.json())
             .then(res => {
                 props.setLoadedOnce(true)
                 props.setSearchResults(res)
             })
+
+        return () => {
+            abortController.abort()
+        }
     }, [search, searchMode])
 
     function handleClick(searchResult: TitleEntryType){

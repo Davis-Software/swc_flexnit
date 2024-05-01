@@ -89,11 +89,13 @@ function TitleBrowser(props: TitleBrowserProps){
             window
     );
 
-    function loadData(reset: boolean = false){
+    function loadData(reset: boolean = false, abortController?: AbortController){
         let currPage = reset ? 1 : (getStableProp(props.id, "page") as number + 1)
         setStableProp(props.id, "pause", true)
         setLoading(true)
-        fetch(`/search/browse?c=15&p=${currPage}`)
+        fetch(`/search/browse?c=15&p=${currPage}`, {
+            signal: abortController?.signal
+        })
             .then(r => r.json())
             .then((data) => {
                 if(data.length === 0) {
@@ -108,13 +110,15 @@ function TitleBrowser(props: TitleBrowserProps){
     }
 
     useEffect(() => {
-        loadData(true)
+        const abortController = new AbortController()
+        loadData(true, abortController)
 
         if(scrollRef.current) {
             scrollRef.current.scrollTo(0, 0)
         }
 
         return () => {
+            abortController.abort()
             setTitles([])
             setStableProp(props.id, "page", 1)
             setStableProp(props.id, "pause", false)
