@@ -1,15 +1,30 @@
 from __init__ import app, config
-from flask import request, redirect
-
+from flask import request, redirect, make_response, session
 
 UMS_ROUTE = config.get("UMS_ROUTE", "https://ums.software-city.org")
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    return redirect(f"{UMS_ROUTE}/login?title=FlexNit%20Login&redirect={request.root_url}{request.args.get('redirect') or '/'}")
+    url = request.root_url
+    if "http://" in url or "https://" in url:
+        url = url.split("//")[1]
+
+    resp = make_response(
+        redirect(f"{UMS_ROUTE}/login?title=SWC%20Interface%20Login&redirect={url}{request.args.get('redirect') or '/'}")
+    )
+
+    if session.get("username") is None:
+        session.clear()
+        resp.delete_cookie("session")
+
+    return resp
 
 
 @app.route("/logout")
 def logout():
-    return redirect(f"{UMS_ROUTE}/logout?redirect={request.root_url}")
+    url = request.root_url
+    if "http://" in url or "https://" in url:
+        url = url.split("//")[1]
+
+    return redirect(f"{UMS_ROUTE}/logout?redirect={url}")

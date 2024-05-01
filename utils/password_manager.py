@@ -1,29 +1,10 @@
-import requests
-
 from functools import wraps
 from utils.request_codes import RequestCode
-from flask import session, request, render_template, abort, redirect
-
-
-def check_password(user, password) -> (bool, bool):
-    resp = requests.post(
-        "https://api.software-city.org/app/check_login?non-hash&is-admin",
-        data={"username": user, "password": password}
-    )
-
-    if resp.status_code == 200:
-        resp = resp.json()
-        return resp["resp"], resp
-
-    return False, {
-        "is_admin": False,
-        "is_cloud": False,
-        "permissions": []
-    }
+from flask import session, request, abort, redirect
 
 
 def check_auth():
-    return session.get("logged_in")
+    return session.get("logged_in") and session.get("user")
 
 
 def auth_required(func):
@@ -37,14 +18,17 @@ def auth_required(func):
 
 
 def check_admin():
-    return session.get("admin")
+    return session.get("user").get("admin", False) or session.get("admin", False)
 
 
 def check_permission(permission):
-    perms = session.get("permissions")
+    perms = session.get("user").get("permissions") or []
+    perms.extend(session.get("permissions", []))
 
     if perms is None:
         return False
+    if "*" in perms:
+        return True
 
     return permission in perms
 
