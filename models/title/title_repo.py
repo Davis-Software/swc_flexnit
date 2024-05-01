@@ -4,6 +4,7 @@ from models.movie.movie_model import MovieModel
 from models.series import EpisodeModel, EpisodeGroup
 from models.series.series_model import SeriesModel
 
+from utils.password_manager import check_admin
 
 TITLE_CACHE = []
 TYPE_NAME_MAP = {
@@ -17,10 +18,16 @@ TYPE_NAME_MAP = {
 def get_titles(page: int, count: int, transform=lambda title: title.to_json()) -> list[dict]:
     title_count = MovieModel.query.count() + SeriesModel.query.count()
 
+    def query_call(obj):
+        titles = db.session.query(obj)
+        if not check_admin():
+            titles = titles.filter(obj.is_visible)
+        return titles.all()
+
     if len(TITLE_CACHE) != title_count:
         TITLE_CACHE.clear()
-        TITLE_CACHE.extend([transform(movie) for movie in db.session.query(MovieModel).all()])
-        TITLE_CACHE.extend([transform(series) for series in db.session.query(SeriesModel).all()])
+        TITLE_CACHE.extend([transform(movie) for movie in query_call(MovieModel)])
+        TITLE_CACHE.extend([transform(series) for series in query_call(SeriesModel)])
 
         TITLE_CACHE.sort(key=lambda title: title["title"].lower())
 
@@ -68,7 +75,8 @@ def make_title_entry(title: MovieModel or SeriesModel or EpisodeModel or Episode
         entry["episodes"] = len(title.episodes)
 
     if type(title) is MovieModel:
-        entry["runtime"] = title.video_info["format"]["duration"] if title.video_info is not None and title.video_info != {} else None
+        entry["runtime"] = title.video_info["format"][
+            "duration"] if title.video_info is not None and title.video_info != {} else None
     elif type(title) is SeriesModel:
         entry["season_count"] = title.season_count
     elif type(title) is EpisodeModel:

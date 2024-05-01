@@ -217,7 +217,7 @@ def base_query(order: bool = True):
     if order:
         query = query.order_by(SeriesModel.title.asc())
     if not check_admin():
-        query = query.filter_by(is_visible=True)
+        query = query.filter(SeriesModel.is_visible)
 
     return query
 
@@ -250,6 +250,9 @@ def latest_series(both: bool = True, limit: int = 25, grouping_time: int = 30):
     if both:
         episodes = EpisodeModel.query.order_by(EpisodeModel.added_on.desc()).all()
         episode_groups = []
+
+        if not check_admin():
+            episodes = [episode for episode in episodes if episode.series.is_visible]
 
         for episode in episodes:
             episode_group = EpisodeGroup(episode.uuid, episode.series, [episode], episode.added_on)

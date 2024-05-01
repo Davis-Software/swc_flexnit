@@ -86,7 +86,7 @@ def base_query(order: bool = True):
     if order:
         query = query.order_by(MovieModel.title.asc())
     if not check_admin():
-        query = query.filter_by(is_visible=True)
+        query = query.filter(MovieModel.is_visible)
 
     return query
 
