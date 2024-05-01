@@ -11,7 +11,7 @@ def login():
         url = url.split("//")[1]
 
     resp = make_response(
-        redirect(f"{UMS_ROUTE}/login?title=SWC%20Interface%20Login&redirect={url}{request.args.get('redirect') or '/'}")
+        redirect(f"{UMS_ROUTE}/login?title=FlexNit%20Login&redirect={url}{request.args.get('redirect') or '/'}")
     )
 
     if session.get("user") is None:
