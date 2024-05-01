@@ -14,7 +14,7 @@ def login():
         redirect(f"{UMS_ROUTE}/login?title=SWC%20Interface%20Login&redirect={url}{request.args.get('redirect') or '/'}")
     )
 
-    if session.get("username") is None:
+    if session.get("user") is None:
         session.clear()
         resp.delete_cookie("session")
 
