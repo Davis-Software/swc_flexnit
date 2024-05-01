@@ -54,7 +54,7 @@ function UserInfo(){
                         badgeContent={isAdminSet ? "A" : ""}
                         invisible={!isAdminSet}
                     >
-                        <Avatar alt={user} src={`https://interface.software-city.org/user?avatar=${user}`} />
+                        <Avatar alt={user} src={`https://ums.software-city.org/api/avatar/${user}`} />
                     </Badge>
                 </IconButton>
             </Tooltip>
