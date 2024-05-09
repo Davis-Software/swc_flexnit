@@ -35,6 +35,10 @@ function AdminPageUserMetrics(){
             .then(setMetrics)
     }, []);
 
+    function sortMetrics(a: UserMetrics, b: UserMetrics){
+        return a.updated_at > b.updated_at ? -1 : 1
+    }
+
     return (
         <>
             <Table>
@@ -51,7 +55,7 @@ function AdminPageUserMetrics(){
                     </TableRow>
                 </TableHead>
                 <TableBody hidden={metrics.length === 0}>
-                    {metrics.map((metric) =>
+                    {metrics.sort(sortMetrics).map((metric) =>
                         <FileManagerUserMetricsTableRow key={metric.id} metric={metric} rowClicked={setSelectedMetric} />
                     )}
                 </TableBody>
