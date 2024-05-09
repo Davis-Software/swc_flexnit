@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {Container, Skeleton, Typography} from "@mui/material";
 import TitleEntryType from "../../types/titleEntryType";
 import SwcLoader from "../SwcLoader";
@@ -45,6 +45,40 @@ function TitleView({title, imageHeight = 100}: TitleViewProps){
             </div>
         </>
     )
+}
+function TitleViewLoader({count}: {count: number}){
+    const TextSkeleton = () => (
+        <div className="ms-3 flex-grow-1">
+            <Skeleton variant="text" height="30px" width="30%" animation="wave"/>
+            <Skeleton variant="text" width="25%" animation="wave"/>
+        </div>
+    )
+
+    return <>
+        <EffectGenerator
+            className="d-flex mb-4 p-2 position-relative"
+            candleEffect
+        >
+            <>
+                <Skeleton variant="rectangular" width={120} height={200} animation="wave"/>
+                <TextSkeleton />
+            </>
+        </EffectGenerator>
+        <div className="row m-0">
+            {Array.from({length: count - 1}).map((_, i) => (
+                <EffectGenerator
+                    className="col-lg-6 col-12 d-flex p-1 position-relative"
+                    key={i}
+                    candleEffect
+                >
+                    <>
+                        <Skeleton variant="rectangular" width={60} height={100} animation="wave"/>
+                        <TextSkeleton />
+                    </>
+                </EffectGenerator>
+            ))}
+        </div>
+    </>
 }
 
 const nameMapping = {
@@ -109,11 +143,7 @@ function News(props: NewsProps){
                             ))}
                         </div>
                     </>
-                ) : (
-                    <div className="d-flex justify-content-center">
-                        <SwcLoader />
-                    </div>
-                )}
+                ) : <TitleViewLoader count={props.count || 5} />}
             </Container>
         </>
     )
