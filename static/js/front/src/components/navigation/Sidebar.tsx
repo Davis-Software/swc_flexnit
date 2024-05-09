@@ -100,6 +100,21 @@ function TitleEntry({searchResult}: TitleEntryProps){
         </>
     )
 }
+function TitleEntryLoader(){
+    return (
+        <EffectGenerator
+            className="result p-2 ps-3 border-bottom border-secondary position-relative"
+            candleEffect
+            candleSize={2}
+        >
+            <Skeleton variant="rectangular" sx={{minWidth: "70px"}} height="100%" animation="wave" />
+            <div className="ms-3 w-100">
+                <div className="fw-bold"><Skeleton variant="text" width="50%" animation="wave" /></div>
+                <Typography variant="caption"><Skeleton variant="text" width="60%" animation="wave" /></Typography>
+            </div>
+        </EffectGenerator>
+    )
+}
 
 interface SidebarProps {
     setSelectedTitle: (title: TitleEntryType) => void;
@@ -115,10 +130,14 @@ function Sidebar(props: SidebarProps){
         React.useState<"all" | "movie" | "series">(sessionStorage.getItem("search-mode") as "all" | "movie" | "series" || "all")
     const searchBarRef = useRef<HTMLInputElement>(null)
 
+    const [loading, setLoading] = React.useState(true)
+    const loadTimeout = useRef<NodeJS.Timeout | null>(null)
     const [createNewModal, setCreateNewModal] = React.useState(false)
 
     useEffect(() => {
         const abortController = new AbortController()
+        loadTimeout.current && clearTimeout(loadTimeout.current)
+        setLoading(true)
 
         sessionStorage.setItem("search", search)
         sessionStorage.setItem("search-mode", searchMode)
@@ -129,6 +148,7 @@ function Sidebar(props: SidebarProps){
             .then(res => {
                 props.setLoadedOnce(true)
                 props.setSearchResults(res)
+                loadTimeout.current = setTimeout(() => setLoading(false), 100 + Math.random() * 300)
             })
 
         return () => {
@@ -174,12 +194,15 @@ function Sidebar(props: SidebarProps){
                 </div>
 
                 <div className="results">
+                    {loading && Array.from(new Array(8)).map((_, i) => (
+                        <TitleEntryLoader key={i} />
+                    ))}
                     {props.searchResults.map((searchResult, i) => (
                         <EffectGenerator
                             key={i}
                             onClick={() => handleClick(searchResult)}
                             onMouseDown={(e) => handleMiddleClick(e, searchResult)}
-                            className={"result p-2 ps-3 border-bottom border-secondary"}
+                            className="result p-2 ps-3 border-bottom border-secondary"
                             rippleEffect
                             candleEffect
                             candleSize={2}
