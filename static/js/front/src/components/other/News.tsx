@@ -1,7 +1,6 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Container, Skeleton, Typography} from "@mui/material";
 import TitleEntryType from "../../types/titleEntryType";
-import SwcLoader from "../SwcLoader";
 import EffectGenerator from "../EffectGenerator";
 
 function getTitleImage(title: TitleEntryType){
@@ -14,9 +13,11 @@ function getTitleImage(title: TitleEntryType){
 interface TitleViewProps {
     title: TitleEntryType
     imageHeight?: number
+    small?: boolean
 }
-function TitleView({title, imageHeight = 100}: TitleViewProps){
+function TitleView({title, imageHeight = 100, small}: TitleViewProps){
     const [loading, setLoading] = useState(true)
+    imageHeight = small ? 100 : imageHeight
 
     return (
         <>
@@ -36,7 +37,7 @@ function TitleView({title, imageHeight = 100}: TitleViewProps){
                 ) : (
                     <Typography variant="overline">New {nameMapping[title.type]}</Typography>
                 )}
-                <Typography variant="h5">{title.type === "episode" && "New Episode: "}{title.type !== "episode_group" ? title.title : title.series?.title}</Typography>
+                <Typography variant={small ? "h6" : "h5"}>{title.type === "episode" && "New Episode: "}{title.type !== "episode_group" ? title.title : title.series?.title}</Typography>
                 <p>{title.type === "episode_group" ? (
                     title.episodes + " New Episodes Available"
                 ) : (
@@ -46,7 +47,7 @@ function TitleView({title, imageHeight = 100}: TitleViewProps){
         </>
     )
 }
-function TitleViewLoader({count}: {count: number}){
+function TitleViewLoader({count, small}: {count: number, small?: boolean}){
     const TextSkeleton = () => (
         <div className="ms-3 flex-grow-1">
             <Skeleton variant="text" height="30px" width="30%" animation="wave"/>
@@ -60,7 +61,7 @@ function TitleViewLoader({count}: {count: number}){
             candleEffect
         >
             <>
-                <Skeleton variant="rectangular" width={120} height={200} animation="wave"/>
+                <Skeleton variant="rectangular" width={!small ? 120 : 60} height={!small ? 200 : 100} animation="wave"/>
                 <TextSkeleton />
             </>
         </EffectGenerator>
@@ -91,6 +92,8 @@ const nameMapping = {
 interface NewsProps {
     setSelectedTitle?: (title: TitleEntryType) => void
     count?: number
+    small?: boolean
+    className?: string
 }
 function News(props: NewsProps){
     const [latestRelease, setLatestRelease] = useState<TitleEntryType | null>(null)
@@ -112,7 +115,7 @@ function News(props: NewsProps){
 
     return (
         <>
-            <Container className="pt-5 p-3">
+            <Container className={props.className || "pt-5 p-3"}>
                 <h3 className="text-center">Latest Additions</h3>
                 <hr/>
                 {latestReleases.length > 0 ? (
@@ -125,7 +128,7 @@ function News(props: NewsProps){
                                 candleEffect
                                 onClick={() => handleTitleLink(latestRelease)}
                             >
-                                <TitleView title={latestRelease} imageHeight={200} />
+                                <TitleView title={latestRelease} imageHeight={200} small={props.small} />
                             </EffectGenerator>
                         )}
                         <div className="row m-0">
@@ -138,12 +141,12 @@ function News(props: NewsProps){
                                     candleEffect
                                     onClick={() => handleTitleLink(title)}
                                 >
-                                    <TitleView title={title} />
+                                    <TitleView title={title} small={props.small} />
                                 </EffectGenerator>
                             ))}
                         </div>
                     </>
-                ) : <TitleViewLoader count={props.count || 5} />}
+                ) : <TitleViewLoader count={props.count || 5} small={props.small} />}
             </Container>
         </>
     )

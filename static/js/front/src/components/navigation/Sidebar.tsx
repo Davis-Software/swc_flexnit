@@ -1,5 +1,16 @@
 import React, {useEffect, useRef, useState} from "react";
-import {Button, FormControl, MenuItem, Select, Skeleton, TextField, Typography} from "@mui/material";
+import {
+    Button,
+    Collapse,
+    FormControl,
+    Link,
+    MenuItem,
+    Paper,
+    Select,
+    Skeleton,
+    TextField,
+    Typography
+} from "@mui/material";
 import SwcModal from "../SwcModal";
 import TitleEntryType from "../../types/titleEntryType";
 import EffectGenerator from "../EffectGenerator";
@@ -8,6 +19,7 @@ import {getTimeString} from "../../utils/FormatDate";
 import useIsInView from "../../hooks/useIsInView";
 import {navigateTo} from "../../utils/navigation";
 import {useIsAdmin} from "../../contexts/showAdminContext";
+import News from "../other/News";
 
 interface CreateNewModalProps {
     show: boolean;
@@ -129,15 +141,27 @@ function Sidebar(props: SidebarProps){
     const [searchMode, setSearchMode] =
         React.useState<"all" | "movie" | "series">(sessionStorage.getItem("search-mode") as "all" | "movie" | "series" || "all")
     const searchBarRef = useRef<HTMLInputElement>(null)
+    const [showNews, setShowNews] = React.useState(window.innerWidth < 840)
 
     const [loading, setLoading] = React.useState(true)
     const loadTimeout = useRef<NodeJS.Timeout | null>(null)
     const [createNewModal, setCreateNewModal] = React.useState(false)
 
     useEffect(() => {
+        function updateShowNews(){
+            setShowNews(window.innerWidth < 840 && search === "")
+        }
+        window.addEventListener("resize", updateShowNews)
+        return () => window.removeEventListener("resize", updateShowNews)
+    }, []);
+
+    useEffect(() => {
         const abortController = new AbortController()
         loadTimeout.current && clearTimeout(loadTimeout.current)
         setLoading(true)
+        if(search !== ""){
+            setShowNews(false)
+        }
 
         sessionStorage.setItem("search", search)
         sessionStorage.setItem("search-mode", searchMode)
@@ -194,6 +218,30 @@ function Sidebar(props: SidebarProps){
                 </div>
 
                 <div className="results">
+                    {showNews && (
+                        <Paper elevation={5}>
+                            <News
+                                setSelectedTitle={title => {
+                                    navigateTo(`/info?mode=${title.series ? "series" : "movie"}&uuid=${title.series ? title.series.uuid : title.uuid}`)
+                                }}
+                                count={3}
+                                small
+                                className="px-2 pt-3"
+                            />
+                            <div className="text-center pb-1">
+                                <Typography variant="overline">
+                                    <Link
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            navigateTo("/news")
+                                        }}
+                                    >Show more</Link>
+                                </Typography>
+                            </div>
+                        </Paper>
+                    )}
+
                     {loading && Array.from(new Array(8)).map((_, i) => (
                         <TitleEntryLoader key={i} />
                     ))}
