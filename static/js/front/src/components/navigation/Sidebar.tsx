@@ -147,10 +147,10 @@ function Sidebar(props: SidebarProps){
     const loadTimeout = useRef<NodeJS.Timeout | null>(null)
     const [createNewModal, setCreateNewModal] = React.useState(false)
 
+    function updateShowNews(){
+        setShowNews(window.innerWidth < 840)
+    }
     useEffect(() => {
-        function updateShowNews(){
-            setShowNews(window.innerWidth < 840 && search === "")
-        }
         window.addEventListener("resize", updateShowNews)
         return () => window.removeEventListener("resize", updateShowNews)
     }, []);
@@ -218,7 +218,7 @@ function Sidebar(props: SidebarProps){
                 </div>
 
                 <div className="results">
-                    {showNews && (
+                    {showNews && search === "" && (
                         <Paper elevation={5}>
                             <News
                                 setSelectedTitle={title => {
