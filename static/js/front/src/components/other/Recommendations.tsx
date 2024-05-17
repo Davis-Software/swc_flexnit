@@ -115,7 +115,7 @@ function Recommendations(props: RecommendedProps){
                     </div>
                 </>
             )}
-            {recommendedSeries.length > 0 || loading && (
+            {(recommendedSeries.length > 0 || loading) && (
                 <>
                     <h4 className="text-center">Series</h4>
                     <div className="row m-0">
