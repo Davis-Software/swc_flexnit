@@ -114,41 +114,39 @@ function News(props: NewsProps){
     }
 
     return (
-        <>
-            <Container className={props.className || "pt-5 p-3"}>
-                <h3 className="text-center">Latest Additions</h3>
-                <hr/>
-                {latestReleases.length > 0 ? (
-                    <>
-                        {!!latestRelease && (
+        <Container className={props.className || "pt-5 p-3"}>
+            <h3 className="text-center">Latest Additions</h3>
+            <hr/>
+            {latestReleases.length > 0 ? (
+                <>
+                    {!!latestRelease && (
+                        <EffectGenerator
+                            className="d-flex mb-4 p-2"
+                            style={{cursor: "pointer"}}
+                            rippleEffect
+                            candleEffect
+                            onClick={() => handleTitleLink(latestRelease)}
+                        >
+                            <TitleView title={latestRelease} imageHeight={200} small={props.small} />
+                        </EffectGenerator>
+                    )}
+                    <div className="row m-0">
+                        {latestReleases.slice(1).map((title, i) => (
                             <EffectGenerator
-                                className="d-flex mb-4 p-2"
+                                className="col-lg-6 col-12 d-flex p-1"
                                 style={{cursor: "pointer"}}
+                                key={i}
                                 rippleEffect
                                 candleEffect
-                                onClick={() => handleTitleLink(latestRelease)}
+                                onClick={() => handleTitleLink(title)}
                             >
-                                <TitleView title={latestRelease} imageHeight={200} small={props.small} />
+                                <TitleView title={title} small={props.small} />
                             </EffectGenerator>
-                        )}
-                        <div className="row m-0">
-                            {latestReleases.slice(1).map((title, i) => (
-                                <EffectGenerator
-                                    className="col-lg-6 col-12 d-flex p-1"
-                                    style={{cursor: "pointer"}}
-                                    key={i}
-                                    rippleEffect
-                                    candleEffect
-                                    onClick={() => handleTitleLink(title)}
-                                >
-                                    <TitleView title={title} small={props.small} />
-                                </EffectGenerator>
-                            ))}
-                        </div>
-                    </>
-                ) : <TitleViewLoader count={props.count || 5} small={props.small} />}
-            </Container>
-        </>
+                        ))}
+                    </div>
+                </>
+            ) : <TitleViewLoader count={props.count || 5} small={props.small} />}
+        </Container>
     )
 }
 

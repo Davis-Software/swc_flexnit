@@ -12,6 +12,7 @@ interface TitleEntryType{
     hls?: boolean
     dash?: boolean
     episodes?: number
+    score?: number
 }
 
 export default TitleEntryType;

@@ -2,6 +2,7 @@ import TitleEntryType from "../../types/titleEntryType";
 import React, {lazy, useEffect, useState} from "react";
 import {Box, Skeleton, Tab, Tabs, Typography, useTheme} from "@mui/material";
 import SwcLoader from "../SwcLoader";
+import Recommendations from "./Recommendations";
 
 const News = lazy(() => import("./News"))
 
@@ -49,7 +50,7 @@ function TitlePreview(props: TitlePreviewProps){
                     className="rounded-1"
                 />
                 <Box
-                    className="p-2 p-xl-5 position-absolute top-0 start-0 text-break w-100 h-100"
+                    className="p-2 p-xl-4 position-absolute top-0 start-0 text-break w-100 h-100"
                     sx={{
                         "&:hover": {
                             opacity: 1
@@ -184,16 +185,16 @@ function TitleBrowser(props: TitleBrowserProps){
 
 interface ContentBrowserProps{
     id: string
-    startTab?: "browse" | "news"
-    forceTab?: "browse" | "news"
+    startTab?: "browse" | "news" | "recommendations"
+    forceTab?: "browse" | "news" | "recommendations"
     setSelectedTitle?: (title: TitleEntryType) => void
 }
 function ContentBrowser(props: ContentBrowserProps){
-    const [tab, setTab] = useState<"browse" | "news">(
+    const [tab, setTab] = useState<"browse" | "news" | "recommendations">(
         props.forceTab ||
-        sessionStorage.getItem("home-tab") as "browse" | "news" ||
+        sessionStorage.getItem("home-tab") as "browse" | "news" | "recommendations" ||
         props.startTab ||
-        "browse"
+        "news"
     )
 
     useEffect(() => {
@@ -206,13 +207,9 @@ function ContentBrowser(props: ContentBrowserProps){
             {props.forceTab === undefined && (
                 <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="fullWidth" className="mb-3">
                     <Tab value="browse" label="Browse" />
+                    <Tab value="recommendations" label="Recommendations" />
                     <Tab value="news" label="News" />
                 </Tabs>
-            )}
-            {(props.forceTab === undefined || props.forceTab === "news") && (
-                <Box hidden={tab !== "news"}>
-                    <News setSelectedTitle={props.setSelectedTitle} count={7} />
-                </Box>
             )}
             {(props.forceTab === undefined || props.forceTab === "browse") && (
                 (props.forceTab === undefined ? (
@@ -224,6 +221,16 @@ function ContentBrowser(props: ContentBrowserProps){
                 ) : (
                     <TitleBrowser setSelectedTitle={props.setSelectedTitle} id={"m-" + props.id}/>
                 ))
+            )}
+            {(props.forceTab === undefined || props.forceTab === "recommendations") && (
+                <Box hidden={tab !== "recommendations"}>
+                    <Recommendations setSelectedTitle={props.setSelectedTitle} />
+                </Box>
+            )}
+            {(props.forceTab === undefined || props.forceTab === "news") && (
+                <Box hidden={tab !== "news"}>
+                    <News setSelectedTitle={props.setSelectedTitle} count={7} />
+                </Box>
             )}
         </>
     )
