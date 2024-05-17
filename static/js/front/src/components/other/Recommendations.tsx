@@ -47,7 +47,7 @@ function TitlePreview(props: TitlePreviewProps){
                     }}
                 >
                     <Box className="fw-bold mb-2">{props.title.title}</Box>
-                    <Typography variant="caption">{props.title.tags} - {props.title.score! * 100}% match</Typography>
+                    <Typography variant="caption">{props.title.tags} - {Math.round(props.title.score! * 100)}% match</Typography>
                     {props.title.description && (
                         <p className="mt-1">{props.title.description?.length > 100 ? props.title.description?.slice(0, 200) + "..." : props.title.description}</p>
                     )}
