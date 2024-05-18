@@ -20,7 +20,7 @@ class BaseModel(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    def to_dict(self, show: list = None, to_json=True, parent_type = None):
+    def to_dict(self, show: list = None, to_json=True, parent_type=None):
         columns = self.__table__.columns.keys()
         relationships = self.__mapper__.relationships.keys()
 

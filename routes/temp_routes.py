@@ -1,7 +1,7 @@
 from flask import render_template
 
 from __init__ import app
-from utils.password_manager import admin_required
+from swc_utils.web.auth_manager import admin_required
 
 
 @app.route("/make_subs")

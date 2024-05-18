@@ -4,7 +4,7 @@ from models.movie.movie_model import MovieModel
 from models.series import EpisodeModel, EpisodeGroup
 from models.series.series_model import SeriesModel
 
-from utils.password_manager import check_admin
+from swc_utils.web.auth_manager import check_admin
 
 TITLE_CACHE = []
 TYPE_NAME_MAP = {

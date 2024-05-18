@@ -2,7 +2,7 @@ from __init__ import app
 from flask import request, make_response, session
 
 from models.playback_progress import get_playback_progress, set_playback_progress
-from utils.password_manager import auth_required
+from swc_utils.web.auth_manager import auth_required
 
 
 @app.route("/sync", methods=["GET", "POST"])

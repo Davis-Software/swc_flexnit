@@ -1,7 +1,7 @@
 from sqlalchemy import or_
 from werkzeug.datastructures import FileStorage
 
-from utils.password_manager import check_admin
+from swc_utils.web.auth_manager import check_admin
 from .movie_model import MovieModel
 
 

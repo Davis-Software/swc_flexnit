@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 from models.movie import get_movie, delete_movie as delete_movie_model
 from .storage_tools import get_video_file_info, convert_file_to_hls, remove_hls_files, get_video_frame, get_dir_files, \
     remove_dash_files, convert_file_to_dash, reinitialize_hls, generate_subtitles_for_video
-from utils.generator_utils import generator_from_callback_consumer
+from swc_utils.other.generator_utils import generator_from_callback_consumer
 
 MOVIE_STORAGE_PATH = path.join(config.get("VIDEO_DIR"), "movies")
 

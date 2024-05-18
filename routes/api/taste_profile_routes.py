@@ -5,7 +5,7 @@ from __init__ import app
 from models.playback_progress import get_playback_progress
 from models.taste_profile.taste_profile_model import TasteProfile
 
-from utils.password_manager import auth_required
+from swc_utils.web.auth_manager import auth_required
 
 
 @app.route("/taste_profile")

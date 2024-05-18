@@ -1,10 +1,10 @@
 import os
 
 from flask import Flask
-from tools.config import Config
 from tools.python_mml import load_mods
 from flask_sqlalchemy import SQLAlchemy
-from database import database_connection
+from swc_utils.tools import Config
+from swc_utils.database import database_connection, ConnectionProfile
 
 
 working_dir = os.path.dirname(os.path.realpath(__file__))
@@ -15,7 +15,7 @@ app = Flask(__name__)
 app.secret_key = config["SECRET_KEY"]
 database_connection.connect_to_database(
     app,
-    database_connection.ConnectionProfile(
+    ConnectionProfile(
         config["DB_HOST"],
         config["DB_PORT"],
         config["DB_NAME"],
@@ -32,7 +32,7 @@ load_mods(working_dir)
 
 
 with app.app_context():
-    from tools.route_loader import load_routes
+    from swc_utils.tools import load_routes
     load_routes(working_dir, "routes")
 
     db.create_all()

@@ -9,14 +9,13 @@ def build_tastes_from_progress(progress: dict):
     parsed_tastes = {}
 
     for title in progress:
-        mode = "movie" if type(progress[title]) == int else "series"
+        mode = "movie" if type(progress[title]) is int else "series"
 
         if mode == "movie":
             movie = get_movie(title)
             if movie is None or not movie.tags:
                 continue
-            runtime = movie.video_info["format"]["duration"] if movie.video_info \
-                      is not None and movie.video_info != {} else None
+            runtime = movie.video_info["format"]["duration"] if movie.video_info is not None and movie.video_info != {} else None
             factor = progress[title] / runtime if runtime is not None and runtime != 0 else 0
             for tag in movie.tags.split(","):
                 if tag not in parsed_tastes:

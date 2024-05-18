@@ -4,8 +4,8 @@ from flask import request, make_response
 from models.movie import get_movies, latest_movies, search_movies
 from models.series import get_all_series, latest_series, search_series
 from models.title.title_repo import get_titles, get_title_tags, make_title_entry
-from utils.password_manager import auth_required
-from utils.request_codes import RequestCode
+from swc_utils.web.auth_manager import auth_required
+from swc_utils.web import RequestCode
 
 
 @app.route("/search/<mode>")

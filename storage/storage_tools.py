@@ -13,7 +13,7 @@ from __init__ import config
 from models.movie import MovieModel
 from models.music import SongModel
 from models.series import SeriesModel
-from utils.wsl_compatability import make_wsl_command, get_wsl_path, get_local_wsl_temp_dir
+from swc_utils.wsl import make_wsl_command, get_wsl_path, get_local_wsl_temp_dir
 from ai_tools.subtitle_generator import generate_subtitles_from_audio_stream
 
 frame_cache = {}
@@ -122,10 +122,10 @@ def get_video_frame(file_path: str, time_index: int):
 
 def detect_audio_offsets(search_file: bytes, video_folder: str, ignore_files: str = "m3u8,ts"):
     audio_file = str(uuid4()) + ".wav"
-    with open(get_local_wsl_temp_dir() + file, "wb") as f:
+    with open(get_local_wsl_temp_dir(config) + file, "wb") as f:
         f.write(search_file)
 
-    aivd = subprocess.Popen(make_wsl_command([
+    aivd = subprocess.Popen(make_wsl_command(config, [
         AIVD,
         "-r",
         "-x", ignore_files,
@@ -135,14 +135,14 @@ def detect_audio_offsets(search_file: bytes, video_folder: str, ignore_files: st
         "--ffmpeg", FFMPEG if not config.get_bool("USE_WSL") else config.get("WSL_FFMPEG"),
         "--silent",
         f"/tmp/{audio_file}",
-        get_wsl_path(video_folder)
+        get_wsl_path(config, video_folder)
     ]),
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT
     )
 
     resp = aivd.stdout.read()
-    os.remove(get_local_wsl_temp_dir() + file)
+    os.remove(get_local_wsl_temp_dir(config) + file)
 
     return json.loads(resp.strip())
 

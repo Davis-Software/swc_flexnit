@@ -3,7 +3,7 @@ from flask import request, session, make_response
 from __init__ import app, config
 from models.metrics import set_user_request_metrics, get_all_metrics, parse_metrics
 
-from utils.password_manager import admin_required
+from swc_utils.web.auth_manager import admin_required
 
 
 USE_METRICS = config.get_bool("METRIC", False)

@@ -1,8 +1,8 @@
 from __init__ import app
 
 from models.content_requests import get_content_request, get_content_requests, paginate_content_requests, create_or_edit_content_request
-from utils.password_manager import auth_required
-from utils.request_codes import RequestCode
+from swc_utils.web.auth_manager import auth_required
+from swc_utils.web import RequestCode
 
 from flask import request, session, make_response
 

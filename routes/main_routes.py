@@ -1,7 +1,7 @@
 from __init__ import app
-from utils.password_manager import auth_required
+from swc_utils.web.auth_manager import auth_required
 from utils.valid_react_routes import VALID_REACT_ROUTES
-from utils.request_codes import RequestCode
+from swc_utils.web import RequestCode
 
 from flask import render_template, make_response, request, redirect
 

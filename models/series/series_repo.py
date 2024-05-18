@@ -3,7 +3,7 @@ from datetime import timedelta
 from werkzeug.datastructures import FileStorage
 from sqlalchemy import or_
 
-from utils.password_manager import check_admin
+from swc_utils.web.auth_manager import check_admin
 from .series_model import SeriesModel
 from .episode_model import EpisodeModel
 

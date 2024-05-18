@@ -6,9 +6,8 @@ from storage.music_storage import upload_song, get_song_storage_file, delete_son
 
 from flask import make_response, request, send_file, session
 
-from utils.adv_responses import send_binary_image
-from utils.password_manager import auth_required, admin_required
-from utils.request_codes import RequestCode
+from swc_utils.web import send_binary_image, RequestCode
+from swc_utils.web.auth_manager import auth_required, admin_required
 
 
 @app.route("/music/new", methods=["POST"])

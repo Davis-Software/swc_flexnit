@@ -9,9 +9,8 @@ from storage.series_storage import upload_episode_file, convert_episode_to_hls, 
     reinitialize_legacy_hls, convert_season_to_dash, delete_episode_dash_files
 from storage.storage_tools import get_sized_thumbnail
 from scraper.imdb_scraper import IMDBScraper
-from utils.adv_responses import send_binary_image
-from utils.password_manager import auth_required, admin_required, check_permission
-from utils.request_codes import RequestCode
+from swc_utils.web import send_binary_image, RequestCode
+from swc_utils.web.auth_manager import auth_required, admin_required, check_permission
 
 
 @app.route("/series/new", methods=["POST"])
