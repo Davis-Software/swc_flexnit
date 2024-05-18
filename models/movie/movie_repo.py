@@ -101,9 +101,13 @@ def latest_movies(limit: int = 25):
     return base_query(False).order_by(MovieModel.added_on.desc()).limit(limit).all()
 
 
-def search_movies(search_term: str, limit: int = 25):
-    return base_query().filter(or_(
-        MovieModel.title.ilike(f"%{search_term}%"),
-        MovieModel.tags.ilike(f"%{search_term}%"),
-        MovieModel.description.ilike(f"%{search_term}%")
-    )).limit(limit).all()
+def search_movies(search_term: str = None, tag_filter: str = None, limit: int = 25):
+    query = base_query()
+    if tag_filter is not None:
+        query = query.filter(MovieModel.tags.like(f"%{tag_filter}%"))
+    if search_term is not None:
+        query = query.filter(or_(
+            MovieModel.title.ilike(f"%{search_term}%"),
+            MovieModel.description.ilike(f"%{search_term}%")
+        ))
+    return query.limit(limit).all()

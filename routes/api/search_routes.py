@@ -15,6 +15,7 @@ def search_title(mode):
         return make_response({"message": "Invalid mode"}, RequestCode.ClientError.BadRequest)
 
     results = list()
+    tag_filter = request.args.get("tag")
     search_term = request.args.get("q")
 
     if mode == "browse":
@@ -34,7 +35,7 @@ def search_title(mode):
 
         results = list(sorted(latest, key=lambda x: x.added_on, reverse=True))[:count]
 
-    elif search_term is None:
+    elif search_term is None and tag_filter is None:
         if mode in ["movie", "all"]:
             for movie in get_movies(
                 request.args.get("c", 25, type=int),
@@ -49,10 +50,10 @@ def search_title(mode):
                 results.append(series)
     else:
         if mode in ["movie", "all"]:
-            for movie in search_movies(search_term):
+            for movie in search_movies(search_term, tag_filter):
                 results.append(movie)
         if mode in ["series", "all"]:
-            for series in search_series(search_term):
+            for series in search_series(search_term, tag_filter):
                 results.append(series)
 
     return list(

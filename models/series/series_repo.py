@@ -279,10 +279,14 @@ def latest_series(both: bool = True, limit: int = 25, grouping_time: int = 30):
     return result
 
 
-def search_series(search: str, limit: int = 25):
-    return base_query().filter(or_(
-        SeriesModel.title.ilike(f"%{search}%"),
-        SeriesModel.tags.ilike(f"%{search}%"),
-        SeriesModel.description.ilike(f"%{search}%")
-    )).limit(limit).all()
+def search_series(search_term: str = None, tag_filter: str = None, limit: int = 25):
+    query = base_query()
+    if tag_filter is not None:
+        query = query.filter(SeriesModel.tags.like(f"%{tag_filter}%"))
+    if search_term is not None:
+        query = query.filter(or_(
+            SeriesModel.title.ilike(f"%{search_term}%"),
+            SeriesModel.description.ilike(f"%{search_term}%")
+        ))
+    return query.limit(limit).all()
 

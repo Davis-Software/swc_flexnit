@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from "react";
 import {
     Button,
-    Collapse,
+    Collapse, Divider,
     FormControl,
     Link,
     MenuItem,
@@ -128,6 +128,62 @@ function TitleEntryLoader(){
     )
 }
 
+interface SidebarSearchInputProps {
+    searchBarRef: React.RefObject<HTMLInputElement>;
+    search: string;
+    setSearch: (search: string) => void;
+    searchMode: string;
+    setSearchMode: (searchMode: string) => void;
+}
+function SidebarSearchInput({
+    searchBarRef,
+    search,
+    setSearch,
+    searchMode,
+    setSearchMode
+}: SidebarSearchInputProps){
+    const [tags, setTags] = React.useState<string[]>([])
+
+    useEffect(() => {
+        fetch("/tags")
+            .then(res => res.json())
+            .then(res => setTags(res))
+    }, [])
+
+    return (
+        <div className="sidebar-form">
+            <FormControl fullWidth>
+                <TextField
+                    inputRef={searchBarRef}
+                    variant="standard"
+                    placeholder="Search"
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    sx={{"& input": {paddingLeft: ".5rem"}}}
+                />
+            </FormControl>
+            <FormControl fullWidth>
+                <Select
+                    variant="standard"
+                    value={searchMode}
+                    onChange={e => setSearchMode(e.target.value)}
+                    sx={{paddingLeft: ".5rem"}}
+                >
+                    <MenuItem value="all">All</MenuItem>
+                    <Divider />
+                    <MenuItem value="movie">Movie</MenuItem>
+                    <MenuItem value="series">Series</MenuItem>
+                    {tags.length > 0 && <Divider />}
+                    {tags.map((tag, i) => (
+                        <MenuItem key={i} value={tag}>{tag}</MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
+            <hr className="mb-0"/>
+        </div>
+    )
+}
+
 interface SidebarProps {
     setSelectedTitle: (title: TitleEntryType) => void;
     selectedTitleUUID: string | null;
@@ -135,11 +191,12 @@ interface SidebarProps {
     setSearchResults: (results: (prevState: TitleEntryType[]) => TitleEntryType[]) => void;
     setLoadedOnce: (loadedOnce: boolean) => void;
 }
-function Sidebar(props: SidebarProps){
+
+function Sidebar(props: SidebarProps) {
     const isAdmin = useIsAdmin()
     const [search, setSearch] = React.useState(sessionStorage.getItem("search") || "")
     const [searchMode, setSearchMode] =
-        React.useState<"all" | "movie" | "series">(sessionStorage.getItem("search-mode") as "all" | "movie" | "series" || "all")
+        React.useState<string>(sessionStorage.getItem("search-mode") || "all")
     const searchBarRef = useRef<HTMLInputElement>(null)
     const [showNews, setShowNews] = React.useState(window.innerWidth < 840)
 
@@ -147,9 +204,10 @@ function Sidebar(props: SidebarProps){
     const loadTimeout = useRef<NodeJS.Timeout | null>(null)
     const [createNewModal, setCreateNewModal] = React.useState(false)
 
-    function updateShowNews(){
+    function updateShowNews() {
         setShowNews(window.innerWidth < 840)
     }
+
     useEffect(() => {
         window.addEventListener("resize", updateShowNews)
         return () => window.removeEventListener("resize", updateShowNews)
@@ -165,7 +223,16 @@ function Sidebar(props: SidebarProps){
 
         sessionStorage.setItem("search", search)
         sessionStorage.setItem("search-mode", searchMode)
-        fetch(`/search/${searchMode}${search !== "" ? "?q=" + search : ""}`, {
+        let reqSearchMode = searchMode
+        let searchParams = []
+        if(!["all", "movie", "series"].includes(searchMode)){
+            reqSearchMode = "all"
+            searchParams.push(`tag=${searchMode}`)
+        }
+        if(search !== ""){
+            searchParams.push(`q=${search}`)
+        }
+        fetch(`/search/${reqSearchMode}?${searchParams.join("&")}`, {
             signal: abortController.signal
         })
             .then(res => res.json())
@@ -191,31 +258,13 @@ function Sidebar(props: SidebarProps){
     return (
         <>
             <div className="sidebar d-flex flex-column border-end border-secondary">
-                <div className="sidebar-form">
-                    <FormControl fullWidth>
-                        <TextField
-                            inputRef={searchBarRef}
-                            variant="standard"
-                            placeholder="Search"
-                            value={search}
-                            onChange={e => setSearch(e.target.value)}
-                            sx={{"& input": {paddingLeft: ".5rem"}}}
-                        />
-                    </FormControl>
-                    <FormControl fullWidth>
-                        <Select
-                            variant="standard"
-                            value={searchMode}
-                            onChange={e => setSearchMode(e.target.value as "all" | "movie" | "series")}
-                            sx={{paddingLeft: ".5rem"}}
-                        >
-                            <MenuItem value="all">All</MenuItem>
-                            <MenuItem value="movie">Movie</MenuItem>
-                            <MenuItem value="series">Series</MenuItem>
-                        </Select>
-                    </FormControl>
-                    <hr className="mb-0" />
-                </div>
+                <SidebarSearchInput
+                    searchBarRef={searchBarRef}
+                    search={search}
+                    setSearch={setSearch}
+                    searchMode={searchMode}
+                    setSearchMode={setSearchMode}
+                />
 
                 <div className="results">
                     {showNews && search === "" && (
