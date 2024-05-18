@@ -281,7 +281,7 @@ def convert_file_to_dash(input_file: str, output_location: str, add_lq: bool = F
     else:
         audio_encoder = "aac"
 
-    if all(map(lambda x: x in ["webvtt", "ass", "srt"], subtitle_codecs)):
+    if all(map(lambda x: x in ["webvtt", "ass", "srt", "mov_text"], subtitle_codecs)):
         encode_subtitles = True
     else:
         encode_subtitles = False
