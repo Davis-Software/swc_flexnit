@@ -25,7 +25,7 @@ def get_content_requests(username=None):
 
 
 def paginate_content_requests(page, per_page):
-    return ContentRequestModel.query.paginate(page, per_page, False).items
+    return ContentRequestModel.query.paginate(page=page, per_page=per_page, max_per_page=50, error_out=False).items
 
 
 def get_content_request(cr_id):

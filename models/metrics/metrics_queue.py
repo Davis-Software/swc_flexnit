@@ -1,7 +1,7 @@
 import time
 import threading
 
-from __init__ import config
+from __init__ import app, config
 
 from models.metrics import UserMetricStruct
 
@@ -17,8 +17,9 @@ def updater():
 
     while True:
         time.sleep(METRIC_INTERVAL)
-        for username, metrics in metrics_queue.items():
-            metrics.push_to_db()
+        with app.test_request_context():
+            for username, metrics in metrics_queue.items():
+                metrics.push_to_db()
         metrics_queue = {}
 
 

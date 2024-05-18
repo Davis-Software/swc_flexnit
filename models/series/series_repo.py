@@ -208,7 +208,7 @@ def get_episodes(series_uuid: str, season: int = None):
 def get_all_episodes(limit: int = 25, page: int = 1):
     if limit == -1:
         return EpisodeModel.query.all()
-    return EpisodeModel.query.paginate(page, limit, False).items
+    return EpisodeModel.query.paginate(page=page, per_page=limit, max_per_page=100, error_out=False).items
 
 
 def base_query(order: bool = True):
@@ -225,7 +225,7 @@ def base_query(order: bool = True):
 def get_all_series(limit: int = 25, page: int = 1):
     if limit == -1:
         return base_query().all()
-    return base_query().paginate(page, limit, False).items
+    return base_query().paginate(page=page, per_page=limit, max_per_page=100, error_out=False).items
 
 
 def latest_series(both: bool = True, limit: int = 25, grouping_time: int = 30):

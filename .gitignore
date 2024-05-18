@@ -2,6 +2,6 @@
 venv/
 ai_tools/ai_models
 static/js/bundle/
-static/db/db.sqlite
+instance/db.sqlite
 templates/pages/index.html
 temp.py

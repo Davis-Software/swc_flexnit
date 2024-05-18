@@ -52,7 +52,6 @@ def build_recommendations_from_taste_profile(progress: dict, taste_profile: dict
         for title in titles:
             title["score"] = sum([taste_profile[tag] if tag in taste_profile else 0 for tag in title["tags"].split(",")])
         sorted_titles = sorted(titles, key=lambda x: x["score"], reverse=True)
-        print([title["score"] for title in sorted_titles])
         highest_score = max([title["score"] for title in sorted_titles]) if len(sorted_titles) > 0 else 0
         for title in sorted_titles:
             title["score"] = title["score"] / highest_score if highest_score != 0 else 0
